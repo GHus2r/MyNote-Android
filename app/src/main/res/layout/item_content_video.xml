@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <FrameLayout
+        android:id="@+id/content_area"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="4dp"
+        android:background="@color/bg_main">
+
+        <ImageView
+            android:id="@+id/iv_video_thumb"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:background="@color/divider"
+            android:contentDescription="视频封面" />
+
+        <ImageView
+            android:id="@+id/btn_video_play"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_play"
+            android:contentDescription="播放" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/swipe_delete"
+        android:layout_width="72dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:gravity="center"
+        android:background="@color/danger"
+        android:clickable="true"
+        android:focusable="true"
+        android:translationX="72dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="删除"
+            android:textSize="14sp"
+            android:textColor="@color/white" />
+    </LinearLayout>
+</FrameLayout>

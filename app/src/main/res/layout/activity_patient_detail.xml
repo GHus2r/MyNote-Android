@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_main">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="16dp"
+        android:background="@color/bg_card">
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_media_previous"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+        <TextView
+            android:id="@+id/tv_patient_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="18sp"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold" />
+        <Button
+            android:id="@+id/btn_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="36dp"
+            android:text="编辑"
+            android:textSize="13sp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:includeFontPadding="false" />
+    </LinearLayout>
+
+    <!-- 患者信息卡片（固定不滚动） -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:layout_marginBottom="4dp"
+        app:cardElevation="1dp"
+        app:cardCornerRadius="8dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/tv_info_line1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="15sp"
+                    android:textColor="@color/text_primary" />
+            </LinearLayout>
+            <TextView
+                android:id="@+id/tv_info_line2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textSize="13sp"
+                android:textColor="@color/text_hint" />
+            <TextView
+                android:id="@+id/tv_info_diagnosis"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textSize="14sp"
+                android:textColor="#D32F2F" />
+            <TextView
+                android:id="@+id/tv_info_complaint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="病历列表"
+        android:textSize="14sp"
+        android:textColor="@color/text_hint"
+        android:paddingStart="12dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp" />
+
+    <!-- 体征摘要 -->
+    <LinearLayout
+        android:id="@+id/vital_summary_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="4dp"
+        android:visibility="gone"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="2dp">
+
+        <TextView android:id="@+id/tv_vital_temp" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="11sp" android:gravity="center" android:textColor="@color/text_primary" android:padding="3dp" android:background="#E3F2FD" android:layout_marginEnd="1dp" />
+        <TextView android:id="@+id/tv_vital_pulse" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="11sp" android:gravity="center" android:textColor="@color/text_primary" android:padding="3dp" android:background="#E3F2FD" android:layout_marginEnd="1dp" />
+        <TextView android:id="@+id/tv_vital_bp" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1.5" android:textSize="11sp" android:gravity="center" android:textColor="@color/text_primary" android:padding="3dp" android:background="#E3F2FD" android:layout_marginEnd="1dp" />
+        <TextView android:id="@+id/tv_vital_spo2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textSize="11sp" android:gravity="center" android:textColor="@color/text_primary" android:padding="3dp" android:background="#E3F2FD" android:layout_marginEnd="1dp" />
+        <TextView android:id="@+id/tv_vital_lab" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="2" android:textSize="11sp" android:gravity="center" android:textColor="@color/text_primary" android:padding="3dp" android:background="#E8F5E9" />
+    </LinearLayout>
+
+    <!-- RecyclerView 自己滚动 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_records"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp" />
+
+    <Button
+        android:id="@+id/fab_action"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"
+        android:text="操作 ▼"
+        android:textSize="15sp" />
+</LinearLayout>

@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_main">
+
+    <!-- 顶部栏 -->
+    <LinearLayout
+        android:id="@+id/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:background="@drawable/frosted_bar_bg"
+        android:elevation="8dp">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="36dp" android:layout_height="36dp"
+            android:src="@drawable/ic_back"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <TextView
+            android:id="@+id/tv_save_status"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:gravity="center"
+            android:text="笔记" android:textSize="16sp" android:textStyle="bold"
+            android:textColor="@color/text_primary" />
+
+        <TextView
+            android:id="@+id/tv_word_count"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="0字" android:textSize="11sp"
+            android:textColor="@color/text_hint"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/btn_export_pdf"
+            android:layout_width="wrap_content" android:layout_height="36dp"
+            android:gravity="center" android:text="导出" android:textSize="13sp"
+            android:textColor="#E65100"
+            android:paddingStart="8dp" android:paddingEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <TextView
+            android:id="@+id/btn_share"
+            android:layout_width="wrap_content" android:layout_height="36dp"
+            android:gravity="center" android:text="分享" android:textSize="13sp"
+            android:textColor="#1976D2"
+            android:paddingStart="8dp" android:paddingEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <TextView
+            android:id="@+id/btn_immersive"
+            android:layout_width="wrap_content" android:layout_height="36dp"
+            android:gravity="center" android:text="沉浸" android:textSize="13sp"
+            android:textColor="#00897B"
+            android:paddingStart="8dp" android:paddingEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <TextView
+            android:id="@+id/btn_save"
+            android:layout_width="wrap_content" android:layout_height="36dp"
+            android:gravity="center" android:text="保存" android:textSize="14sp"
+            android:textColor="@color/primary"
+            android:paddingStart="12dp" android:paddingEnd="12dp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+    </LinearLayout>
+
+    <!-- 标题 -->
+    <EditText
+        android:id="@+id/et_title"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:hint="标题" android:textSize="22sp" android:textStyle="bold"
+        android:textColor="@color/text_primary" android:background="@null"
+        android:paddingHorizontal="16dp" android:paddingVertical="8dp"
+        android:inputType="text" />
+
+    <!-- 富文本编辑区 -->
+    <WebView
+        android:id="@+id/web_editor"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- 更多功能面板（默认隐藏） -->
+    <LinearLayout
+        android:id="@+id/more_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/bg_card"
+        android:visibility="gone">
+
+        <!-- 格式工具 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="4dp"
+            android:background="#F0F0F0">
+
+            <TextView android:id="@+id/btn_bold" style="@style/PdfToolBtn"
+                android:text="B" android:textStyle="bold" android:textColor="#000" android:textSize="16sp" />
+            <TextView android:id="@+id/btn_italic" style="@style/PdfToolBtn"
+                android:text="I" android:textColor="#000" android:textStyle="italic" />
+            <TextView android:id="@+id/btn_underline" style="@style/PdfToolBtn"
+                android:text="U̲" android:textSize="14sp" android:textColor="#000" />
+            <TextView android:id="@+id/btn_undo" style="@style/PdfToolBtn"
+                android:text="撤" android:textSize="13sp" android:textColor="#000" />
+            <TextView android:id="@+id/btn_redo" style="@style/PdfToolBtn"
+                android:text="复" android:textSize="13sp" android:textColor="#000" />
+            <View android:layout_width="1dp" android:layout_height="24dp"
+                android:background="#20000000" android:layout_marginHorizontal="4dp" />
+            <TextView android:id="@+id/btn_font_up" style="@style/PdfToolBtn"
+                android:text="A+" android:textSize="14sp" android:textColor="#000" />
+            <TextView android:id="@+id/btn_font_down" style="@style/PdfToolBtn"
+                android:text="A-" android:textSize="12sp" android:textColor="#000" />
+        </LinearLayout>
+
+        <!-- 排版辅助：分隔线 / 引用 / 高亮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="4dp"
+            android:background="#F5F5F5">
+
+            <TextView android:id="@+id/btn_separator" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="——" android:textSize="14sp" android:textColor="#666" />
+            <TextView android:id="@+id/btn_quote" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="❝ 引用" android:textSize="13sp" android:textColor="#4CAF50" />
+            <TextView android:id="@+id/btn_highlight" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="■ 高亮" android:textSize="13sp" android:textColor="#F9A825" />
+            <TextView android:id="@+id/btn_code" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="&lt;&gt;" android:textSize="14sp" android:textColor="#78909C" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="4dp"
+            android:background="#F5F5F5">
+
+            <TextView android:id="@+id/btn_checklist" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="☑ 清单" android:textSize="13sp" android:textColor="#1565C0" />
+            <TextView android:id="@+id/btn_info_card" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="🛈 卡片" android:textSize="13sp" android:textColor="#00897B" />
+            <TextView android:id="@+id/btn_warning" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="⚠ 警示" android:textSize="13sp" android:textColor="#D32F2F" />
+            <TextView android:id="@+id/btn_numbered" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="1. 编号" android:textSize="13sp" android:textColor="#FF6D00" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="4dp">
+
+            <TextView android:id="@+id/btn_pdf2" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="PDF" android:textSize="14sp" android:textColor="#333" />
+            <TextView android:id="@+id/btn_docx2" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="Word" android:textSize="14sp" android:textColor="#333" />
+            <TextView android:id="@+id/btn_xlsx2" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="Excel" android:textSize="13sp" android:textColor="#333" />
+            <TextView android:id="@+id/btn_pptx2" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="PPT" android:textSize="14sp" android:textColor="#333" />
+        </LinearLayout>
+
+        <!-- ===== 医疗工具行 ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="4dp"
+            android:background="#FFF8E1">
+
+            <TextView android:id="@+id/btn_template" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="模板" android:textSize="14sp" android:textColor="#E65100" />
+            <TextView android:id="@+id/btn_drug" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="药品" android:textSize="14sp" android:textColor="#1565C0" />
+            <TextView android:id="@+id/btn_disease" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="疾病" android:textSize="14sp" android:textColor="#2E7D32" />
+            <TextView android:id="@+id/btn_ai" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="AI" android:textSize="14sp" android:textColor="#7B1FA2" />
+            <TextView android:id="@+id/btn_rx" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="处方" android:textSize="14sp" android:textColor="#BF360C" />
+            <TextView android:id="@+id/btn_page_template" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="页面" android:textSize="14sp" android:textColor="#555" />
+            <TextView android:id="@+id/btn_ocr" style="@style/PdfToolBtn"
+                android:layout_width="0dp" android:layout_weight="1"
+                android:text="化验" android:textSize="14sp" android:textColor="#00897B" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 底部工具栏 -->
+    <LinearLayout
+        android:id="@+id/bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:background="@color/bg_card"
+        android:elevation="4dp"
+        android:paddingHorizontal="4dp">
+
+        <ImageView
+            android:id="@+id/btn_voice2"
+            android:layout_width="40dp" android:layout_height="40dp"
+            android:src="@drawable/ic_voice"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true" android:focusable="true"
+            android:layout_marginHorizontal="6dp" />
+
+        <ImageView
+            android:id="@+id/btn_gallery"
+            android:layout_width="40dp" android:layout_height="40dp"
+            android:src="@drawable/ic_gallery"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true" android:focusable="true"
+            android:layout_marginHorizontal="6dp" />
+
+        <ImageView
+            android:id="@+id/btn_camera"
+            android:layout_width="40dp" android:layout_height="40dp"
+            android:src="@drawable/ic_camera"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true" android:focusable="true"
+            android:layout_marginHorizontal="6dp" />
+
+        <ImageView
+            android:id="@+id/btn_video2"
+            android:layout_width="40dp" android:layout_height="40dp"
+            android:src="@drawable/ic_videocam"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true" android:focusable="true"
+            android:layout_marginHorizontal="6dp" />
+
+        <View android:layout_width="1dp" android:layout_height="24dp"
+            android:background="#20FFFFFF" android:layout_marginHorizontal="6dp" />
+
+        <TextView android:id="@+id/btn_color" style="@style/PdfToolBtn"
+            android:text="🎨" android:textSize="22sp" android:layout_marginHorizontal="6dp" />
+
+        <View android:layout_width="1dp" android:layout_height="26dp"
+            android:background="#20FFFFFF" android:layout_marginHorizontal="6dp" />
+
+        <TextView android:id="@+id/btn_more" style="@style/PdfToolBtn"
+            android:text="⋯" android:textSize="23sp" android:textColor="#FF9800" android:layout_marginHorizontal="6dp" />
+    </LinearLayout>
+
+    <!-- 沉浸模式退出按钮（浮动，默认隐藏） -->
+    <TextView
+        android:id="@+id/btn_exit_immersive"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_gravity="end|top"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
+        android:gravity="center"
+        android:text="✕"
+        android:textSize="20sp"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/bg_immersive_exit"
+        android:visibility="gone"
+        android:elevation="12dp"
+        android:clickable="true"
+        android:focusable="true" />
+</LinearLayout>

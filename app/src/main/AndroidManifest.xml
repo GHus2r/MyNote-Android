@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 网络 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- 相机 -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- 录音 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- 存储 (Android 13 以下) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+
+    <!-- Android 13+ 媒体权限 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+    <!-- 振动 -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- 防卸载:设备管理员相关 -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
+    <application
+        android:name=".MyNoteApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyNote">
+
+        <!-- 锁屏页 (启动页) — LAUNCHER 由 activity-alias 接管 -->
+        <activity
+            android:name=".ui.lock.LockActivity"
+            android:label="计算器"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:noHistory="true"
+            android:excludeFromRecents="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <!-- 图标样式1：默认 -->
+        <activity-alias
+            android:name=".LauncherDefault"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="计算器"
+            android:targetActivity=".ui.lock.LockActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- 图标样式2：紧凑 -->
+        <activity-alias
+            android:name=".LauncherCompact"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_style_compact"
+            android:label="计算器"
+            android:targetActivity=".ui.lock.LockActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- 图标样式3：极简 -->
+        <activity-alias
+            android:name=".LauncherMinimal"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_style_minimal"
+            android:label="计算器"
+            android:targetActivity=".ui.lock.LockActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- 图标样式4：伪装计算器 -->
+        <activity-alias
+            android:name=".LauncherCalc"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_style_calc"
+            android:label="计算器"
+            android:targetActivity=".ui.lock.LockActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- 主页 -->
+        <activity
+            android:name=".ui.main.MainActivity"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <!-- 编辑页 -->
+        <activity
+            android:name=".ui.edit.EditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <!-- 设置页 -->
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:exported="true"
+            android:theme="@style/Theme.MyNote.NoActionBar">
+            <!-- 百度网盘 OAuth 回调 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="mynote" android:host="callback" />
+            </intent-filter>
+        </activity>
+
+        <!-- 病历管理 -->
+        <activity
+            android:name=".ui.patient.PatientListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <activity
+            android:name=".ui.patient.PatientDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <!-- PDF 查看器 -->
+        <activity
+            android:name=".ui.pdf.PdfViewerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar"
+            android:configChanges="orientation|screenSize" />
+
+        <!-- Office 查看器 -->
+        <activity
+            android:name=".ui.office.OfficeViewerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <!-- 图片查看器 -->
+        <activity
+            android:name=".ui.viewer.ImageViewerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <!-- 闪卡复习 -->
+        <activity
+            android:name=".ui.flashcard.FlashcardActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <!-- 图片标注 -->
+        <activity
+            android:name=".ui.image.ImageAnnotationActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <!-- 视频播放器 -->
+        <activity
+            android:name=".ui.viewer.VideoViewerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <!-- 回收站 -->
+        <activity
+            android:name=".ui.trash.TrashActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <!-- FileProvider（拍照用） -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- 防卸载设备管理员 -->
+        <receiver
+            android:name=".ui.settings.AdminReceiver"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin_policies" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+                <action android:name="android.app.action.DEVICE_ADMIN_DISABLED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- 开机自启动 -->
+        <receiver
+            android:name=".util.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- 桌面小部件 -->
+        <receiver
+            android:name=".ui.widget.MyNoteWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_mynote_info" />
+        </receiver>
+
+        <!-- 摇一摇快速录音 -->
+        <service
+            android:name=".ui.recording.QuickRecordService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse|microphone">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="摇一摇快速录音 —— 用户主动触发后创建笔记并录音" />
+        </service>
+
+    </application>
+
+</manifest>

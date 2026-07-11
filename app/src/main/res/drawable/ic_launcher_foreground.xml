@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 笔记本图标 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,30 L70,30 C72.2,30 74,31.8 74,34 L74,74 C74,76.2 72.2,78 70,78 L38,78 C35.8,78 34,76.2 34,74 L34,34 C34,31.8 35.8,30 38,30 Z" />
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M42,42 L66,42 L66,46 L42,46 Z" />
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M42,52 L66,52 L66,56 L42,56 Z" />
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M42,62 L58,62 L58,66 L42,66 Z" />
+</vector>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lock_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#062516">
+
+    <!-- N字碎片漂浮背景 -->
+    <com.mynote.android.ui.lock.widget.FlowingGradientView
+        android:id="@+id/video_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- 浮动气泡键盘 -->
+    <com.mynote.android.ui.lock.widget.FloatingBubbleKeypad
+        android:id="@+id/bubble_keypad"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- 指纹动画 -->
+    <com.mynote.android.ui.lock.widget.FingerprintRingView
+        android:id="@+id/btn_fingerprint"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone" />
+
+</FrameLayout>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 方形 / 卡片型 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/widget_bg"
+    android:padding="12dp">
+
+    <TextView
+        android:text="📝"
+        android:textSize="36sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tv_note_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0 篇笔记"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:text="点击新建"
+        android:textSize="11sp"
+        android:textColor="#999999"
+        android:layout_marginBottom="12dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/btn_search"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="🔍"
+            android:textSize="16sp"
+            android:background="@drawable/widget_btn_bg"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/btn_new_card"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="✚ 新建"
+            android:textSize="13sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/widget_btn_bg" />
+    </LinearLayout>
+</LinearLayout>

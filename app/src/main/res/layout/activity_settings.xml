@@ -1,0 +1,905 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_main">
+
+    <!-- 顶部栏 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:background="@color/bg_card"
+        android:orientation="horizontal"
+        android:elevation="2dp">
+
+        <TextView
+            android:id="@+id/btn_settings_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="←"
+            android:textColor="@color/text_primary"
+            android:textSize="20sp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="设置"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 安全设置 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="安全设置"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="4dp" />
+
+        <!-- 密码保护 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="密码保护"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_password"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- 修改密码 -->
+        <LinearLayout
+            android:id="@+id/item_change_password"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:visibility="gone"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="修改密码"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=">"
+                android:textSize="20sp"
+                android:textColor="@color/text_hint" />
+        </LinearLayout>
+
+        <!-- 指纹解锁 -->
+        <LinearLayout
+            android:id="@+id/item_fingerprint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="指纹解锁"
+                    android:textSize="15sp"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:id="@+id/tv_fingerprint_hint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="设备不支持硬件"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_hint"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_fingerprint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- 自动锁定时间 -->
+        <LinearLayout
+            android:id="@+id/item_lock_time"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="自动锁定"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tv_lock_time_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="立即"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=">"
+                android:textSize="20sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginStart="4dp" />
+        </LinearLayout>
+
+        <!-- 安全保护 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="安全保护"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="20dp" />
+
+        <!-- 防卸载保护 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:orientation="horizontal"
+            android:layout_marginBottom="1dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="防卸载保护"
+                    android:textSize="15sp"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:id="@+id/tv_anti_uninstall_hint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="激活后需先停用设备管理员才能卸载"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_hint" />
+            </LinearLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_anti_uninstall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- 备份 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="备份"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="16dp" />
+
+        <!-- 上次备份时间 -->
+        <LinearLayout
+            android:id="@+id/item_last_backup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:orientation="horizontal"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="上次备份"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tv_last_backup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="从未备份"
+                android:textSize="14sp"
+                android:textColor="@color/text_hint" />
+        </LinearLayout>
+
+        <!-- 创建 JSON 备份 -->
+        <LinearLayout
+            android:id="@+id/item_local_backup"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="完整备份 (JSON)"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="含分类+笔记+内容"
+                android:textSize="12sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=">"
+                android:textSize="20sp"
+                android:textColor="@color/text_hint" />
+        </LinearLayout>
+
+        <!-- 创建数据库备份 -->
+        <LinearLayout
+            android:id="@+id/item_db_backup"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="快速备份 (DB)"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="直接打包数据库"
+                android:textSize="12sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=">"
+                android:textSize="20sp"
+                android:textColor="@color/text_hint" />
+        </LinearLayout>
+
+        <!-- 从备份恢复 -->
+        <LinearLayout
+            android:id="@+id/item_restore_backup"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="从备份恢复"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="选择备份文件"
+                android:textSize="12sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=">"
+                android:textSize="20sp"
+                android:textColor="@color/text_hint" />
+        </LinearLayout>
+
+        <!-- 管理备份文件 -->
+        <LinearLayout
+            android:id="@+id/item_manage_backups"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="管理备份文件"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tv_backup_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0个"
+                android:textSize="14sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=">"
+                android:textSize="20sp"
+                android:textColor="@color/text_hint" />
+        </LinearLayout>
+
+        <!-- 创建桌面快捷方式 -->
+        <LinearLayout
+            android:id="@+id/item_create_shortcut"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="创建桌面快捷方式"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="防卸载备用入口"
+                android:textSize="12sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=">"
+                android:textSize="20sp"
+                android:textColor="@color/text_hint" />
+        </LinearLayout>
+
+
+        <!-- 导出全部数据 ZIP -->
+        <LinearLayout
+            android:id="@+id/item_export_all"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="导出全部数据 (ZIP)"
+                android:textSize="15sp"
+                android:textColor="#1565C0" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="数据库+附件+笔记"
+                android:textSize="12sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=">"
+                android:textSize="20sp"
+                android:textColor="@color/text_hint" />
+        </LinearLayout>
+
+        <!-- 从 ZIP 恢复 -->
+        <LinearLayout
+            android:id="@+id/item_restore_zip"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="从 ZIP 恢复"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="选择 .zip 文件恢复"
+                android:textSize="12sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=">"
+                android:textSize="20sp"
+                android:textColor="@color/text_hint" />
+        </LinearLayout>
+
+        <!-- ===== 患者管理 ===== -->
+        <TextView android:layout_width="match_parent" android:layout_height="32dp"
+            android:text="  患者管理" android:textSize="13sp" android:textColor="#2E7D32"
+            android:gravity="center_vertical" android:background="#E8F5E9" android:layout_marginTop="8dp" />
+
+        <LinearLayout
+            android:id="@+id/item_patient_mgr"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="患者信息管理"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tv_patient_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0人"
+                android:textSize="14sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=">"
+                android:textSize="20sp"
+                android:textColor="@color/text_hint" />
+        </LinearLayout>
+
+        <!-- ===== AI & 语音 ===== -->
+        <TextView android:layout_width="match_parent" android:layout_height="32dp"
+            android:text="  AI 与语音" android:textSize="13sp" android:textColor="#E65100"
+            android:gravity="center_vertical" android:background="#FFF3E0" android:layout_marginTop="8dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:background="@android:color/transparent" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="快速录音"
+            android:textSize="12sp"
+            android:textColor="@color/text_hint"
+            android:paddingStart="4dp"
+            android:paddingBottom="4dp" />
+
+        <!-- 摇一摇快速录音 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="摇一摇快速录音"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tv_quick_record_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="锁屏也可用"
+                android:textSize="12sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginEnd="8dp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_quick_record"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- 摇一摇灵敏度 -->
+        <LinearLayout
+            android:id="@+id/item_shake_sensitive"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="灵敏度"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tv_shake_sensitive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="灵敏"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=">"
+                android:textSize="20sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginStart="4dp" />
+        </LinearLayout>
+
+        <!-- 存储空间 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:background="@android:color/transparent" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="存储与清理"
+            android:textSize="12sp"
+            android:textColor="@color/text_hint"
+            android:paddingStart="4dp"
+            android:paddingBottom="4dp" />
+
+        <LinearLayout
+            android:id="@+id/item_storage"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="占用空间"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tv_storage_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="计算中..."
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary" />
+        </LinearLayout>
+
+        <!-- 开发工具 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:background="@android:color/transparent" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="开发工具"
+            android:textSize="12sp"
+            android:textColor="@color/text_hint"
+            android:paddingStart="4dp"
+            android:paddingBottom="4dp" />
+
+        <!-- 讯飞语音识别 -->
+        <LinearLayout
+            android:id="@+id/item_iat_config"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="讯飞语音识别配置"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+        </LinearLayout>
+
+        <!-- 天翼AI 维吾尔语识别 -->
+        <LinearLayout
+            android:id="@+id/item_tianyi_config"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="天翼AI 识别配置"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+        </LinearLayout>
+
+        <!-- 阿里云 Qwen 识别 -->
+        <LinearLayout
+            android:id="@+id/item_qwen_config"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="阿里云 Qwen 识别"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+        </LinearLayout>
+
+        <!-- DeepSeek AI 病历生成 -->
+        <LinearLayout
+            android:id="@+id/item_deepseek_config"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="DeepSeek AI 病历生成"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+        </LinearLayout>
+
+        <!-- 导出崩溃日志 -->
+        <LinearLayout
+            android:id="@+id/item_crash_logs"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:background="@color/bg_card"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="导出崩溃日志"
+                android:textSize="15sp"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tv_crash_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0条"
+                android:textSize="14sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginEnd="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=">"
+                android:textSize="20sp"
+                android:textColor="@color/text_hint" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
+</LinearLayout>

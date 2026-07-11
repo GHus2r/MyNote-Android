@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_main">
+
+    <!-- 主内容区 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- 顶部栏 -->
+        <LinearLayout
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:background="@drawable/frosted_bar_bg"
+            android:elevation="8dp">
+
+            <!-- 返回按钮 -->
+            <ImageButton
+                android:id="@+id/btn_back"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_back"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:visibility="gone"
+                android:contentDescription="返回" />
+
+            <!-- 标题 -->
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="MyNote"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:paddingStart="8dp" />
+
+            <!-- 搜索按钮 -->
+            <ImageButton
+                android:id="@+id/btn_search_toggle"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_search"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="搜索" />
+
+            <!-- 病历管理 -->
+            <TextView
+                android:id="@+id/btn_patient"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:text="病历"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary_dark"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:background="@drawable/bg_pill_green"
+                android:elevation="2dp" />
+
+            <!-- 工具 -->
+            <TextView
+                android:id="@+id/btn_tools"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:text="工具"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary_dark"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:background="@drawable/bg_pill_blue"
+                android:elevation="2dp"
+                android:layout_marginStart="8dp" />
+
+            <!-- 设置 -->
+            <TextView
+                android:id="@+id/btn_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:text="设置"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:background="@drawable/bg_pill_gray"
+                android:layout_marginStart="8dp"
+                android:elevation="2dp" />
+
+            <!-- 导出按钮 -->
+            <TextView
+                android:id="@+id/btn_export"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:gravity="center"
+                android:text="导出"
+                android:textSize="14sp"
+                android:textColor="@color/primary"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:visibility="gone" />
+
+            <!-- 排序按钮 -->
+            <TextView
+                android:id="@+id/btn_sort"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:gravity="center"
+                android:text="时间↓"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:visibility="gone" />
+
+            <!-- 多选按钮 -->
+            <TextView
+                android:id="@+id/btn_select_mode"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:gravity="center"
+                android:text="选择"
+                android:textSize="14sp"
+                android:textColor="@color/primary"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- 搜索栏 + 建议 -->
+        <LinearLayout
+            android:id="@+id/search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:orientation="vertical"
+            android:background="@color/bg_card"
+            android:padding="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <EditText
+                    android:id="@+id/et_search"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:hint="搜索标题、内容、标签..."
+                    android:singleLine="true"
+                    android:background="@drawable/search_bg"
+                    android:paddingStart="36dp"
+                    android:paddingEnd="8dp"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/btn_search_clear"
+                    android:layout_width="36dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="✕"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_hint"
+                    android:visibility="gone"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+            </LinearLayout>
+
+            <!-- 搜索建议 -->
+            <LinearLayout
+                android:id="@+id/search_suggestions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:id="@+id/tv_search_history_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="搜索历史"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_hint"
+                    android:padding="4dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_search_suggestions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxHeight="200dp" />
+
+                <TextView
+                    android:id="@+id/btn_clear_history"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:gravity="center"
+                    android:text="清除历史"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_hint"
+                    android:paddingHorizontal="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_gravity="center" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 多选工具栏 -->
+        <LinearLayout
+            android:id="@+id/select_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="@color/primary_light"
+            android:visibility="gone"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btn_select_all"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="全选"
+                android:textSize="14sp"
+                android:textColor="@color/primary_dark"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/btn_delete_selected"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="删除"
+                android:textSize="14sp"
+                android:textColor="@color/danger"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+
+            <TextView
+                android:id="@+id/btn_export_selected"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="导出"
+                android:textSize="14sp"
+                android:textColor="@color/primary_dark"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+        </LinearLayout>
+
+        <!-- 内容区 -->
+        <FrameLayout
+            android:id="@+id/content_area"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <!-- 大主题网格 -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_parent_categories"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/bg_main"
+                android:padding="8dp"
+                android:clipToPadding="false"
+                android:visibility="gone" />
+
+            <!-- 子主题列表 -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_sub_categories"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:clipToPadding="false"
+                android:visibility="gone" />
+
+            <!-- 笔记列表 -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_notes"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="4dp"
+                android:clipToPadding="false"
+                android:visibility="gone" />
+
+            <!-- 空状态 -->
+            <TextView
+                android:id="@+id/tv_empty"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="点击右下角 + 创建笔记"
+                android:textSize="16sp"
+                android:textColor="@color/text_hint"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- FAB 创建笔记 -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_create"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_add"
+        android:contentDescription="创建笔记"
+        android:visibility="gone"
+        app:backgroundTint="@color/primary" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

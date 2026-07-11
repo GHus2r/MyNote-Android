@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="300dp"
+    android:padding="12dp"
+    android:background="@color/bg_main">
+
+    <TextView
+        android:id="@+id/tv_shape_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:text="拖拽把手缩放 · 长按切换形状"
+        android:textSize="11sp"
+        android:textColor="#40FFFFFF"
+        android:paddingStart="4dp" />
+
+    <com.mynote.android.ui.edit.widget.ShapeView
+        android:id="@+id/shape_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="28dp" />
+</FrameLayout>

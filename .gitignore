@@ -1,0 +1,12 @@
+*.apk
+*.keystore
+*.jks
+/build/
+/.gradle/
+*.iml
+.idea/
+local.properties
+hs_err_pid*.log
+replay_pid*.log
+app/release/
+*.hprof

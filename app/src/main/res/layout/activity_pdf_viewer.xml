@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FF1A1A1A"
+    android:keepScreenOn="true">
+
+    <!-- ═══════════════ 顶部栏 ═══════════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="4dp"
+        android:background="#FF2A2A2A"
+        android:orientation="horizontal"
+        android:elevation="4dp">
+
+        <TextView
+            android:id="@+id/btn_back"
+            android:layout_width="40dp" android:layout_height="40dp"
+            android:gravity="center" android:text="←"
+            android:textColor="#E0E0E0" android:textSize="20sp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true" android:focusable="true"
+            android:contentDescription="返回" />
+
+        <TextView
+            android:id="@+id/tv_pdf_title"
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:gravity="center"
+            android:text="PDF"
+            android:textColor="#E0E0E0" android:textSize="14sp"
+            android:singleLine="true" android:ellipsize="middle" />
+
+        <TextView
+            android:id="@+id/tv_page_info"
+            android:layout_width="wrap_content" android:layout_height="40dp"
+            android:gravity="center" android:paddingHorizontal="10dp"
+            android:text="1 / 1"
+            android:textColor="#90A4AE" android:textSize="13sp"
+            android:minWidth="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true" android:focusable="true"
+            android:contentDescription="跳转页面" />
+
+        <TextView
+            android:id="@+id/btn_share"
+            android:layout_width="36dp" android:layout_height="40dp"
+            android:gravity="center"
+            android:text="📤"
+            android:textSize="15sp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true" android:focusable="true"
+            android:contentDescription="分享" />
+
+        <TextView
+            android:id="@+id/btn_save"
+            android:layout_width="wrap_content" android:layout_height="40dp"
+            android:gravity="center" android:paddingHorizontal="10dp"
+            android:text="💾"
+            android:textColor="#4CAF50" android:textSize="15sp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true" android:focusable="true"
+            android:contentDescription="保存批注" />
+    </LinearLayout>
+
+    <!-- ═══════════════ PDF 内容区 ═══════════════ -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/vp_pdf"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.mynote.android.ui.pdf.AnnotationOverlay
+            android:id="@+id/annotation_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+
+    <!-- ═══════════════ 底部工具条 ═══════════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FF2A2A2A"
+        android:orientation="vertical"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"
+        android:paddingHorizontal="2dp"
+        android:elevation="4dp">
+
+        <!-- 第一行：绘图工具 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView android:id="@+id/btn_pen"
+                android:layout_width="42dp" android:layout_height="40dp"
+                android:gravity="center" android:text="✎"
+                android:textColor="#FF5252" android:textSize="18sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <TextView android:id="@+id/btn_highlighter"
+                android:layout_width="42dp" android:layout_height="40dp"
+                android:gravity="center" android:text="🖊"
+                android:textColor="#FFEB3B" android:textSize="16sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <View android:layout_width="1dp" android:layout_height="26dp"
+                android:background="#20FFFFFF" android:layout_marginHorizontal="2dp" />
+
+            <TextView android:id="@+id/btn_rect"
+                android:layout_width="42dp" android:layout_height="40dp"
+                android:gravity="center" android:text="▭"
+                android:textColor="#64B5F6" android:textSize="18sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <TextView android:id="@+id/btn_circle"
+                android:layout_width="42dp" android:layout_height="40dp"
+                android:gravity="center" android:text="○"
+                android:textColor="#64B5F6" android:textSize="16sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <View android:layout_width="1dp" android:layout_height="26dp"
+                android:background="#20FFFFFF" android:layout_marginHorizontal="2dp" />
+
+            <TextView android:id="@+id/btn_underline"
+                android:layout_width="42dp" android:layout_height="40dp"
+                android:gravity="center" android:text="U̲"
+                android:textColor="#B0BEC5" android:textSize="14sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <TextView android:id="@+id/btn_strikethrough"
+                android:layout_width="42dp" android:layout_height="40dp"
+                android:gravity="center" android:text="S̶"
+                android:textColor="#B0BEC5" android:textSize="14sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <View android:layout_width="1dp" android:layout_height="26dp"
+                android:background="#20FFFFFF" android:layout_marginHorizontal="2dp" />
+
+            <TextView android:id="@+id/btn_text"
+                android:layout_width="42dp" android:layout_height="40dp"
+                android:gravity="center" android:text="T"
+                android:textColor="#E0E0E0" android:textStyle="bold" android:textSize="17sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <View android:layout_width="1dp" android:layout_height="26dp"
+                android:background="#20FFFFFF" android:layout_marginHorizontal="2dp" />
+
+            <TextView android:id="@+id/btn_eraser"
+                android:layout_width="42dp" android:layout_height="40dp"
+                android:gravity="center" android:text="⌫"
+                android:textColor="#FF8A65" android:textSize="16sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+        </LinearLayout>
+
+        <!-- 第二行：颜色 + 笔触 + 操作 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingHorizontal="2dp">
+
+            <!-- 颜色盘 -->
+            <TextView android:id="@+id/btn_color_picker"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:gravity="center" android:text="🎨"
+                android:textSize="17sp" android:textColor="#E0E0E0"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <View android:layout_width="1dp" android:layout_height="24dp"
+                android:background="#20FFFFFF" android:layout_marginHorizontal="4dp" />
+
+            <!-- 笔触粗细 -->
+            <TextView android:id="@+id/btn_width_s"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:gravity="center" android:text="·"
+                android:textColor="#60FFFFFF" android:textSize="24sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <TextView android:id="@+id/btn_width_m"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:gravity="center" android:text="●"
+                android:textColor="#E0E0E0" android:textSize="14sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <TextView android:id="@+id/btn_width_l"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:gravity="center" android:text="⬤"
+                android:textColor="#60FFFFFF" android:textSize="16sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <View android:layout_width="1dp" android:layout_height="24dp"
+                android:background="#20FFFFFF" android:layout_marginHorizontal="6dp" />
+
+            <!-- 旋转 -->
+            <TextView android:id="@+id/btn_rotate"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:gravity="center" android:text="↻"
+                android:textColor="#81C784" android:textSize="18sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <!-- 书签 -->
+            <TextView android:id="@+id/btn_bookmark"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:gravity="center" android:text="🔖"
+                android:textSize="16sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <!-- 截图 -->
+            <TextView android:id="@+id/btn_screenshot"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:gravity="center" android:text="📷"
+                android:textSize="18sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <!-- 滚动模式 -->
+            <TextView android:id="@+id/btn_scroll_mode"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:gravity="center" android:text="📄"
+                android:textSize="17sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <!-- 导出批注 -->
+            <TextView android:id="@+id/btn_export"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:gravity="center" android:text="📦"
+                android:textSize="16sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <View android:layout_width="1dp" android:layout_height="24dp"
+                android:background="#20FFFFFF" android:layout_marginHorizontal="6dp" />
+
+            <TextView android:id="@+id/btn_undo"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:gravity="center" android:text="↩"
+                android:textColor="#FFB74D" android:textSize="18sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+
+            <TextView android:id="@+id/btn_clear"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:gravity="center" android:text="🗑"
+                android:textColor="#EF5350" android:textSize="16sp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true" android:focusable="true" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item_root"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:gravity="center_vertical"
+    android:paddingStart="12dp"
+    android:paddingEnd="8dp"
+    android:background="@drawable/bg_card_rounded"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    android:orientation="horizontal">
+
+    <!-- 颜色圆 -->
+    <View
+        android:id="@+id/color_dot"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="@drawable/circle_bg"
+        android:layout_marginEnd="12dp" />
+
+    <!-- 名称 -->
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="15sp"
+        android:textColor="@color/text_primary" />
+
+    <!-- 笔记数 -->
+    <TextView
+        android:id="@+id/tv_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/text_hint"
+        android:layout_marginEnd="4dp" />
+
+    <!-- 编辑按钮 -->
+    <TextView
+        android:id="@+id/btn_edit"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:gravity="center"
+        android:text="E"
+        android:textSize="12sp"
+        android:textColor="@color/text_secondary"
+        android:background="?attr/selectableItemBackgroundBorderless" />
+
+    <!-- 删除按钮 -->
+    <TextView
+        android:id="@+id/btn_delete"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:gravity="center"
+        android:text="D"
+        android:textSize="12sp"
+        android:textColor="@color/danger"
+        android:background="?attr/selectableItemBackgroundBorderless" />
+</LinearLayout>

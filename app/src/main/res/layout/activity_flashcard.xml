@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#1A1A2E">
+
+    <!-- 顶部 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp"
+        android:background="#16213E"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/fc_back_btn"
+            android:layout_width="40dp" android:layout_height="40dp"
+            android:gravity="center" android:text="←"
+            android:textColor="#81C784" android:textSize="20sp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true" android:focusable="true" />
+
+        <TextView
+            android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:gravity="center"
+            android:text="闪卡复习" android:textColor="#E0E0E0" android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/fc_add"
+            android:layout_width="40dp" android:layout_height="40dp"
+            android:gravity="center" android:text="＋"
+            android:textColor="#64B5F6" android:textSize="20sp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true" android:focusable="true" />
+
+        <TextView
+            android:id="@+id/fc_all"
+            android:layout_width="40dp" android:layout_height="40dp"
+            android:gravity="center" android:text="☰"
+            android:textColor="#81C784" android:textSize="18sp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true" android:focusable="true" />
+    </LinearLayout>
+
+    <!-- 进度 -->
+    <TextView
+        android:id="@+id/fc_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="8dp"
+        android:text="1 / 10"
+        android:textColor="#90A4AE"
+        android:textSize="13sp" />
+
+    <ProgressBar
+        android:id="@+id/fc_progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_marginHorizontal="8dp"
+        android:progressTint="#4CAF50" />
+
+    <!-- 卡片区 -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_margin="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:background="#0F3460"
+            android:padding="24dp"
+            android:minHeight="200dp"
+            android:gravity="center"
+            android:elevation="4dp">
+
+            <TextView
+                android:id="@+id/fc_front"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="?"
+                android:textColor="#E0E0E0"
+                android:textSize="22sp"
+                android:gravity="center"
+                android:minHeight="120dp"
+                android:clickable="true" android:focusable="true" />
+
+            <TextView
+                android:id="@+id/fc_back"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="?"
+                android:textColor="#E0E0E0"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:minHeight="120dp"
+                android:visibility="gone"
+                android:clickable="true" android:focusable="true" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- 评分按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center"
+        android:paddingVertical="8dp"
+        android:orientation="horizontal"
+        android:background="#16213E">
+
+        <TextView
+            android:id="@+id/fc_again"
+            android:layout_width="0dp" android:layout_height="40dp"
+            android:layout_weight="1" android:layout_marginHorizontal="4dp"
+            android:gravity="center" android:text="忘记"
+            android:textColor="#EF5350" android:textSize="13sp"
+            android:background="#33EF5350"
+            android:clickable="true" android:focusable="true" />
+
+        <TextView
+            android:id="@+id/fc_hard"
+            android:layout_width="0dp" android:layout_height="40dp"
+            android:layout_weight="1" android:layout_marginHorizontal="4dp"
+            android:gravity="center" android:text="困难"
+            android:textColor="#FF9800" android:textSize="13sp"
+            android:background="#33FF9800"
+            android:clickable="true" android:focusable="true" />
+
+        <TextView
+            android:id="@+id/fc_good"
+            android:layout_width="0dp" android:layout_height="40dp"
+            android:layout_weight="1" android:layout_marginHorizontal="4dp"
+            android:gravity="center" android:text="正常"
+            android:textColor="#4CAF50" android:textSize="13sp"
+            android:background="#334CAF50"
+            android:clickable="true" android:focusable="true" />
+
+        <TextView
+            android:id="@+id/fc_easy"
+            android:layout_width="0dp" android:layout_height="40dp"
+            android:layout_weight="1" android:layout_marginHorizontal="4dp"
+            android:gravity="center" android:text="简单"
+            android:textColor="#2196F3" android:textSize="13sp"
+            android:background="#332196F3"
+            android:clickable="true" android:focusable="true" />
+    </LinearLayout>
+</LinearLayout>

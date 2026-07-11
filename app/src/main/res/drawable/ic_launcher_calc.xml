@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- 计算器底框 -->
+    <path
+        android:fillColor="#607D8B"
+        android:pathData="M24,18 L84,18 C86.2,18 88,19.8 88,22 L88,90 C88,92.2 86.2,94 84,94 L24,94 C21.8,94 20,92.2 20,90 L20,22 C20,19.8 21.8,18 24,18 Z" />
+    <!-- 显示屏 -->
+    <path
+        android:fillColor="#ECEFF1"
+        android:pathData="M28,26 L80,26 L80,40 L28,40 Z" />
+    <!-- 显示数字 -->
+    <path
+        android:fillColor="#37474F"
+        android:pathData="M74,32 L78,32 L78,35 L74,35 Z M68,32 L72,32 L72,35 L68,35 Z" />
+    <!-- 按键行1 -->
+    <path android:fillColor="#90A4AE" android:pathData="M28,46 L44,46 L44,58 L28,58 Z" />
+    <path android:fillColor="#90A4AE" android:pathData="M48,46 L64,46 L64,58 L48,58 Z" />
+    <path android:fillColor="#EF5350" android:pathData="M68,46 L80,46 L80,58 L68,58 Z" />
+    <!-- 按键行2 -->
+    <path android:fillColor="#B0BEC5" android:pathData="M28,62 L44,62 L44,74 L28,74 Z" />
+    <path android:fillColor="#B0BEC5" android:pathData="M48,62 L64,62 L64,74 L48,74 Z" />
+    <path android:fillColor="#EF5350" android:pathData="M68,62 L80,62 L80,74 L68,74 Z" />
+    <!-- 按键行3 -->
+    <path android:fillColor="#B0BEC5" android:pathData="M28,78 L44,78 L44,90 L28,90 Z" />
+    <path android:fillColor="#B0BEC5" android:pathData="M48,78 L64,78 L64,90 L48,90 Z" />
+    <path android:fillColor="#42A5F5" android:pathData="M68,78 L80,78 L80,90 L68,90 Z" />
+</vector>

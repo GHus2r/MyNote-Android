@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/tv_dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="新建大主题"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/text_primary"
+        android:layout_marginBottom="16dp" />
+
+    <!-- 名称输入 -->
+    <EditText
+        android:id="@+id/et_name"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="主题名称"
+        android:maxLength="20"
+        android:singleLine="true"
+        android:textSize="15sp"
+        android:background="@drawable/search_bg"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:layout_marginBottom="12dp" />
+
+    <!-- 颜色选择器 (网格排列) -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="选择颜色"
+        android:textSize="13sp"
+        android:textColor="@color/text_secondary"
+        android:layout_marginBottom="4dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:scrollbars="none">
+
+        <GridLayout
+            android:id="@+id/color_picker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="6"
+            android:alignmentMode="alignMargins"
+            android:padding="4dp" />
+    </ScrollView>
+
+</LinearLayout>

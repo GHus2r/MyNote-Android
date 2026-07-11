@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <!-- 拍照 - 蓝色线条相机 -->
+    <path android:fillColor="#00000000"
+        android:strokeColor="#2196F3"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M23,19c0,1.1 -0.9,2 -2,2H3c-1.1,0 -2,-0.9 -2,-2V8c0,-1.1 0.9,-2 2,-2h4l2,-2h6l2,2h4c1.1,0 2,0.9 2,2V19z"/>
+    <path android:fillColor="#00000000"
+        android:strokeColor="#2196F3"
+        android:strokeWidth="2"
+        android:pathData="M12,9 A4,4 0 1,0 12,17 A4,4 0 1,0 12,9z"/>
+</vector>

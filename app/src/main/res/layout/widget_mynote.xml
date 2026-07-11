@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="10dp">
+
+    <!-- 标题行：MyNote + 新建按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="MyNote"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#333333" />
+
+        <TextView
+            android:id="@+id/btn_new_note"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:gravity="center"
+            android:text="+ 新建"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/widget_btn_bg"
+            android:paddingHorizontal="10dp" />
+    </LinearLayout>
+
+    <!-- 最新笔记 -->
+    <LinearLayout
+        android:id="@+id/notes_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <!-- 空状态 -->
+    <TextView
+        android:id="@+id/tv_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="暂无笔记，点击新建"
+        android:textSize="12sp"
+        android:textColor="#999999"
+        android:gravity="center"
+        android:visibility="gone" />
+
+</LinearLayout>
