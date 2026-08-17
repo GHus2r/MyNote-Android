@@ -4,6 +4,8 @@ import android.content.Context
 import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import android.os.Handler
+import android.os.Looper
 import android.util.Base64
 import kotlinx.coroutines.*
 import okhttp3.*
@@ -36,6 +38,32 @@ object IatHelper {
         timeZone = TimeZone.getTimeZone("GMT")
     }
 
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+    /**
+     * 转写参数
+     * @param language zh_cn / en_us
+     * @param accent mandarin / cantonese / 空字符串=不限制
+     * @param pd 说话人分离: "0"=关闭, "1"=开启（最多区分10人）
+     * @param onProgress 流式回调（主线程），传入当前累积文本
+     */
+    data class TranscribeParams(
+        val language: String = "zh_cn",
+        val accent: String = "mandarin",
+        val pd: String = "0",
+        val onProgress: ((accumulatedText: String) -> Unit)? = null
+    )
+
+    /**
+     * 转写结果
+     * @param rawText 纯文本（不含说话人标记）
+     * @param annotatedText 带说话人标记的文本（仅 pd=1 时有意义）: "说话人0: xxx\n说话人1: xxx"
+     */
+    data class TranscribeResult(
+        val rawText: String,
+        val annotatedText: String
+    )
+
     /**
      * 转写音频文件 → 纯文本。凭证从 Prefs 读取。
      */
@@ -50,21 +78,38 @@ object IatHelper {
         return transcribe(audioFile, appId, apiKey, apiSecret)
     }
 
-    /** 带默认凭证的便捷调用 */
+    /** 带凭证的便捷调用（无流式回调，无 pd） */
     suspend fun transcribe(audioFile: File, appId: String, apiKey: String, apiSecret: String): Result<String> {
+        return transcribeStreaming(audioFile, appId, apiKey, apiSecret, TranscribeParams())
+            .map { it.rawText }
+    }
+
+    /**
+     * 流式转写——每收到一帧结果就回调 onProgress（主线程）
+     * 返回 TranscribeResult（rawText + 带说话人标记的 annotatedText）
+     */
+    suspend fun transcribeStreaming(
+        audioFile: File,
+        appId: String,
+        apiKey: String,
+        apiSecret: String,
+        params: TranscribeParams
+    ): Result<TranscribeResult> {
         return withContext(Dispatchers.IO) {
             try {
                 val url = buildAuthUrl(appId, apiKey, apiSecret)
                 val client = buildClient()
-                val deferred = CompletableDeferred<String>()
+                val deferred = CompletableDeferred<TranscribeResult>()
 
                 val ws = client.newWebSocket(
                     Request.Builder().url(url).build(),
                     object : WebSocketListener() {
-                        val sb = StringBuilder()
+                        val rawSb = StringBuilder()
+                        val annotatedSb = StringBuilder()
+                        var currentSpeaker = -1
 
                         override fun onOpen(webSocket: WebSocket, response: Response) {
-                            sendAudioFrames(webSocket, audioFile, appId)
+                            sendAudioFrames(webSocket, audioFile, appId, params.language, params.accent, params.pd)
                         }
 
                         override fun onMessage(webSocket: WebSocket, text: String) {
@@ -83,12 +128,40 @@ object IatHelper {
                                     for (i in 0 until wsArr.length()) {
                                         val cwArr = wsArr.getJSONObject(i).optJSONArray("cw")
                                         for (j in 0 until cwArr.length()) {
-                                            sb.append(cwArr.getJSONObject(j).optString("w", ""))
+                                            val cwObj = cwArr.getJSONObject(j)
+                                            val word = cwObj.optString("w", "")
+                                            rawSb.append(word)
+
+                                            // pd=1 时读取说话人标签
+                                            if (params.pd == "1") {
+                                                val rg = cwObj.optInt("rg", -1)
+                                                if (rg >= 0 && rg != currentSpeaker) {
+                                                    if (annotatedSb.isNotEmpty()) annotatedSb.append("\n")
+                                                    annotatedSb.append("说话人").append(rg + 1).append(": ")
+                                                    currentSpeaker = rg
+                                                }
+                                            }
+                                            annotatedSb.append(word)
                                         }
                                     }
                                 }
+                                // 流式回调
+                                val displayText = if (params.pd == "1") annotatedSb.toString() else rawSb.toString()
+                                if (data?.optInt("status", 0) == 1 && displayText.isNotEmpty()) {
+                                    params.onProgress?.let { cb ->
+                                        mainHandler.post { cb(displayText) }
+                                    }
+                                }
                                 if (data?.optInt("status", 0) == 2) {
-                                    deferred.complete(sb.toString().trim())
+                                    val trimmedRaw = rawSb.toString().trim()
+                                    val trimmedAnnotated = annotatedSb.toString().trim()
+                                    params.onProgress?.let { cb ->
+                                        mainHandler.post { cb(if (params.pd == "1") trimmedAnnotated else trimmedRaw) }
+                                    }
+                                    deferred.complete(TranscribeResult(
+                                        rawText = trimmedRaw,
+                                        annotatedText = if (params.pd == "1") trimmedAnnotated else trimmedRaw
+                                    ))
                                     webSocket.close(1000, "")
                                 }
                             } catch (e: Exception) {
@@ -102,7 +175,14 @@ object IatHelper {
                         }
 
                         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                            if (!deferred.isCompleted) deferred.complete(sb.toString().trim())
+                            if (!deferred.isCompleted) {
+                                val trimmedRaw = rawSb.toString().trim()
+                                val trimmedAnnotated = annotatedSb.toString().trim()
+                                deferred.complete(TranscribeResult(
+                                    rawText = trimmedRaw,
+                                    annotatedText = if (params.pd == "1") trimmedAnnotated else trimmedRaw
+                                ))
+                            }
                         }
                     })
 
@@ -142,7 +222,10 @@ object IatHelper {
             .build()
     }
 
-    private fun sendAudioFrames(webSocket: WebSocket, file: File, appId: String) {
+    private fun sendAudioFrames(
+        webSocket: WebSocket, file: File, appId: String,
+        language: String = "zh_cn", accent: String = "mandarin", pd: String = "0"
+    ) {
         val pcm = decodeToPcm16k(file)
         val frameSize = 1280
         var offset = 0
@@ -157,9 +240,10 @@ object IatHelper {
             val frame = JSONObject().apply {
                 put("common", JSONObject().put("app_id", appId))
                 put("business", JSONObject().apply {
-                    put("language", "zh_cn")
+                    put("language", language)
                     put("domain", "iat")
-                    put("accent", "mandarin")
+                    put("accent", accent)
+                    put("pd", pd)
                     put("vad_eos", 10000)
                 })
                 put("data", JSONObject().apply {
@@ -247,7 +331,6 @@ object IatHelper {
         codec.release()
         extractor.release()
 
-        // 合并并重采样到 16kHz
         val allSamples = ShortArray(totalSamples)
         var pos = 0
         for (arr in outBuffers) {
@@ -258,7 +341,6 @@ object IatHelper {
         return if (sampleRate == 16000) {
             shortsToBytes(allSamples)
         } else {
-            // 简单线性重采样
             val ratio = sampleRate.toDouble() / 16000.0
             val resampled = ShortArray((allSamples.size / ratio).toInt())
             for (i in resampled.indices) {

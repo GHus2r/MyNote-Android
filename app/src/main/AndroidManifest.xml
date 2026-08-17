@@ -129,13 +129,6 @@
             android:name=".ui.settings.SettingsActivity"
             android:exported="true"
             android:theme="@style/Theme.MyNote.NoActionBar">
-            <!-- 百度网盘 OAuth 回调 -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="mynote" android:host="callback" />
-            </intent-filter>
         </activity>
 
         <!-- 病历管理 -->
@@ -189,6 +182,12 @@
         <!-- 回收站 -->
         <activity
             android:name=".ui.trash.TrashActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <!-- 会议记录 -->
+        <activity
+            android:name=".ui.meeting.MeetingActivity"
             android:exported="false"
             android:theme="@style/Theme.MyNote.NoActionBar" />
 

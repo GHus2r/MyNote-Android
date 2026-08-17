@@ -142,34 +142,26 @@ class Prefs(context: Context) {
         get() = sp.getString(KEY_DEEPSEEK_API_KEY, "") ?: ""
         set(value) = sp.edit().putString(KEY_DEEPSEEK_API_KEY, value).apply()
 
-    // ===== 百度网盘备份 =====
-    var baiduAccessToken: String?
-        get() = sp.getString(KEY_BAIDU_ACCESS_TOKEN, null)
-        set(value) = sp.edit().putString(KEY_BAIDU_ACCESS_TOKEN, value).apply()
+    // ===== WebDAV 云备份 =====
+    var webdavUrl: String
+        get() = sp.getString(KEY_WEBDAV_URL, "") ?: ""
+        set(value) = sp.edit().putString(KEY_WEBDAV_URL, value).apply()
 
-    var baiduRefreshToken: String?
-        get() = sp.getString(KEY_BAIDU_REFRESH_TOKEN, null)
-        set(value) = sp.edit().putString(KEY_BAIDU_REFRESH_TOKEN, value).apply()
+    var webdavUser: String
+        get() = sp.getString(KEY_WEBDAV_USER, "") ?: ""
+        set(value) = sp.edit().putString(KEY_WEBDAV_USER, value).apply()
 
-    var baiduTokenExpiresTime: Long
-        get() = sp.getLong(KEY_BAIDU_EXPIRES, 0)
-        set(value) = sp.edit().putLong(KEY_BAIDU_EXPIRES, value).apply()
+    var webdavPass: String
+        get() = sp.getString(KEY_WEBDAV_PASS, "") ?: ""
+        set(value) = sp.edit().putString(KEY_WEBDAV_PASS, value).apply()
 
-    var baiduAutoBackup: Boolean
-        get() = sp.getBoolean(KEY_BAIDU_AUTO, false)
-        set(value) = sp.edit().putBoolean(KEY_BAIDU_AUTO, value).apply()
+    var backupAutoBackup: Boolean
+        get() = sp.getBoolean(KEY_WEBDAV_AUTO, false)
+        set(value) = sp.edit().putBoolean(KEY_WEBDAV_AUTO, value).apply()
 
     var lastBackupTime: String?
         get() = sp.getString(KEY_LAST_BACKUP_TIME, null)
         set(value) = sp.edit().putString(KEY_LAST_BACKUP_TIME, value).apply()
-
-    var cosSecretId: String
-        get() = sp.getString(KEY_COS_SECRET_ID, "") ?: ""
-        set(value) = sp.edit().putString(KEY_COS_SECRET_ID, value).apply()
-
-    var cosSecretKey: String
-        get() = sp.getString(KEY_COS_SECRET_KEY, "") ?: ""
-        set(value) = sp.edit().putString(KEY_COS_SECRET_KEY, value).apply()
 
     // ===== 外观 =====
     @Deprecated("暗色模式已移除", ReplaceWith("false"))
@@ -205,6 +197,16 @@ class Prefs(context: Context) {
     var emojiCleaned: Boolean
         get() = sp.getBoolean("emoji_cleaned", false)
         set(value) = sp.edit().putBoolean("emoji_cleaned", value).apply()
+
+    /** 回到主页需要刷新数据 */
+    var needsRefresh: Boolean
+        get() = sp.getBoolean(KEY_NEEDS_REFRESH, false)
+        set(value) = sp.edit().putBoolean(KEY_NEEDS_REFRESH, value).apply()
+
+    /** 会议待办 JSON（结构化 TodoItem 数组） */
+    var meetingTodosJson: String
+        get() = sp.getString("meeting_todos", "[]") ?: "[]"
+        set(value) = sp.edit().putString("meeting_todos", value).apply()
 
     // 搜索历史（最多10条）
     var searchHistory: List<String>
@@ -255,13 +257,11 @@ class Prefs(context: Context) {
         private const val KEY_QWEN_API_SECRET = "qwen_api_secret"
         private const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"
 
-        private const val KEY_BAIDU_ACCESS_TOKEN = "baidu_access_token"
-        private const val KEY_BAIDU_REFRESH_TOKEN = "baidu_refresh_token"
-        private const val KEY_BAIDU_EXPIRES = "baidu_expires_time"
-        private const val KEY_BAIDU_AUTO = "baidu_auto_backup"
+        private const val KEY_WEBDAV_URL = "webdav_url"
+        private const val KEY_WEBDAV_USER = "webdav_user"
+        private const val KEY_WEBDAV_PASS = "webdav_pass"
+        private const val KEY_WEBDAV_AUTO = "webdav_auto_backup"
         private const val KEY_LAST_BACKUP_TIME = "last_backup_time"
-        private const val KEY_COS_SECRET_ID = "baidu_app_key"
-        private const val KEY_COS_SECRET_KEY = "baidu_secret_key"
         private const val KEY_AUTO_SYNC = "auto_sync_to_pc"
 
         private const val KEY_DARK_MODE = "dark_mode"
@@ -269,5 +269,6 @@ class Prefs(context: Context) {
         private const val KEY_WAS_SHORTCUT = "was_shortcut_session"
         private const val KEY_SESSION_TS = "app_session_timestamp"
         private const val KEY_DEPT_SEEDED = "departments_seeded"
+        private const val KEY_NEEDS_REFRESH = "needs_refresh"
     }
 }

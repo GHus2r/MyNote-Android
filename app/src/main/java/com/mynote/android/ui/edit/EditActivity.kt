@@ -42,7 +42,6 @@ import com.mynote.android.ui.viewer.VideoViewerActivity
 import com.mynote.android.util.IatHelper
 import com.mynote.android.util.QwenAsrClient
 import com.mynote.android.util.TianyiAsrClient
-import com.mynote.android.util.BaiduNetdisk
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.MediaType.Companion.toMediaType
 import kotlinx.coroutines.Dispatchers
@@ -1132,10 +1131,10 @@ ${d.treatment.split("、").joinToString("\n") { "　○ ${it.trim()}" }}
                 tvSaveStatus.text = "● 已保存"
                 updateWordCount()
                 try { com.mynote.android.ui.widget.MyNoteWidget.refreshAll(this@EditActivity) } catch (_: Exception) {}
-                // 自动备份到百度网盘
+                // 自动备份到云
                 val sp = com.mynote.android.util.Prefs(this@EditActivity)
-                if (sp.baiduAutoBackup && !sp.baiduAccessToken.isNullOrEmpty()) {
-                    ioScope.launch { BaiduNetdisk.uploadBackup(this@EditActivity) }
+                if (sp.backupAutoBackup && com.mynote.android.util.WebDAVBackup.isConfigured(this@EditActivity)) {
+                    ioScope.launch { com.mynote.android.util.WebDAVBackup.uploadBackup(this@EditActivity) }
                 }
             }
         }
@@ -1215,6 +1214,17 @@ ${d.treatment.split("、").joinToString("\n") { "　○ ${it.trim()}" }}
                     sb.append("<div contenteditable=\"false\" class=\"media-card\" data-type=\"pdf\" data-path=\"")
                         .append(pathEsc).append("\"><span class=\"icon\">📄</span><div><div class=\"label\">PDF</div><div class=\"name\">")
                         .append(esc(name)).append("</div></div>").append(timeLabel()).append("</div><br>")
+                }
+                "text" -> {
+                    // text 类型：如果内容以 <div/ <p/ <h 开头，视为 HTML 直接插入；否则转义后显示
+                    val content = item.content.trim()
+                    if (content.startsWith("<div") || content.startsWith("<p") || content.startsWith("<h") ||
+                        content.startsWith("<span") || content.startsWith("<ul") || content.startsWith("<ol")) {
+                        sb.append(content).append("<br>")
+                    } else {
+                        val escaped = content.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace("\n","<br>")
+                        if (escaped.isNotBlank()) sb.append(escaped).append("<br>")
+                    }
                 }
                 else -> {
                     val escaped = item.content.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace("\n","<br>")

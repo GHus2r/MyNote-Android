@@ -23,8 +23,8 @@ android {
         applicationId = "com.mynote.android"
         minSdk = 21
         targetSdk = 34
-        versionCode = 30
-        versionName = "3.0.0"
+        versionCode = 42
+        versionName = "4.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

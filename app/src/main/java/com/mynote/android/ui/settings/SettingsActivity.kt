@@ -33,7 +33,7 @@ import com.mynote.android.data.AppDatabase
 import com.mynote.android.ui.base.BaseActivity
 import com.mynote.android.ui.lock.LockActivity
 import com.mynote.android.util.BackupManager
-import com.mynote.android.util.BaiduNetdisk
+import com.mynote.android.util.WebDAVBackup
 import com.mynote.android.util.CrashHandler
 import com.mynote.android.util.IconManager
 import com.mynote.android.util.MedicalCalculator
@@ -124,9 +124,6 @@ class SettingsActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
-
-        // 百度网盘 OAuth 回调
-        handleOAuthCallback(intent)
 
         switchPassword = findViewById(R.id.switch_password)
         itemChangePwd = findViewById(R.id.item_change_password)
@@ -297,6 +294,19 @@ class SettingsActivity : BaseActivity() {
                 "abg" -> showAbgCalc()
                 "drugInteract" -> showDrugInteraction()
                 "aiLab" -> startAiLabReader()
+                // 新增
+                "emergency" -> showEmergencyProcedures()
+                "abx" -> showAntibioticGuide()
+                "transfusion" -> showTransfusionGuide()
+                "tox" -> showToxicologyRef()
+                "peds" -> showPediatricGrowth()
+                "ivdrip" -> showIvDripCalc()
+                "bsa" -> showBsaCalc()
+                "pedidose" -> showPediDoseCalc()
+                "trauma" -> showTraumaScore()
+                "pain" -> showPainAssessment()
+                "pregdrug" -> showPregDrugLookup()
+                "scores" -> showClinicalScores()
             }
         }, 300)
     }
@@ -529,11 +539,11 @@ class SettingsActivity : BaseActivity() {
 
     // ===== 备份选项 =====
     private fun showBackupOptionsDialog() {
-        val authorized = BaiduNetdisk.isAuthorized(this)
+        val configured = WebDAVBackup.isConfigured(this)
         val items = mutableListOf("📁 备份到本地文件",
-            if (authorized) "☁️ 百度网盘云备份（已授权 ✓）" else "☁️ 百度网盘云备份（未配置/未授权）",
-            "⚙️ 配置百度网盘 AppKey",
-            "📥 从百度网盘恢复备份")
+            if (configured) "☁️ 坚果云备份（已配置 ✓）" else "☁️ 坚果云备份（未配置）",
+            "⚙️ 配置坚果云 WebDAV",
+            "📥 从坚果云恢复备份")
 
         AlertDialog.Builder(this)
             .setTitle("选择备份方式")
@@ -541,122 +551,100 @@ class SettingsActivity : BaseActivity() {
                 when (which) {
                     0 -> startJsonBackup()
                     1 -> showBackupCloudDialog()
-                    2 -> showBaiduConfigDialog()
+                    2 -> showWebDAVConfigDialog()
                     3 -> showRestoreFromCloud()
                 }
             }
             .setNegativeButton("取消", null)
             .show()
-    }    // ===== 百度网盘密钥配置 =====
-    private fun showBaiduConfigDialog() {
+    }
+    // ===== WebDAV 配置 =====
+    private fun showWebDAVConfigDialog() {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(40, 20, 40, 10)
         }
-        val etId = EditText(this).apply {
-            hint = "AppKey (client_id)"
-            setText(prefs.cosSecretId)
+        val etUrl = EditText(this).apply {
+            hint = "WebDAV 地址"
+            setText(prefs.webdavUrl.ifEmpty { "https://dav.jianguoyun.com/dav/" })
             setSingleLine()
         }
-        val etKey = EditText(this).apply {
-            hint = "SecretKey (client_secret)"
-            setText(prefs.cosSecretKey)
+        val etUser = EditText(this).apply {
+            hint = "用户名/邮箱"
+            setText(prefs.webdavUser)
+            setSingleLine()
+        }
+        val etPass = EditText(this).apply {
+            hint = "应用密码（坚果云安全设置里生成）"
+            setText(prefs.webdavPass)
             setSingleLine()
         }
         val hint = TextView(this).apply {
-            text = "申请地址：pan.baidu.com/union/apply\n回调地址：mynote://callback"
+            text = "坚果云：dav.jianguoyun.com/dav/\n密码：坚果云网页版→安全设置→第三方应用密码"
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             setTextColor(0xFF666666.toInt())
             setPadding(0, 8, 0, 0)
         }
-        layout.addView(etId)
-        layout.addView(etKey)
+        layout.addView(etUrl)
+        layout.addView(etUser)
+        layout.addView(etPass)
         layout.addView(hint)
 
         AlertDialog.Builder(this)
-            .setTitle("⚙️ 百度网盘 AppKey 配置")
+            .setTitle("⚙️ 坚果云 WebDAV 配置")
             .setView(layout)
             .setPositiveButton("保存") { _, _ ->
-                prefs.cosSecretId = etId.text.toString().trim()
-                prefs.cosSecretKey = etKey.text.toString().trim()
-                BaiduNetdisk.updateConfig(prefs.cosSecretId, prefs.cosSecretKey)
+                prefs.webdavUrl = etUrl.text.toString().trim()
+                prefs.webdavUser = etUser.text.toString().trim()
+                prefs.webdavPass = etPass.text.toString().trim()
                 Toast.makeText(this, "配置已保存", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("取消", null)
             .show()
     }
 
-    // ===== 百度网盘备份 =====
+    // ===== 云备份 =====
     private fun showBackupCloudDialog() {
-        val authorized = BaiduNetdisk.isAuthorized(this)
+        val configured = WebDAVBackup.isConfigured(this)
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(40, 20, 40, 10)
         }
 
         val statusText = TextView(this).apply {
-            text = if (authorized) "✅ 已授权百度网盘\n备份目录: /apps/MyNote/" else "⚠️ 未授权"
+            text = if (configured) "✅ 已配置坚果云 WebDAV\n备份目录: /MyNote/" else "⚠️ 未配置"
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             setPadding(0, 0, 0, 12)
         }
         val switchSync = SwitchCompat(this).apply {
-            isChecked = prefs.baiduAutoBackup
+            isChecked = prefs.backupAutoBackup
         }
         val switchRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = android.view.Gravity.CENTER_VERTICAL
         }
         switchRow.addView(TextView(this).apply {
-            text = "保存时自动备份到百度网盘"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            text = "保存时自动备份到坚果云"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
         }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         switchRow.addView(switchSync)
 
         layout.addView(statusText)
-        if (authorized) {
-            layout.addView(TextView(this).apply {
-                text = "🔄 重新授权（先清除旧授权）"
-                setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
-                setTextColor(0xFFE65100.toInt())
-                setOnClickListener {
-                    prefs.baiduAccessToken = null
-                    prefs.baiduRefreshToken = null
-                    try {
-                        startActivity(BaiduNetdisk.getAuthIntent(force = true))
-                    } catch (e: Exception) {
-                        Toast.makeText(this@SettingsActivity, "请安装浏览器", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                setPadding(0, 0, 0, 12)
-            })
-        }
         layout.addView(switchRow)
 
         val builder = AlertDialog.Builder(this)
-            .setTitle("☁️ 百度网盘云备份")
+            .setTitle("☁️ 坚果云备份")
             .setView(layout)
             .setPositiveButton("保存设置") { _, _ ->
-                prefs.baiduAutoBackup = switchSync.isChecked
+                prefs.backupAutoBackup = switchSync.isChecked
                 Toast.makeText(this, if (switchSync.isChecked) "自动云备份已启用" else "已关闭", Toast.LENGTH_SHORT).show()
             }
 
-        if (!authorized) {
-            builder.setNeutralButton("去授权") { _, _ ->
-                try {
-                    val intent = BaiduNetdisk.getAuthIntent()
-                    if (intent == null) {
-                        Toast.makeText(this, "请先配置 AppKey", Toast.LENGTH_SHORT).show()
-                        showBaiduConfigDialog()
-                    } else {
-                        startActivity(intent)
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(this, "请安装浏览器", Toast.LENGTH_SHORT).show()
-                }
-            }
+        if (!configured) {
+            builder.setNeutralButton("去配置") { _, _ -> showWebDAVConfigDialog() }
         } else {
             builder.setNeutralButton("立即备份") { _, _ ->
                 lifecycleScope.launch {
-                    Toast.makeText(this@SettingsActivity, "正在上传到百度网盘...", Toast.LENGTH_SHORT).show()
-                    BaiduNetdisk.uploadBackup(this@SettingsActivity) { ok, msg ->
+                    Toast.makeText(this@SettingsActivity, "正在上传到坚果云...", Toast.LENGTH_SHORT).show()
+                    WebDAVBackup.uploadBackup(this@SettingsActivity) { ok, msg ->
                         runOnUiThread { Toast.makeText(this@SettingsActivity, if (ok) "✅ $msg" else "❌ $msg", Toast.LENGTH_LONG).show() }
                     }
                 }
@@ -665,16 +653,16 @@ class SettingsActivity : BaseActivity() {
         builder.setNegativeButton("取消", null).show()
     }
 
-    // ===== 从百度网盘恢复 =====
+    // ===== 从云端恢复 =====
     private fun showRestoreFromCloud() {
         lifecycleScope.launch {
-            Toast.makeText(this@SettingsActivity, "正在从百度网盘读取备份列表...", Toast.LENGTH_SHORT).show()
-            val files = BaiduNetdisk.listBackupFiles(this@SettingsActivity)
+            Toast.makeText(this@SettingsActivity, "正在从坚果云读取备份列表...", Toast.LENGTH_SHORT).show()
+            val files = WebDAVBackup.listBackupFiles(this@SettingsActivity)
             runOnUiThread {
                 if (files.isEmpty()) {
                     AlertDialog.Builder(this@SettingsActivity)
                         .setTitle("📥 云端备份列表")
-                        .setMessage("百度网盘 /apps/MyNote/ 下暂无备份文件")
+                        .setMessage("坚果云 /MyNote/ 下暂无备份文件")
                         .setPositiveButton("确定", null)
                         .show()
                     return@runOnUiThread
@@ -690,7 +678,7 @@ class SettingsActivity : BaseActivity() {
                             .setPositiveButton("确认恢复") { _, _ ->
                                 lifecycleScope.launch {
                                     Toast.makeText(this@SettingsActivity, "正在下载备份...", Toast.LENGTH_SHORT).show()
-                                    val json = BaiduNetdisk.downloadBackup(this@SettingsActivity, f.path)
+                                    val json = WebDAVBackup.downloadBackup(this@SettingsActivity, f.path)
                                     if (json != null) {
                                         runOnUiThread {
                                             AlertDialog.Builder(this@SettingsActivity)
@@ -731,17 +719,6 @@ class SettingsActivity : BaseActivity() {
         else -> "${size}B"
     }
 
-    private fun handleOAuthCallback(intent: Intent) {
-        val uri = intent.data ?: return
-        if (uri.scheme != "mynote" || uri.host != "callback") return
-        lifecycleScope.launch {
-            val ok = BaiduNetdisk.handleCallback(this@SettingsActivity, uri)
-            runOnUiThread {
-                Toast.makeText(this@SettingsActivity, if (ok) "✅ 百度网盘授权成功！" else "❌ 授权失败", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
     // ===== JSON 完整备份 =====
     private fun startJsonBackup() {
         val fileName = "MyNote_backup_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.json"
@@ -769,6 +746,257 @@ class SettingsActivity : BaseActivity() {
                 runOnUiThread { Toast.makeText(this@SettingsActivity, "备份失败: ${e.message}", Toast.LENGTH_SHORT).show() }
             }
         }
+    }
+
+    // ===== 新增知识库 =====
+    private fun showEmergencyProcedures() = showKnowledgeList("急救流程", com.mynote.android.util.EmergencyProcedures.all.map {
+        it.title to "${it.indication}\n\n${it.steps}"}, com.mynote.android.util.EmergencyProcedures::search)
+    private fun showAntibioticGuide() = showKnowledgeList("抗菌药物选药", com.mynote.android.util.AntibioticGuide.all.map {
+        it.title to "病原: ${it.pathogen}\n\n一线: ${it.firstLine}\n\n替代: ${it.alternative}"}, com.mynote.android.util.AntibioticGuide::search)
+    private fun showTransfusionGuide() = showKnowledgeList("输血指征", com.mynote.android.util.TransfusionGuide.all.map {
+        it.title to "指征: ${it.threshold}\n\n备注: ${it.notes}"}, com.mynote.android.util.TransfusionGuide::search)
+    private fun showToxicologyRef() = showKnowledgeList("中毒与解毒", com.mynote.android.util.ToxicologyRef.all.map {
+        it.agent to "毒症: ${it.toxidrome}\n\n解毒: ${it.antidote}\n\n要点: ${it.keyPoints}"}, com.mynote.android.util.ToxicologyRef::search, mapOf(
+        "毒蘑菇(鹅膏菌)" to "https://cn.bing.com/images/search?q=%E6%AF%92%E8%98%91%E8%8F%87+%E9%B9%85%E8%86%8F%E8%8F%8C",
+        "乌头/附子" to "https://cn.bing.com/images/search?q=%E4%B9%8C%E5%A4%B4+%E9%99%84%E5%AD%90+%E6%A4%8D%E7%89%A9",
+        "断肠草/钩吻" to "https://cn.bing.com/images/search?q=%E6%96%AD%E8%82%A0%E8%8D%89+%E9%92%A9%E5%90%BB+%E6%A4%8D%E7%89%A9",
+    ))
+    private fun showPediatricGrowth() = showKnowledgeList("儿童生长发育", com.mynote.android.util.PediatricGrowth.all.map {
+        it.title to "年龄段: ${it.ageRange}\n${it.normalData}"}, com.mynote.android.util.PediatricGrowth::search, mapOf(
+        "身高体重百分位(WHO 2006)" to "https://cn.bing.com/images/search?q=%E5%84%BF%E7%AB%A5%E8%BA%AB%E9%AB%98%E4%BD%93%E9%87%8D%E7%99%BE%E5%88%86%E4%BD%8D%E6%9B%B2%E7%BA%BF+WHO",
+        "头围参考值(WHO)" to "https://cn.bing.com/images/search?q=%E5%84%BF%E7%AB%A5%E5%A4%B4%E5%9B%B4%E7%99%BE%E5%88%86%E4%BD%8D%E6%9B%B2%E7%BA%BF",
+    ))
+
+    // ===== 新增临床工具 =====
+    private fun showIvDripCalc() = showCalcDialog("输液速度计算", """
+        |请输入: 液体总量(mL) × 滴系数(drop/mL) × 时间(分钟)
+        |公式: 滴/分 = 总量×滴系数/分钟
+    """.trimMargin(), listOf(Triple("volume", "总液体量(mL)", "500"), Triple("dropFactor", "滴系数(滴/mL)", "20"), Triple("timeMin", "时间(分钟)", "60")),
+    { v -> val r = com.mynote.android.util.MedicalCalculator.ivDrip(v[0].toDouble(), v[1].toInt(), v[2].toDouble()); "=${r.dropsPerMin.toInt()}滴/分，${r.mlPerHour.toInt()}mL/h" })
+
+    private fun showBsaCalc() = showCalcDialog("体表面积 BSA", "DuBois 公式: BSA=0.007184×WT^0.425×HT^0.725",
+        listOf(Triple("weight", "体重(kg)", "70"), Triple("height", "身高(cm)", "170")),
+    { v -> val r = com.mynote.android.util.MedicalCalculator.bsa(v[0].toDouble(), v[1].toDouble()); "BSA=${r.bsa}m² (${r.formula})" })
+
+    private fun showPediDoseCalc() = showCalcDialog("儿童剂量速算", "按体重给药: 体重(kg) × 剂量(mg/kg) ÷ 药物浓度(mg/mL)",
+        listOf(Triple("weight", "体重(kg)", "10"), Triple("mgPerKg", "剂量(mg/kg)", "15"), Triple("conc", "浓度(mg/mL)", "50")),
+    { v -> val r = com.mynote.android.util.MedicalCalculator.pediDose(v[0].toDouble(), v[1].toDouble(), v[2].toDouble()); r.summary })
+
+    private fun showClinicalScores() = showKnowledgeList("临床常用量表", com.mynote.android.util.ClinicalScores.all.map {
+        it.title to "[${it.indication}]\n\n${it.content}"}, com.mynote.android.util.ClinicalScores::search, mapOf(
+        "皮肤病损形态学速查" to "https://cn.bing.com/images/search?q=%E7%9A%AE%E8%82%A4%E7%97%85%E6%8D%9F+%E6%96%91%E7%96%B9+%E4%B8%98%E7%96%B9+%E6%B0%B4%E7%96%B1+%E8%8A%82%E7%BB%93+%E9%A3%8E%E5%9B%A2",
+    ))
+
+    private fun showTraumaScore() {
+        val items = listOf("ISS 创伤严重度评分" to {
+            // GCS + AIS zones dialog
+            val zones = listOf("头部/颈部" to 1, "面部" to 2, "胸部" to 3, "腹部/盆腔" to 4, "四肢/骨盆" to 5, "体表" to 6)
+            val selected = mutableMapOf<Int, Int>()
+            val et = android.widget.EditText(this).apply { hint = "各区域AIS分数,用逗号分隔\n例: 4,3,2"; setSingleLine() }
+            AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("ISS 创伤严重度").setView(et)
+                .setMessage("输入各受伤区域的AIS分数(AIS 1-6),逗号分隔。\nISS = 最高的三个AIS²之和")
+                .setPositiveButton("计算") { _, _ ->
+                    val aisStr = et.text.toString().split(",", "，").mapNotNull { it.trim().toIntOrNull() }.filter { it in 1..6 }
+                    if (aisStr.size >= 1) {
+                        val r = com.mynote.android.util.MedicalCalculator.iss(aisStr)
+                        val msg = "ISS=${r.iss}分\n${r.risk}\n${r.mortality}"
+                        AlertDialog.Builder(this@SettingsActivity, R.style.RoundedDialog).setTitle("ISS 创伤严重度")
+                            .setMessage(msg).setPositiveButton("确定", null)
+                            .setNeutralButton("📋 复制") { _, _ ->
+                                getSystemService(android.content.ClipboardManager::class.java)?.setPrimaryClip(
+                                    android.content.ClipData.newPlainText("iss_score", msg))
+                                Toast.makeText(this@SettingsActivity, "已复制", Toast.LENGTH_SHORT).show()
+                            }.show()
+                    }
+                }.setNegativeButton("取消", null).show()
+        }, "RTS 改良创伤评分" to { showTraumaRts() })
+        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("创伤评分").setItems(items.map { it.first }.toTypedArray()) { _, i -> items[i].second() }
+            .setNegativeButton("关闭", null).show()
+    }
+
+    private fun showTraumaRts() {
+        val etGcs = android.widget.EditText(this).apply { hint = "GCS"; setSingleLine(); inputType = android.text.InputType.TYPE_CLASS_NUMBER }
+        val etSbp = android.widget.EditText(this).apply { hint = "收缩压(mmHg)"; setSingleLine(); inputType = android.text.InputType.TYPE_CLASS_NUMBER }
+        val etRr = android.widget.EditText(this).apply { hint = "呼吸频率(/min)"; setSingleLine(); inputType = android.text.InputType.TYPE_CLASS_NUMBER }
+        val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(40, 20, 40, 10) }
+        layout.addView(etGcs); layout.addView(etSbp); layout.addView(etRr)
+        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("RTS 改良创伤评分").setView(layout)
+            .setPositiveButton("计算") { _, _ ->
+                val g = etGcs.text.toString().toIntOrNull() ?: 15; val s = etSbp.text.toString().toIntOrNull() ?: 120; val r = etRr.text.toString().toIntOrNull() ?: 20
+                val result = com.mynote.android.util.MedicalCalculator.rts(g, s, r)
+                val rtMsg = "RTS=${result.rts}\n${result.coded}\n${result.surv}"
+                AlertDialog.Builder(this@SettingsActivity, R.style.RoundedDialog).setTitle("RTS 改良创伤评分")
+                    .setMessage(rtMsg).setPositiveButton("确定", null)
+                    .setNeutralButton("📋 复制") { _, _ ->
+                        getSystemService(android.content.ClipboardManager::class.java)?.setPrimaryClip(
+                            android.content.ClipData.newPlainText("rts_score", rtMsg))
+                        Toast.makeText(this@SettingsActivity, "已复制", Toast.LENGTH_SHORT).show()
+                    }.show()
+            }.setNegativeButton("取消", null).show()
+    }
+
+    private fun showPainAssessment() {
+        val scores = (0..10).map { "$it 分" }.toTypedArray()
+        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("疼痛评估 NRS").setItems(scores) { _, i ->
+            val r = com.mynote.android.util.MedicalCalculator.painAssess(i)
+            val painMsg = "NRS ${r.nrs}分 — ${r.level}\n处理建议:\n${r.mgmt}"
+            AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("NRS ${r.nrs}分 — ${r.level}")
+                .setMessage("处理建议:\n${r.mgmt}").setPositiveButton("确定", null)
+                .setNeutralButton("📋 复制") { _, _ ->
+                    getSystemService(android.content.ClipboardManager::class.java)?.setPrimaryClip(
+                        android.content.ClipData.newPlainText("pain_score", painMsg))
+                    Toast.makeText(this, "已复制", Toast.LENGTH_SHORT).show()
+                }.show()
+        }.setNegativeButton("关闭", null).show()
+    }
+
+    private fun showPregDrugLookup() {
+        val et = android.widget.EditText(this).apply { hint = "输入药品名 (如: 卡托普利、阿莫西林...)"; setSingleLine(); textSize = 14f }
+        val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(40, 20, 40, 10) }
+        val tvCat = TextView(this).apply { text = "A=安全 B=较安全 C=权衡 D=慎用 X=禁忌"; textSize = 11f; setTextColor(Color.GRAY); setPadding(0, 4, 0, 0) }
+        layout.addView(et); layout.addView(tvCat)
+        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("妊娠用药分级(FDA)").setView(layout)
+            .setPositiveButton("查询") { _, _ ->
+                val name = et.text.toString().trim()
+                val r = com.mynote.android.util.MedicalCalculator.pregnancyDrug(name)
+                if (r != null) {
+                    val catInfo = com.mynote.android.util.MedicalCalculator.pregnancyCategories.firstOrNull { it.first == r.cat.take(1) }?.second ?: ""
+                    AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("${r.drug} → ${r.cat}类")
+                        .setMessage("$catInfo\n\nA=安全 B=较安全 C=权衡利弊 D=慎用(危及生命) X=禁忌")
+                        .setPositiveButton("确定", null).show()
+                } else {
+                    Toast.makeText(this, "未找到药品\"$name\"，尝试其他名称", Toast.LENGTH_SHORT).show()
+                }
+            }.setNegativeButton("关闭", null).show()
+    }
+
+    /** 通用知识列表对话框 */
+    private fun <T> showKnowledgeList(title: String, items: List<Pair<String, String>>, searchFn: ((String) -> List<T>)? = null, urls: Map<String, String> = emptyMap()) {
+        val et = android.widget.EditText(this).apply { hint = "搜索..."; setSingleLine(); textSize = 14f }
+        var tvCount = TextView(this).apply { text = "共${items.size}项"; textSize = 11f; setTextColor(Color.GRAY); setPadding(0, 8, 0, 0) }
+        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(20, 12, 20, 0) }
+        root.addView(et); root.addView(tvCount)
+
+        var dlg: AlertDialog? = null
+        fun build(list: List<Pair<String, String>>) {
+            dlg?.dismiss()
+            val labels = list.map { it.first }.toTypedArray()
+            dlg = AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(title).setView(root)
+                .setItems(labels) { _, i2 ->
+                    val itemTitle = list[i2].first; val itemContent = list[i2].second
+                    val builder = AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(itemTitle)
+                        .setMessage(itemContent)
+                        .setPositiveButton("确定", null)
+                        .setNeutralButton("📋 复制") { _, _ ->
+                            val clipData = android.content.ClipData.newPlainText("clinical_tool", "$itemTitle\n$itemContent")
+                            getSystemService(android.content.ClipboardManager::class.java)?.setPrimaryClip(clipData)
+                            Toast.makeText(this, "已复制到剪贴板", Toast.LENGTH_SHORT).show()
+                        }
+                    urls[itemTitle]?.let { url ->
+                        builder.setNegativeButton("📊 看图") { _, _ ->
+                            startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)))
+                        }
+                    }
+                    builder.show()
+                }.setNegativeButton("关闭", null).create()
+            dlg!!.show()
+        }
+        build(items)
+        if (searchFn != null) {
+            et.addTextChangedListener(object : android.text.TextWatcher {
+                override fun afterTextChanged(s: android.text.Editable?) {
+                    val q = s.toString().trim()
+                    if (q.isEmpty()) { build(items); tvCount.text = "共${items.size}项"; return }
+                    val results = searchFn(q) as? List<Any> ?: emptyList()
+                    // Rebuild from original items by matching first field
+                    val filtered = items.filter { (title, _) -> title.lowercase().contains(q.lowercase()) || items.any { it.first == title && it.second.lowercase().contains(q.lowercase()) } }
+                    tvCount.text = "找到${filtered.size}/${items.size}项"; build(filtered)
+                }
+                override fun beforeTextChanged(s: CharSequence?, st: Int, c: Int, af: Int) {}
+                override fun onTextChanged(s: CharSequence?, st: Int, b: Int, c: Int) {}
+            })
+        }
+    }
+
+    /** 通用计算器对话框 — 结果内嵌可修改重算，记忆上次数值 */
+    private fun showCalcDialog(title: String, hint: String, fields: List<Triple<String, String, String>>, calc: (List<String>) -> String) {
+        val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(40, 20, 40, 10) }
+        // 记忆上次输入
+        val memSp = getSharedPreferences("mynote_calc", Context.MODE_PRIVATE)
+        val memKey = "calc_mem_${title}"
+        val saved = memSp.getString(memKey, null)
+        val savedVals = saved?.split("|")?.take(fields.size) ?: emptyList()
+        val ets = mutableListOf<android.widget.EditText>()
+        for ((i, field) in fields.withIndex()) {
+            val (_, label, defVal) = field
+            val et = android.widget.EditText(this)
+            et.hint = label
+            et.setText(if (i < savedVals.size) savedVals[i] else defVal)
+            et.setSingleLine()
+            et.setInputType(android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL)
+            layout.addView(et); ets.add(et)
+        }
+        // 提示文字
+        layout.addView(TextView(this).apply { text = hint; textSize = 11f; setTextColor(Color.GRAY); setPadding(0, 8, 0, 4) })
+        // 结果区域
+        val tvResult = TextView(this).apply {
+            textSize = 15f; setTypeface(null, android.graphics.Typeface.BOLD)
+            setTextColor(Color.parseColor("#1565C0")); setPadding(0, 10, 0, 6); visibility = android.view.View.GONE
+        }
+        layout.addView(tvResult)
+        // 计算按钮行
+        val btnRow = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, 4, 0, 0) }
+        val btnCalc = android.widget.Button(this).apply {
+            text = "计算"; setTextColor(Color.WHITE); setBackgroundColor(Color.parseColor("#1976D2"))
+            textSize = 14f; layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        val btnCopy = android.widget.Button(this).apply {
+            text = "📋 复制"; setTextColor(Color.parseColor("#1976D2"))
+            textSize = 13f; visibility = View.GONE
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { setMargins(8, 0, 0, 0) }
+            setBackgroundColor(Color.parseColor("#E3F2FD"))
+        }
+        btnRow.addView(btnCalc); btnRow.addView(btnCopy)
+        layout.addView(btnRow)
+        // 历史记录
+        val histSp = getSharedPreferences("calc_history", Context.MODE_PRIVATE)
+        val btnHist = TextView(this).apply {
+            text = "📜 历史记录"; textSize = 11f; setTextColor(Color.parseColor("#78909C"))
+            setPadding(0, 8, 0, 0); visibility = View.GONE
+        }
+        layout.addView(btnHist)
+
+        var lastResult = ""
+        btnCalc.setOnClickListener {
+            val vals = ets.map { it.text.toString().ifEmpty { "0" } }
+            lastResult = calc(vals)
+            tvResult.text = lastResult; tvResult.visibility = View.VISIBLE
+            btnCopy.visibility = View.VISIBLE
+            // 记忆数值
+            memSp.edit().putString(memKey, vals.joinToString("|")).apply()
+            // 保存计算历史
+            val ts = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
+            val entry = "$ts $lastResult"
+            val hist = histSp.getString("list", "")?.split("||")?.filter { it.isNotBlank() }?.toMutableList() ?: mutableListOf()
+            hist.add(0, entry); if (hist.size > 20) hist.removeAt(hist.size - 1)
+            histSp.edit().putString("list", hist.joinToString("||")).apply()
+            btnHist.visibility = View.VISIBLE
+            btnHist.text = "📜 历史记录 (${hist.size})"
+        }
+        btnCopy.setOnClickListener {
+            getSystemService(android.content.ClipboardManager::class.java)?.setPrimaryClip(
+                android.content.ClipData.newPlainText("calc_result", "$title\n$lastResult"))
+            Toast.makeText(this, "已复制", Toast.LENGTH_SHORT).show()
+        }
+        btnHist.setOnClickListener {
+            val hist = histSp.getString("list", "")?.split("||")?.filter { it.isNotBlank() } ?: emptyList()
+            if (hist.isEmpty()) { Toast.makeText(this, "暂无记录", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+            AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("计算历史 (最近20条)")
+                .setItems(hist.toTypedArray(), null).setPositiveButton("关闭", null).show()
+        }
+
+        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(title).setView(layout)
+            .setPositiveButton("关闭", null).show()
     }
 
     // ===== 医学计算器 =====
@@ -1427,12 +1655,17 @@ class SettingsActivity : BaseActivity() {
                 AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("${depts[di]} (${deptDiseases.size})")
                     .setItems(deptDiseases.map { it.name }.toTypedArray()) { _, i ->
                         val d = deptDiseases[i]
-                        // 提取年份
                         val years = mutableListOf<String>()
                         if (d.treatment.contains("202")) years.addAll(listOf("2024", "2025", "2026").filter { d.treatment.contains(it) || d.drugs.contains(it) })
+                        val msg = "${if (years.isNotEmpty()) "【指南 (${years.joinToString("/")})】\n" else ""}${d.drugs}\n\n【治疗】${d.treatment.take(200)}\n\n【症状】${d.symptoms.take(150)}\n【鉴别】${d.differential.take(150)}"
                         AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("${d.name} ${if (years.isNotEmpty()) "· ${years.joinToString("/")}" else ""}")
-                            .setMessage("${if (years.isNotEmpty()) "【指南 (${years.joinToString("/")})】\n" else ""}${d.drugs}\n\n【治疗】${d.treatment.take(200)}\n\n【症状】${d.symptoms.take(150)}\n【鉴别】${d.differential.take(150)}")
-                            .setPositiveButton("关闭", null).show()
+                            .setMessage(msg)
+                            .setPositiveButton("关闭", null)
+                            .setNeutralButton("📋 复制") { _, _ ->
+                                (getSystemService(Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager)
+                                    ?.setPrimaryClip(android.content.ClipData.newPlainText("disease", "${d.name}\n$msg"))
+                                Toast.makeText(this, "已复制", Toast.LENGTH_SHORT).show()
+                            }.show()
                     }.setNegativeButton("返回") { _, _ -> showGuideByDept() }.show()
             }.setNegativeButton("返回") { _, _ -> showGuideLookup() }.show()
     }
@@ -1450,9 +1683,15 @@ class SettingsActivity : BaseActivity() {
                         AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("${depts[di]} · $y")
                             .setItems(list.map { it.name }.toTypedArray()) { _, i ->
                                 val d = list[i]
+                                val msg2 = "【${y}指南用药】${d.drugs}\n\n【${y}指南治疗】${d.treatment}\n\n【症状】${d.symptoms}\n【鉴别】${d.differential}"
                                 AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(d.name)
-                                    .setMessage("【${y}指南用药】${d.drugs}\n\n【${y}指南治疗】${d.treatment}\n\n【症状】${d.symptoms}\n【鉴别】${d.differential}")
-                                    .setPositiveButton("关闭", null).show()
+                                    .setMessage(msg2)
+                                    .setPositiveButton("关闭", null)
+                                    .setNeutralButton("📋 复制") { _, _ ->
+                                        (getSystemService(Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager)
+                                            ?.setPrimaryClip(android.content.ClipData.newPlainText("disease", "${d.name}\n$msg2"))
+                                        Toast.makeText(this, "已复制", Toast.LENGTH_SHORT).show()
+                                    }.show()
                             }.setNegativeButton("返回", null).show()
                     }.setNegativeButton("返回", null).show()
             }.setNegativeButton("返回") { _, _ -> showGuideLookup() }.show()
@@ -1783,12 +2022,17 @@ class SettingsActivity : BaseActivity() {
                         text = "  ${item.title}"
                         textSize = 14f; setPadding(4, 8, 4, 8); setTextColor(Color.DKGRAY)
                         setOnClickListener {
+                            val msg = "【${item.category}】\n\n${item.description}"
                             AlertDialog.Builder(this@SettingsActivity, R.style.RoundedDialog).setTitle(item.title)
-                                .setMessage("【${item.category}】\n\n${item.description}")
+                                .setMessage(msg)
                                 .setPositiveButton("📋 复制") { _, _ ->
                                     (getSystemService(android.content.ClipboardManager::class.java))?.setPrimaryClip(android.content.ClipData.newPlainText("ecg", "${item.title}\n${item.description}"))
                                     Toast.makeText(this@SettingsActivity, "已复制", Toast.LENGTH_SHORT).show()
-                                }.setNegativeButton("关闭", null).show()
+                                }
+                                .setNeutralButton("📊 看图") { _, _ ->
+                                    startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(item.url)))
+                                }
+                                .setNegativeButton("关闭", null).show()
                         }
                     }
                     listContainer.addView(tvItem)

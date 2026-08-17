@@ -461,6 +461,85 @@ object MedicalCalculator {
         return "Padua=${s}分\n${risk}"
     }
 
+    // ═══════════ 输液速度计算器 ═══════════
+    data class IvDripResult(val dropsPerMin: Double, val mlPerHour: Double, val timeMin: Double, val summary: String)
+    fun ivDrip(volumeMl: Double, dropFactor: Int = 20, timeMin: Double): IvDripResult {
+        val mlH = if (timeMin > 0) volumeMl / timeMin * 60 else 0.0
+        val gttMin = if (timeMin > 0) volumeMl * dropFactor / timeMin else 0.0
+        return IvDripResult(gttMin, mlH, timeMin, "${volumeMl.toInt()}mL×${dropFactor}滴/mL×${timeMin.toInt()}min → ${gttMin.toInt()}滴/分(${mlH.toInt()}mL/h)")
+    }
+    fun ivDripFast(volumeMl: Double, gttMin: Double, dropFactor: Int = 20): String {
+        val tMin = volumeMl * dropFactor / gttMin
+        val mlH = volumeMl / tMin * 60
+        return "${gttMin.toInt()}滴/分 → ${tMin.toInt()}min, ${mlH.toInt()}mL/h"
+    }
+
+    // ═══════════ BSA 体表面积 ═══════════
+    data class BsaResult(val bsa: Double, val formula: String)
+    fun bsa(weightKg: Double, heightCm: Double): BsaResult {
+        val b = 0.007184 * Math.pow(weightKg, 0.425) * Math.pow(heightCm, 0.725)
+        return BsaResult(Math.round(b * 100.0) / 100.0, "DuBois: 0.007184×WT^0.425×HT^0.725")
+    }
+
+    // ═══════════ 儿童按体重剂量 ═══════════
+    data class PediDoseResult(val doseMg: Double, val volMl: Double, val summary: String)
+    fun pediDose(wtKg: Double, mgPerKg: Double, concMgPerMl: Double): PediDoseResult {
+        val d = wtKg * mgPerKg; val v = d / concMgPerMl
+        return PediDoseResult(d, v, "${wtKg}kg×${mgPerKg}mg/kg=${"%.1f".format(d)}mg → ${"%.1f".format(v)}mL")
+    }
+
+    // ═══════════ ISS 创伤严重度 ═══════════
+    data class IssResult(val iss: Int, val risk: String, val mortality: String)
+    fun iss(aisScores: List<Int>): IssResult {
+        val s = aisScores.sortedDescending().take(3).sumOf { it * it }
+        return IssResult(s,
+            when { s>=25->"重度"; s>=16->"中度"; s>=9->"轻度"; else->"轻伤" },
+            when { s>=50->"死亡率~50-75%"; s>=25->"~10-25%"; s>=16->"~5-10%"; s>=9->"<5%"; else->"<1%" })
+    }
+
+    // ═══════════ RTS 改良创伤评分 ═══════════
+    data class RtsResult(val rts: Double, val coded: String, val surv: String)
+    fun rts(gcs: Int, sbp: Int, rr: Int): RtsResult {
+        val gc = when { gcs>=13->4.0; gcs>=9->3.0; gcs>=6->2.0; gcs>=4->1.0; else->0.0 }
+        val sc = when { sbp>89->4.0; sbp>=76->3.0; sbp>=50->2.0; sbp>=1->1.0; else->0.0 }
+        val rc = when { rr in 10..29->4.0; rr>29->3.0; rr in 6..9->2.0; rr in 1..5->1.0; else->0.0 }
+        val r = Math.round((gc*0.9368+sc*0.7326+rc*0.2908)*100.0)/100.0
+        return RtsResult(r, "GCS=$gcs/SBP=$sbp/RR=$rr",
+            when { r>=7.0->"生存率>90%"; r>=5.0->"50-90%"; r>=3.0->"10-50%"; else->"<10%" })
+    }
+
+    // ═══════════ 疼痛评估 ═══════════
+    data class PainResult(val nrs: Int, val level: String, val mgmt: String)
+    fun painAssess(nrsScore: Int): PainResult = PainResult(nrsScore,
+        when { nrsScore>=8->"重度"; nrsScore>=4->"中度"; nrsScore>=1->"轻度"; else->"无痛" },
+        when { nrsScore>=8->"强阿片(吗啡/芬太尼)±NSAIDs"; nrsScore>=4->"弱阿片(曲马多)+NSAIDs"; nrsScore>=1->"NSAIDs/对乙酰氨基酚"; else->"无需" })
+
+    // ═══════════ 妊娠用药分级(FDA) ═══════════
+    data class PregDrug(val drug: String, val cat: String)
+    private val pregDrugs = listOf(
+        PregDrug("左甲状腺素","A"), PregDrug("叶酸","A"), PregDrug("维生素B6","A"),
+        PregDrug("对乙酰氨基酚","B"), PregDrug("阿莫西林","B"), PregDrug("头孢曲松","B"), PregDrug("青霉素","B"),
+        PregDrug("红霉素","B"), PregDrug("克林霉素","B"), PregDrug("甲硝唑","B(后3月避)"),
+        PregDrug("胰岛素","B"), PregDrug("二甲双胍","B"), PregDrug("氯雷他定","B"), PregDrug("奥美拉唑","B"),
+        PregDrug("昂丹司琼","B"), PregDrug("沙丁胺醇","C"), PregDrug("呋塞米","C"), PregDrug("氢氯噻嗪","C"),
+        PregDrug("硝苯地平","C"), PregDrug("拉贝洛尔","C"), PregDrug("甲基多巴","C"),
+        PregDrug("肝素","C"), PregDrug("吗啡","C"), PregDrug("泼尼松","C"), PregDrug("氟康唑","C"),
+        PregDrug("卡托普利","D"), PregDrug("厄贝沙坦","D"), PregDrug("缬沙坦","D"),
+        PregDrug("苯妥英","D"), PregDrug("卡马西平","D"), PregDrug("丙戊酸","D"),
+        PregDrug("华法林","D"), PregDrug("锂盐","D"), PregDrug("四环素","D"),
+        PregDrug("异维A酸","X"), PregDrug("沙利度胺","X"), PregDrug("米索前列醇","X"),
+        PregDrug("辛伐他汀","X"), PregDrug("阿托伐他汀","X")
+    )
+    val pregnancyCategories = listOf(
+        "A" to "对照研究无风险 — 安全",
+        "B" to "动物研究无风险 — 较安全",
+        "C" to "动物研究有风险/无数据 — 权衡利弊",
+        "D" to "人体研究有风险 — 危及生命时用",
+        "X" to "禁忌 — 致畸风险明确"
+    )
+    fun pregnancyDrug(name: String): PregDrug? = pregDrugs.firstOrNull { it.drug == name.trim() }
+    fun searchPregDrugs(q: String) = pregDrugs.filter { it.drug.lowercase().contains(q.lowercase()) }
+
     // ═══════════ ABG 血气自动判读 ═══════════
     fun abgInterpret(pH: Double, pCO2: Double, HCO3: Double, Na: Double, Cl: Double, Lac: Double = 0.0, Alb: Double = 40.0): String {
         val sb = StringBuilder()

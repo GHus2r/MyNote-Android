@@ -185,6 +185,127 @@ object ImagingReference {
         // === 胸外科补充 ===
         Imaging("肺隔离症", "CT(增强)", "胸外科", "体循环供血(来自胸主动脉分支)+正常支气管连接缺失。叶内型(静脉引流肺静脉)/叶外型。", "https://radiopaedia.org/search?q=pulmonary+sequestration&scope=all"),
         Imaging("膈疝", "X线/CT", "胸外科", "膈面破裂→腹腔内脏疝入胸腔(胃/肠管)+纵隔移位。外伤性最常见。", "https://radiopaedia.org/search?q=diaphragmatic+hernia+traumatic&scope=all"),
+        // === 急诊创伤分级 ===
+        Imaging("脾损伤 AAST 分级", "CT(增强)", "急诊/创伤", "I-II级(血肿/浅表裂伤<3cm)→保守; III级(裂伤>3cm/活动性出血)→介入/手术; IV-V(粉碎/血管撕脱)→手术。", "https://radiopaedia.org/search?q=splenic+trauma+AAST&scope=all"),
+        Imaging("肝损伤 AAST 分级", "CT(增强)", "急诊/创伤", "I-II级(包膜下血肿<50%/浅表裂伤<3cm)→保守; III-V(深度裂伤/实质破坏)→介入/手术。注意肝周造影剂外溢=活动性出血。", "https://radiopaedia.org/search?q=liver+trauma+AAST&scope=all"),
+        Imaging("肾损伤 AAST 分级", "CT(增强)", "急诊/创伤", "I-II(挫伤/小血肿)→保守; III(裂伤>1cm)→观察; IV(肾盂裂伤/节段性梗死)→手术; V(肾粉碎/肾蒂撕脱)→肾切除。", "https://radiopaedia.org/search?q=renal+trauma+AAST&scope=all"),
+        Imaging("骨盆骨折 Tile 分型", "CT(三维重建)", "急诊/骨科", "Tile A(稳定)→保守; B(旋转不稳/垂直稳); C(旋转+垂直都不稳)=最严重→外固定/内固定。盆腔出血主要死亡原因。", "https://radiopaedia.org/search?q=pelvic+fracture+Tile&scope=all"),
+        Imaging("胸主动脉损伤(BTAI)", "CTA(胸腹)", "急诊/血管", "主动脉峡部(动脉韧带处)最常见。I级:内膜撕裂; II级:壁内血肿; III级:假性动脉瘤; IV级:破裂→急诊手术/TEVAR。", "https://radiopaedia.org/search?q=blunt+thoracic+aortic+injury&scope=all"),
+        // === 神经系统补充 ===
+        Imaging("脑脓肿", "MRI(增强+DWI)", "神经/感染", "环形强化+中央DWI高信号(脓液限制扩散→与肿瘤坏死囊变鉴别重要)+周围明显血管源性水肿。", "https://radiopaedia.org/search?q=brain+abscess&scope=all"),
+        Imaging("硬膜下脓胸", "MRI(增强+DWI)", "神经/感染", "新月形硬膜下积脓+DWI高信号(脓液)+边缘强化+占位效应。鼻窦炎/中耳炎最常见来源。", "https://radiopaedia.org/search?q=subdural+empyema&scope=all"),
+        Imaging("脊髓硬膜外脓肿", "MRI(增强)", "神经/感染", "硬膜外T2高信号脓液积聚+边缘强化+脊髓受压。MRI急诊! 脊柱手术/菌血症/IVDU常见。", "https://radiopaedia.org/search?q=spinal+epidural+abscess&scope=all"),
+        Imaging("颈动脉夹层", "CTA/MRI(T1脂肪抑制)", "神经/血管", "颈内动脉颅外段火焰状/串珠状狭窄→动脉腔内新月形T1高信号(高铁血红蛋白壁内血肿)。年轻卒中首要考虑。", "https://radiopaedia.org/search?q=carotid+artery+dissection&scope=all"),
+        Imaging("颅内动脉瘤(未破裂)", "CTA/MRA(TOF)", "神经/血管", "前交通/后交通/大脑中分叉部最常见。形态：囊状/梭形/水泡型。>7mm+形态不规则/增长时考虑治疗。", "https://radiopaedia.org/search?q=cerebral+aneurysm&scope=all"),
+        Imaging("脑动静脉畸形(AVM)", "MRI/CTA/DSA", "神经/血管", "供血动脉→巢(nidus)→引流静脉。MRI：蜂窝状流空信号。DSA金标准。Spetzler-Martin分级。", "https://radiopaedia.org/search?q=brain+arteriovenous+malformation&scope=all"),
+        Imaging("脑静脉窦血栓形成(CVST)", "CTV/MRI(增强)", "神经/血管", "CT：上矢状窦高密度(索状征)+空三角征(增强)。MRI+MRA：窦腔内血栓(各期信号不同)。头痛+癫痫/局灶体征。", "https://radiopaedia.org/search?q=cerebral+venous+sinus+thrombosis&scope=all"),
+        // === 脊柱感染/代谢 ===
+        Imaging("脊柱化脓性感染(椎间盘炎/骨髓炎)", "MRI(增强)", "骨科/感染", "T1低(终板)+T2高(椎间盘/终板水肿)+明显强化。终板侵蚀+椎间盘变窄。金黄色葡萄球菌最常见。", "https://radiopaedia.org/search?q=discitis+osteomyelitis&scope=all"),
+        Imaging("脊柱结核(Pott病)", "MRI(增强)", "骨科/感染", "椎体前部T1低/T2高+寒性脓肿(椎旁/腰大肌流注)。相对椎间盘保留(与化脓性鉴别)。驼背畸形。", "https://radiopaedia.org/search?q=Pott+disease+spine&scope=all"),
+        Imaging("骨质疏松(DXA/骨密度)", "DXA/QCT", "内分泌/骨科", "T-score ≥ -1正常; -1 ~ -2.5骨量减少; ≤ -2.5骨质疏松; ≤ -2.5+骨折=严重骨质疏松。腰椎+髋部测量。", "https://radiopaedia.org/search?q=osteoporosis+DXA&scope=all"),
+        Imaging("Paget骨病", "X线/全身骨扫描", "骨科/代谢", "X线:局限性骨骼膨大+骨纹粗糙紊乱+骨皮质增厚。颅骨'棉花团状'改变。骨盆增厚+髋臼内陷。", "https://radiopaedia.org/search?q=Paget+disease+bone&scope=all"),
+        Imaging("肾性骨营养不良", "X线(手/骨骼)", "肾内科/内分泌", "骨质疏松+骨软化/Looser带(假性骨折)+继发性甲旁亢(棕色瘤/骨膜下吸收)。脊柱'橄榄球衣征'(终板硬化)。", "https://radiopaedia.org/search?q=renal+osteodystrophy&scope=all"),
+        // === 风湿免疫 ===
+        Imaging("类风湿关节炎(RA)", "X线(双手)/MRI", "风湿/骨科", "对称性关节间隙均匀变窄+边缘性骨质侵蚀+软组织肿胀。晚期:尺侧偏斜+天鹅颈/纽扣畸形+关节融合。", "https://radiopaedia.org/search?q=rheumatoid+arthritis+hand+imaging&scope=all"),
+        Imaging("系统性硬化症(硬皮病)", "X线/CT(HRCT)", "风湿/呼吸", "手部:肢端骨质溶解+钙质沉着(指腹钙化)。胃:食管扩张+蠕动消失。肺:NSIP为主(HRCT)。", "https://radiopaedia.org/search?q=systemic+sclerosis+imaging&scope=all"),
+        Imaging("银屑病关节炎(PsA)", "X线/MRI", "风湿/骨科", "不对称性关节破坏+DIP受累+'笔帽征'(铅笔在杯中)。骶髂关节炎(常不对称)+肌腱端炎。", "https://radiopaedia.org/search?q=psoriatic+arthritis+imaging&scope=all"),
+        Imaging("干燥综合征(肺部)", "CT(HRCT)", "风湿/呼吸", "LIP(淋巴细胞间质性肺炎):随机分布磨玻璃影+囊性变。NSIP或滤泡性细支气管炎也可见。", "https://radiopaedia.org/search?q=sjogren+syndrome+lung+imaging&scope=all"),
+        // === 眼科补充 ===
+        Imaging("视网膜脱离", "超声(B超)", "眼科", "视网膜脱离：玻璃体内膜状高回声+与视盘连接。孔源性(年龄/近视)vs牵拉性(糖尿病)。紧急修复!", "https://radiopaedia.org/search?q=retinal+detachment+ultrasound&scope=all"),
+        Imaging("年龄相关性黄斑变性(AMD)", "OCT", "眼科", "干性:玻璃膜疣+地图状萎缩RPE。湿性:CNVM(脉络膜新生血管膜)→视网膜下积液/出血。", "https://radiopaedia.org/search?q=age+related+macular+degeneration+OCT&scope=all"),
+        Imaging("糖尿病视网膜病变", "眼底照相+FFA/OCTA", "眼科/内分泌", "微动脉瘤→出血+渗出→棉绒斑→新生血管(增殖性)+玻璃体积血→视网膜前纤维增殖→牵拉脱离。", "https://radiopaedia.org/search?q=diabetic+retinopathy+imaging&scope=all"),
+        // === 生殖泌尿补充 ===
+        Imaging("睾丸扭转", "超声(彩色多普勒)", "泌尿/急诊", "睾丸肿大+回声不均+多普勒无血流(或明显减少)。与附睾炎(高血流)鉴别关键。<6h复位率>90%，>24h几乎0%。", "https://radiopaedia.org/search?q=testicular+torsion+ultrasound&scope=all"),
+        Imaging("精索静脉曲张", "超声(彩色多普勒)", "泌尿", "立位+瓦氏动作：精索静脉内径>2mm+持续逆行血流>2s。左侧更常见。", "https://radiopaedia.org/search?q=varicocele+ultrasound&scope=all"),
+        // === 消化补充 ===
+        Imaging("结直肠癌", "CT(增强)+MRI(直肠)", "消化", "结肠壁不规则增厚+管腔狭窄(苹果核征)+周围淋巴结转移。肝转移(门脉期最明显)。", "https://radiopaedia.org/search?q=colorectal+cancer+CT&scope=all"),
+        Imaging("胃间质瘤(GIST)", "CT(增强)", "消化", "胃壁外生性肿块+均匀或不均匀强化+中央坏死/出血可呈液液平面。肝转移常见。", "https://radiopaedia.org/search?q=gastric+GIST&scope=all"),
+        Imaging("腹膜假性黏液瘤(PMP)", "CT/MRI", "消化", "腹膜广泛包裹+肝/脾表面'扇贝征'+大量黏液性腹水。阑尾黏液性肿瘤破裂来源。", "https://radiopaedia.org/search?q=pseudomyxoma+peritonei&scope=all"),
+        // === 儿科补充 ===
+        Imaging("先天性心脏病-超声心动图", "超声心动图(TTE)", "儿科/心内", "VSD/ASD/PDA/TOF法洛四联症/TGA大动脉转位。评估分流方向/压力/右室压。", "https://radiopaedia.org/search?q=congenital+heart+disease+echocardiography&scope=all"),
+        Imaging("胆道闭锁", "超声/磁共振胰胆管(MRCP)", "儿科", "超声：三角形索状征(肝门纤维斑块)+小胆囊或无胆囊。新生儿直接高胆红素血症最重要鉴别诊断。", "https://radiopaedia.org/search?q=biliary+atresia+imaging&scope=all"),
+        // === 更多血管 ===
+        Imaging("肠系膜缺血", "CTA(腹部)", "血管/急诊", "急性:动脉栓塞(SMA)+静脉血栓(MVT)。CTA：肠壁无强化+肠壁积气+腹腔积液。死亡率60-80%。", "https://radiopaedia.org/search?q=mesenteric+ischaemia+CT&scope=all"),
+        Imaging("上腔静脉综合征(SVCS)", "CTV/MRI", "血管/胸外", "上腔静脉阻塞→侧支静脉扩张。恶性最常见(肺癌/淋巴瘤)。", "https://radiopaedia.org/search?q=superior+vena+cava+obstruction&scope=all"),
+        // === 麻醉/呼吸补充 ===
+        Imaging("阻塞性睡眠呼吸暂停(OSA)影像学", "CT(气道三维)", "ENT/麻醉", "上气道最小横截面积(MCA)减少+腭后/舌后区域显著。", "https://radiopaedia.org/search?q=obstructive+sleep+apnoea+imaging&scope=all"),
+        // === 更多胸部 ===
+        Imaging("胸膜间皮瘤", "CT(增强)/PET-CT", "胸外科", "弥漫胸膜结节状增厚(>1cm)+胸腔积液+纵隔胸膜受侵。石棉接触史。VATS胸膜活检确诊。", "https://radiopaedia.org/search?q=pleural+mesothelioma&scope=all"),
+        // === 更多肌肉骨骼 ===
+        Imaging("外伤性肌肉损伤(分级)", "MRI/超声", "骨科/运动医学", "I级(轻度):肌腱/肌肉轻度挫伤。II级(中度):部分肌纤维断裂+血肿。III级(重度):肌纤维完全断裂+回缩。", "https://radiopaedia.org/search?q=muscle+strain+grading+MRI&scope=all"),
+        Imaging("胫骨平台骨折(Schatzker)", "CT(三维重建)", "骨科", "Schatzker I-VI型。V/VI型累及干骺端分离→双重钢板。", "https://radiopaedia.org/search?q=tibial+plateau+fracture+Schatzker&scope=all"),
+        // === 脊柱补充 ===
+        Imaging("马尾综合征(Cauda Equina)", "MRI(增强/急诊)", "神经/骨科", "马尾神经受压(巨大椎间盘突出/肿瘤/血肿)→鞍区感觉消失+尿潴留+下肢无力。MRI急诊<24h手术。", "https://radiopaedia.org/search?q=cauda+equina+syndrome&scope=all"),
+        Imaging("脊髓空洞症(Syringomyelia)", "MRI", "神经/骨科", "脊髓中央管T2高信号囊腔(纵行)，与小脑扁桃体下疝(Chiari I型)密切关联。", "https://radiopaedia.org/search?q=syringomyelia&scope=all"),
+        // === 骨与关节补充 ===
+        Imaging("SLAP撕裂(上盂唇前后撕裂)", "MRI(关节造影)", "骨科/运动医学", "SLAP I-IV型→上盂唇剥离或桶柄状撕裂。MRI关节造影比常规MRI更准确。投掷运动员常见。", "https://radiopaedia.org/search?q=SLAP+tear&scope=all"),
+        Imaging("Bankart损伤", "MRI(关节造影)/CT(MRA)", "骨科/运动医学", "肩关节前下盂唇撕裂+前下盂唇骨性缺损(Bony Bankart)-骨缺损>20-25%=需要Latarjet手术。", "https://radiopaedia.org/search?q=Bankart+lesion&scope=all"),
+        Imaging("分离性骨软骨炎(OCD)", "MRI/X线", "骨科/运动医学", "关节软骨+软骨下骨分离(>通常膝关节内侧股骨髁)，骨软骨块脱落→游离体。青少年11-21岁。", "https://radiopaedia.org/search?q=osteochondritis+dissecans&scope=all"),
+        Imaging("月骨坏死(Kienbock病)", "X线/MRI", "骨科/手腕", "月骨T1低信号+塌陷(Lichtman分期I-IV)。I-II期可保守/血运重建，III-IV需手术。", "https://radiopaedia.org/search?q=Kienbock+disease&scope=all"),
+        // === 血管补充 ===
+        Imaging("大动脉炎(Takayasu arteritis)", "CTA/MRA", "血管/风湿", "年轻女性主动脉弓+分支长段管壁环形增厚+管腔狭窄/闭塞。双期(动脉期/延迟期)观察壁强化(活动性)。", "https://radiopaedia.org/search?q=Takayasu+arteritis&scope=all"),
+        Imaging("冠状动脉钙化积分(CAC)", "CT(平扫低剂量)", "心内科/筛查", "Agatston评分:CAC 0(极低危)→1-100→100-400→>400(高危)。0分=10年ASCVD<5%。", "https://radiopaedia.org/search?q=coronary+artery+calcium+score&scope=all"),
+        // === 腹部补充 ===
+        Imaging("正常腹部CT解剖", "CT(增强)", "消化/教学", "门脉期：肝+脾+胰+双肾+肾上腺+胆囊+胆总管<7mm+小肠直径<3cm+结肠直径<6cm。", ""),
+        Imaging("肠脂垂炎(Epiploic Appendagitis)", "CT(增强)", "消化/急诊", "结肠旁脂肪密度增高+环征(高密度薄边缘)+中心点状高密度(中央静脉)，无周围肠壁增厚。自限性保守治疗。", "https://radiopaedia.org/search?q=epiploic+appendagitis&scope=all"),
+        Imaging("网膜梗死后/大网膜扭转", "CT(增强)", "消化/急诊", "大网膜区域脂肪密度增高(比肠脂垂炎更大更模糊)，无环征。自限性。", "https://radiopaedia.org/search?q=omental+infarction&scope=all"),
+        Imaging("肠系膜淋巴结炎", "超声/CT", "消化/儿科", "右下腹肿大淋巴结>3个+回肠末端正常(与阑尾炎鉴别关键!)。", "https://radiopaedia.org/search?q=mesenteric+adenitis&scope=all"),
+        // === 胸科补充 ===
+        Imaging("正常胸部CT解剖(纵隔窗+肺窗)", "CT", "呼吸/教学", "肺窗:两侧肺野透亮度均匀+叶间裂无偏移。纵隔窗:心/大血管/气管/主支气管/食管/淋巴结(<1cm)。", ""),
+        Imaging("后纵隔肿物(神经源性)", "CT/MRI", "胸外科", "后纵隔+椎旁沟内靠近交感链/神经根的软组织肿块。成人多为神经鞘瘤。儿童为神经母细胞瘤/神经节瘤。", "https://radiopaedia.org/search?q=posterior+mediastinal+mass&scope=all"),
+        Imaging("前纵隔畸胎瘤", "CT/MRI", "胸外科", "前纵隔囊肿性肿块+脂肪/钙化/液体/毛发等不均质成分。良性占多数。", "https://radiopaedia.org/search?q=mediastinal+teratoma&scope=all"),
+        // === 神经补充 ===
+        Imaging("正常头颅CT解剖", "CT(平扫)", "神经/教学", "灰白质界面清晰，脑沟+外侧裂+四叠体池+鞍上池可见，中线居中，颅骨对称无异常密度。", ""),
+        Imaging("垂体卒中(Pituitary Apoplexy)", "MRI(增强)", "神经/内分泌", "垂体腺瘤内急性出血(磁敏感序列信号异常)+蝶鞍扩张+视交叉受压。急症!急性重度头痛+视交叉综合征+垂体功能减低→激素+急诊手术。", "https://radiopaedia.org/search?q=pituitary+apoplexy&scope=all"),
+        Imaging("小脑梗死", "MRI(DWI)+CT(排除出血/脑积水)", "神经", "小脑后下/前下/上动脉供血区DWI高信号+ADC低，水肿可压迫第四脑室/脑干→急诊脑室外引流可能。", "https://radiopaedia.org/search?q=cerebellar+infarction&scope=all"),
+        // === 儿科补充 ===
+        Imaging("正常新生儿头部超声(颅脑)", "超声(经前囟)", "儿科/神经", "正常脑室前角+颞角无扩张(无脑室出血/脑室增宽)。生发基质+脉络膜回声正常。", "https://radiopaedia.org/search?q=normal+neonatal+cranial+ultrasound&scope=all"),
+        Imaging("正常小儿髋关节超声(Graf)", "超声", "儿科/骨科", "α角>60°(骨性臼顶，α<43°脱位)，β角<55°正常，股骨头正常位于髋臼内。", "https://radiopaedia.org/search?q=Graf+ultrasound+hip&scope=all"),
+        // === 皮肤科补充 ===
+        Imaging("正常皮肤+皮下组织超声", "超声(高频>15MHz)", "皮肤科", "分层解剖：表皮+真皮+皮下脂肪层。各层厚度均匀对称+筋膜层连续清晰+无异常血流。", ""),
+        // === 骨折/骨科补充 ===
+        Imaging("桡骨头骨折(Mason分型)", "X线/CT", "骨科", "Mason I(无移位)→保守; II(移位>2mm)→ORIF; III(粉碎)→切除/置换; IV(合并脱位)→重建。", "https://radiopaedia.org/search?q=radial+head+fracture&scope=all"),
+        Imaging("桡骨远端骨折(Frykman分型)", "X线/CT", "骨科", "Frykman I-VIII(关节内/外+尺骨茎突)。Colles(背侧); Smith(掌侧反Colles); Barton(关节内骨折脱位)。", "https://radiopaedia.org/search?q=distal+radius+fracture&scope=all"),
+        Imaging("椎弓崩裂/脊柱滑脱(Spondylolysis)", "CT(矢状+轴位)/MRI", "骨科", "椎弓峡部缺损(Scottie狗颈圈断裂)。Meyerding分级:I(<25%)II(25-50)III(50-75)IV(>75)V(完全脱位=ptosis)。", "https://radiopaedia.org/search?q=spondylolisthesis&scope=all"),
+        Imaging("骶骨不全骨折", "MRI/CT", "骨科/老年", "骶骨翼T1低/T2高信号(骨折线)+垂直方向。骨质疏松/放疗后。H型骨折=双侧+中轴=最严重。", "https://radiopaedia.org/search?q=sacral+insufficiency+fracture&scope=all"),
+        Imaging("足踝-副舟骨/疼痛性副舟骨", "X线/MRI", "骨科/足踝", "2型副舟骨伴疼痛(内踝前方)+胫后肌腱附着异常/变性+骨髓水肿(疼痛性)。", "https://radiopaedia.org/search?q=accessory+navicular+syndrome&scope=all"),
+        Imaging("髌骨骨折", "X线(正侧/轴位)/CT", "骨科/膝关节", "横断/粉碎/下极撕脱。>2mm间隙=移位需ORIF。MRI评估伸膝装置完整性+骨软骨骨折。", "https://radiopaedia.org/search?q=patella+fracture&scope=all"),
+        Imaging("DISH(弥漫性特发性骨肥厚)", "X线/CT", "骨科/风湿", "前纵韧带骨化连接>=4个连续椎体(Sinding-Larsen)，右侧流注状。'蜡烛火焰'外观。与AS鉴别：骶髂关节正常+无椎体侵蚀。", "https://radiopaedia.org/search?q=diffuse+idiopathic+skeletal+hyperostosis&scope=all"),
+        // === 消化补充 ===
+        Imaging("乙状结肠扭转", "X线(腹部)/CT", "消化/急诊", "X线:巨大倒U形扩张结肠('咖啡豆征'), 乙状结肠梗阻点。CT:肠系膜漩涡征(whirl sign)。内镜复位(>80%成功)。", "https://radiopaedia.org/search?q=sigmoid+volvulus&scope=all"),
+        Imaging("急性结肠憩室炎", "CT(增强)", "消化", "结肠憩室+壁增厚>5mm+周围脂肪条索+脓肿/微小穿孔。Hinchey分级Ia-IV。", "https://radiopaedia.org/search?q=acute+diverticulitis+CT&scope=all"),
+        Imaging("Ogilvie综合征(急性结肠假性梗阻)", "CT/X线", "消化/急诊", "盲肠+升结肠扩张(>9cm为穿孔风险>12cm危险!)，远端结肠口径正常(无机梗阻)。新斯的明(neostigmine)治疗。", "https://radiopaedia.org/search?q=acute+colonic+pseudo-obstruction&scope=all"),
+        Imaging("盲肠扭转", "CT", "消化/急诊", "盲肠扭转→中上腹部扩张，远端结肠塌陷。'肾形'扩张盲肠。鸟嘴征。需急诊手术(缺血坏死率高)。", "https://radiopaedia.org/search?q=caecal+volvulus&scope=all"),
+        // === 血管补充 ===
+        Imaging("May-Thurner综合征(髂静脉受压)", "CTV/MR+超声", "血管", "右髂总动脉压迫左髂总静脉→左下肢DVT+慢性静脉功能不全。年轻女性多见。血管内支架治疗。", "https://radiopaedia.org/search?q=May+Thurner+syndrome&scope=all"),
+        Imaging("胡桃夹综合征(Nutcracker)", "CTA+超声", "血管", "左肾静脉被SMA与主动脉之间压迫→血尿/左侧腹部痛。超声：LRV直径比>5:1。", "https://radiopaedia.org/search?q=Nutcracker+syndrome&scope=all"),
+        Imaging("正中弓状韧带综合征(MALS)", "CTA(呼气+吸气相)/超声", "血管", "腹腔动脉被弓状韧带压迫(呼气相加重)，呼气相狭窄>吸气相>50%。餐后上腹痛+体重下降。", "https://radiopaedia.org/search?q=median+arcuate+ligament+syndrome&scope=all"),
+        // === 神经补充 ===
+        Imaging("Moyamoya病", "MRI+MRA/CTA/DSA", "神经/血管", "双侧颈内动脉末段渐进性狭窄/闭塞+烟雾样侧支血管('烟雾吸入'弥漫+模糊)。铃木分期I-VI。缺血/出血均可。", "https://radiopaedia.org/search?q=Moyamoya+disease&scope=all"),
+        Imaging("Chiari I型畸形", "MRI(矢状位)", "神经/先天", "小脑扁桃体下疝>5mm通过枕骨大孔(小脑扁桃体下疝)+脊髓空洞症(>50%伴有)。慢性Valsalva性头痛。", "https://radiopaedia.org/search?q=Chiari+I+malformation&scope=all"),
+        Imaging("正常压力脑积水(NPH)", "MRI(矢状+冠状)", "神经", "DESH(不成比例扩大的蛛网膜下腔脑积水)。Evan's index>0.3+胼胝体角<90°+高脑凸面蛛网膜下腔狭窄。脑室引流前腰穿放液可评估获益。", "https://radiopaedia.org/search?q=normal+pressure+hydrocephalus+DESH&scope=all"),
+        Imaging("Rathke裂囊肿", "MRI(增强)", "神经/内分泌", "鞍内囊性占位(通常<1cm)，T1信号根据蛋白浓度变化+T2高/低信号+囊壁无强化(少数轻度强化)。", "https://radiopaedia.org/search?q=Rathke+cleft+cyst&scope=all"),
+        Imaging("硬膜动静脉瘘(dAVF)", "DSA(金标准)/MRI", "神经/血管", "增强血管(静脉早期充盈)→异常的皮层静脉引流(=高危 → 应紧急治疗)。搏动性耳鸣+颅内出血。", "https://radiopaedia.org/search?q=dural+arteriovenous+fistula&scope=all"),
+        // === 急危重症补充 ===
+        Imaging("Fournier坏疽(会阴部坏死性筋膜炎)", "CT(增强)", "急诊/泌尿", "会阴部软组织积气+筋膜增厚+无强化坏死区域。男性>女性。糖尿病+免疫低下者。急诊手术清创(多科联合)。", "https://radiopaedia.org/search?q=Fournier+gangrene&scope=all"),
+        Imaging("气肿性肾盂肾炎", "CT(平扫)", "急诊/泌尿", "肾实质+肾周气囊征(气体)，CT可区分I型(局部)/II型(弥漫→死亡率更高)。糖尿病+妇女常见。急诊肾切除可能。", "https://radiopaedia.org/search?q=emphysematous+pyelonephritis&scope=all"),
+        Imaging("气肿性胆囊炎", "CT/超声", "急诊/消化", "胆囊壁/腔内气体，超声:环状气体高回声+后方混响伪差('脏的声影')。急诊手术。", "https://radiopaedia.org/search?q=emphysematous+cholecystitis&scope=all"),
+        Imaging("Boerhaave综合征(自发性食管破裂)", "CT(增强)+食管造影(水溶性)", "急诊/胸外", "食管下段透壁不完全破裂+纵隔积气+左侧胸腔积液(胸膜破)+气肿。呕吐后急性剧烈胸痛。急诊手术+引流。", "https://radiopaedia.org/search?q=Boerhaave+syndrome&scope=all"),
+        // === 介入放射补充 ===
+        Imaging("TIPS(经颈静脉肝内门体分流术)", "超声(多普勒)+CT", "介入放射", "肝-门静脉分流(肝静脉→右门静脉分支)。超声:分流道通畅血流速度50-200cm/s+流出静脉流速。狭窄/阻塞=再次干预。", "https://radiopaedia.org/search?q=TIPS+transjugular+intrahepatic+portosystemic+shunt&scope=all"),
+        Imaging("支气管动脉栓塞(BAE-咯血)", "CT血管成像+支气管动脉DSA", "介入放射", "咯血最常见来源:支气管动脉(90%)。血管栓塞:聚乙烯醇颗粒+微弹簧圈。注意勿栓塞脊髓动脉(前脊动脉源于肋间/支气管动脉)。", "https://radiopaedia.org/search?q=bronchial+artery+embolization&scope=all"),
+        Imaging("子宫肌瘤栓塞(UFE)", "DSA", "介入放射", "双侧子宫动脉超选择插管→栓塞肌瘤微球(血流丰富肌瘤优先吸收)。MRI术后评估肌瘤坏死(无强化)。", "https://radiopaedia.org/search?q=uterine+fibroid+embolization&scope=all"),
+        // === 肿瘤补充 ===
+        Imaging("腹膜癌病(Peritoneal Carcinomatosis)", "CT(增强)+MRI", "肿瘤/消化", "腹膜结节状增厚+大网膜饼征+腹水。来源：卵巢/结直肠/胃/胰腺。PCI评分评估范围。", "https://radiopaedia.org/search?q=peritoneal+carcinomatosis&scope=all"),
+        Imaging("淋巴瘤(结内+结外)", "CT/PET-CT", "肿瘤/血液", "多区域淋巴肿大(有多个界限清晰的球形团块)。结外：脾/肝/肾/肾上腺/骨骼。PET-CT用于分期+疗效评估。", "https://radiopaedia.org/search?q=lymphoma+imaging&scope=all"),
+        // === 血液科补充 ===
+        Imaging("多发性骨髓瘤(骨破坏)", "X线(全身骨显像)/CT", "血液/肿瘤", "颅骨'雨滴状'溶解、椎体压缩骨折、肋骨/锁骨/肱骨多发穿凿状溶骨。X线阴性者做全身MRI或PET-CT。", "https://radiopaedia.org/search?q=multiple+myeloma+bone&scope=all"),
+        Imaging("血友病性关节病", "X线/MRI", "血液/骨科", "反复关节积血→骨骺过度生长(膝/肘/踝)。关节间隙变窄+软骨下囊变(Arnold分期)。MRI含铁血黄素沉积(T2低信号,梯度回波开花征)。", "https://radiopaedia.org/search?q=haemophilic+arthropathy&scope=all"),
+        Imaging("骨髓纤维化", "X线/MRI", "血液/肿瘤", "骨质密度弥漫增高(弥漫性骨硬化)+骨髓腔闭塞。脾高度肿大(髓外造血)。MR:T1+T2弥漫低信号(造血骨髓)。", "https://radiopaedia.org/search?q=myelofibrosis+imaging&scope=all"),
+        // === 康复科补充 ===
+        Imaging("异位骨化", "X线/CT(三维)/三相骨扫描", "骨科/康复", "关节周围/肌肉内逐渐成熟骨质形成(>2-4周出现)。关节活动受限+压迫神经血管。好发:髋臼骨折/截瘫/烧伤。", "https://radiopaedia.org/search?q=heterotopic+ossification&scope=all"),
+        Imaging("肩峰下撞击综合征", "MRI/超声(动态)", "骨科/康复", "肩峰下间隙狭窄(肩峰形态Bigliani分型: I型扁平/II型弧形/III型钩状)。肩袖出口狭窄→肱骨头上移+肩峰下滑囊积液。", "https://radiopaedia.org/search?q=subacromial+impingement+MRI&scope=all"),
+        Imaging("肩袖钙化性肌腱炎", "X线/超声", "骨科/康复", "冈上肌腱内钙化沉积(形成/静止/吸收三阶段)。超声:高回声钙化灶+后方声影/混响伪差。急性吸收期剧痛(钙化性滑囊炎)。", "https://radiopaedia.org/search?q=calcific+tendinitis+shoulder&scope=all"),
     )
     val categories = all.map { it.system }.distinct().sorted()
     val modalities = all.map { it.modality }.distinct().sorted()

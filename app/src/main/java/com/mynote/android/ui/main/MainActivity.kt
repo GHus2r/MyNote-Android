@@ -995,6 +995,10 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
 
     override fun onResume() {
         super.onResume()
+        if (prefs.needsRefresh) {
+            prefs.needsRefresh = false
+            loadData()
+        }
         applyBackground()
     }
 
@@ -1035,53 +1039,187 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
             "📚 知识库" to listOf(
                 "疾病速查 (960种)" to { startSettings("disease") },
                 "用药参考 (367种)" to { startSettings("drug") },
-                "检验参考值 (105项)" to { startSettings("lab") },
-                "影像征象 (155种)" to { startSettings("imaging") },
-                "心电图速查 (35种)" to { startSettings("ecg") },
+                "检验参考值 (155项)" to { startSettings("lab") },
+                "影像征象 (246种)" to { startSettings("imaging") },
+                "心电图速查 (51种)" to { startSettings("ecg") },
                 "指南速查 (100+篇)" to { startSettings("guide") },
                 "临床路径 (18条)" to { startSettings("pathway") },
+                "急救流程 (11项)" to { startSettings("emergency") },
+                "抗菌药物选药 (25项)" to { startSettings("abx") },
+                "输血指征 (16项)" to { startSettings("transfusion") },
+                "中毒与解毒 (14项)" to { startSettings("tox") },
+                "儿童生长发育/用药" to { startSettings("peds") },
+                "临床量表 (21项)" to { startSettings("scores") },
             ),
             "🧮 临床工具" to listOf(
-                "医学计算器 (31项)" to { startSettings("calc") },
+                "医学计算器 (38项)" to { startSettings("calc") },
+                "输液速度计算" to { startSettings("ivdrip") },
+                "体表面积 BSA" to { startSettings("bsa") },
+                "儿童剂量速算" to { startSettings("pedidose") },
+                "创伤评分 ISS/RTS" to { startSettings("trauma") },
+                "疼痛评估 NRS" to { startSettings("pain") },
+                "妊娠用药分级" to { startSettings("pregdrug") },
                 "ABG 血气判读" to { startSettings("abg") },
                 "药物相互作用" to { startSettings("drugInteract") },
                 "AI 读化验单" to { startSettings("aiLab") },
             ),
             "📌 数据管理" to listOf(
                 "标签管理" to { showTagsDialog() },
+                "会议记录" to { startActivity(android.content.Intent(this@MainActivity, com.mynote.android.ui.meeting.MeetingActivity::class.java)) },
             ),
         )
         var dialog: AlertDialog? = null
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(20, 8, 20, 0) }
+        // 全局搜索
+        val etSearch = EditText(this).apply {
+            hint = "🔍 搜索所有知识库和工具..."; setSingleLine(); textSize = 14f
+            setPadding(12, 12, 12, 12); setBackgroundColor(Color.parseColor("#F5F5F5"))
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(0, 4, 0, 8) }
+        }
+        root.addView(etSearch)
         val scroll = ScrollView(this)
+        val resultContainer = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; visibility = View.GONE }
+        root.addView(resultContainer)
         val container = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         scroll.addView(container)
         root.addView(scroll)
+        // 最近使用
+        val recentKeys = getSharedPreferences("mynote_tools", Context.MODE_PRIVATE).getString("recent", "")?.split(",")?.filter { it.isNotBlank() }?.take(5) ?: emptyList()
+        if (recentKeys.isNotEmpty()) {
+            val recentLabel = TextView(this).apply {
+                text = "🕐 最近使用"; textSize = 13f; setTextColor(Color.parseColor("#EF6C00"))
+                setPadding(16, 12, 16, 8); typeface = android.graphics.Typeface.DEFAULT_BOLD
+            }
+            container.addView(recentLabel)
+            for (key in recentKeys) {
+                val label = findLabelByKey(key)
+                val tv = TextView(this).apply {
+                    text = label; textSize = 14f; setPadding(24, 10, 24, 10)
+                    setTextColor(Color.DKGRAY)
+                    setOnClickListener { dialog?.dismiss(); startSettings(key) }
+                }
+                container.addView(tv)
+            }
+            container.addView(View(this).apply { layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1).apply { setMargins(16, 8, 16, 4) }; setBackgroundColor(Color.parseColor("#E0E0E0")) })
+        }
+        // 默认第一个分组展开，其余收起
+        var firstGroup = true
         for ((section, subs) in items) {
+            val groupContent = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; visibility = if (firstGroup) View.VISIBLE else View.GONE }
             val header = TextView(this).apply {
-                text = section; textSize = 14f; setTextColor(Color.parseColor("#1976D2"))
-                setPadding(16, 18, 16, 10); typeface = android.graphics.Typeface.DEFAULT_BOLD
+                text = if (firstGroup) "▼ $section" else "▶ $section"
+                textSize = 14f; setTextColor(Color.parseColor("#1976D2"))
+                setPadding(16, 16, 16, 8); typeface = android.graphics.Typeface.DEFAULT_BOLD
+                setOnClickListener {
+                    if (groupContent.visibility == View.VISIBLE) {
+                        groupContent.visibility = View.GONE; text = "▶ $section"
+                    } else {
+                        groupContent.visibility = View.VISIBLE; text = "▼ $section"
+                    }
+                }
             }
             container.addView(header)
             for ((label, action) in subs) {
                 val tv = TextView(this).apply {
-                    text = label; textSize = 15f; setPadding(20, 14, 20, 14)
+                    text = label; textSize = 15f; setPadding(24, 12, 24, 12)
                     setTextColor(Color.DKGRAY)
                     setOnClickListener { dialog?.dismiss(); action() }
                 }
-                container.addView(tv)
+                groupContent.addView(tv)
             }
+            container.addView(groupContent)
+            firstGroup = false
         }
         dialog = AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("🛠 工具").setView(root as android.view.View)
             .setNegativeButton("关闭", null).create()
         dialog.show()
-        dialog.window?.setLayout((resources.displayMetrics.widthPixels * 0.92).toInt(), (resources.displayMetrics.heightPixels * 0.65).toInt())
+        dialog.window?.setLayout((resources.displayMetrics.widthPixels * 0.92).toInt(), (resources.displayMetrics.heightPixels * 0.78).toInt())
+
+        // 搜索逻辑
+        val searchIndex = buildGlobalSearchIndex()
+        etSearch.addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val q = s.toString().trim().lowercase()
+                if (q.length < 1) {
+                    scroll.visibility = View.VISIBLE; resultContainer.visibility = View.GONE; resultContainer.removeAllViews(); return
+                }
+                scroll.visibility = View.GONE; resultContainer.visibility = View.VISIBLE; resultContainer.removeAllViews()
+                val results = searchIndex.filter {
+                    it.first.lowercase().contains(q) || it.second.lowercase().contains(q) ||
+                    com.mynote.android.util.PinyinUtil.toInitials(it.first).contains(q)
+                }.take(20)
+                if (results.isEmpty()) {
+                    resultContainer.addView(TextView(this@MainActivity).apply {
+                        text = "未找到匹配结果"; setTextColor(Color.GRAY); textSize = 14f; setPadding(16, 12, 16, 12)
+                    })
+                    return
+                }
+                val header = TextView(this@MainActivity).apply {
+                    text = "找到 ${results.size} 条结果"; textSize = 12f; setTextColor(Color.parseColor("#1976D2"))
+                    setPadding(16, 8, 16, 8); typeface = android.graphics.Typeface.DEFAULT_BOLD
+                }
+                resultContainer.addView(header)
+                for ((label, route) in results) {
+                    val tv = TextView(this@MainActivity).apply {
+                        text = label; textSize = 14f; setPadding(20, 12, 20, 12); setTextColor(Color.DKGRAY)
+                        setOnClickListener { dialog?.dismiss(); startSettings(route) }
+                    }
+                    resultContainer.addView(tv)
+                }
+            }
+            override fun beforeTextChanged(s: CharSequence?, st: Int, c: Int, af: Int) {}
+            override fun onTextChanged(s: CharSequence?, st: Int, b: Int, c: Int) {}
+        })
+    }
+
+    /** 构建全局搜索索引: (显示标签, 路由key) */
+    private fun buildGlobalSearchIndex(): List<Pair<String, String>> {
+        val idx = mutableListOf<Pair<String, String>>()
+        // 知识库
+        for (d in com.mynote.android.util.DiseaseReference.getAll()) idx.add("[疾病] ${d.name}" to "disease")
+        for (d in com.mynote.android.util.DrugReference.getAll()) idx.add("[药品] ${d.name}" to "drug")
+        for (d in com.mynote.android.util.LabReference.all) idx.add("[检验] ${d.name}" to "lab")
+        for (d in com.mynote.android.util.ImagingReference.all) idx.add("[影像] ${d.title}" to "imaging")
+        for (d in com.mynote.android.util.ECGReference.all) idx.add("[ECG] ${d.title}" to "ecg")
+        for (d in com.mynote.android.util.GuidelineLibrary.all) idx.add("[指南] ${d.title}" to "guide")
+        for (d in com.mynote.android.util.ClinicalPathways.pathways) idx.add("[路径] ${d.title}" to "pathway")
+        for (d in com.mynote.android.util.EmergencyProcedures.all) idx.add("[急救] ${d.title}" to "emergency")
+        for (d in com.mynote.android.util.AntibioticGuide.all) idx.add("[抗菌] ${d.title}" to "abx")
+        for (d in com.mynote.android.util.TransfusionGuide.all) idx.add("[输血] ${d.title}" to "transfusion")
+        for (d in com.mynote.android.util.ToxicologyRef.all) idx.add("[中毒] ${d.agent}" to "tox")
+        for (d in com.mynote.android.util.PediatricGrowth.all) idx.add("[儿科] ${d.title}" to "peds")
+        for (d in com.mynote.android.util.ClinicalScores.all) idx.add("[量表] ${d.title}" to "scores")
+        // 工具
+        idx.add("[工具] 输液速度计算" to "ivdrip"); idx.add("[工具] 体表面积 BSA" to "bsa")
+        idx.add("[工具] 儿童剂量速算" to "pedidose"); idx.add("[工具] 创伤评分 ISS/RTS" to "trauma")
+        idx.add("[工具] 疼痛评估 NRS" to "pain"); idx.add("[工具] 妊娠用药分级" to "pregdrug")
+        idx.add("[工具] ABG 血气判读" to "abg"); idx.add("[工具] 药物相互作用" to "drugInteract")
+        idx.add("[工具] AI 读化验单" to "aiLab"); idx.add("[工具] 医学计算器" to "calc")
+        return idx
     }
 
     private fun startSettings(target: String) {
+        // 记录最近使用
+        val sp = getSharedPreferences("mynote_tools", Context.MODE_PRIVATE)
+        val recent = sp.getString("recent", "")?.split(",")?.filter { it.isNotBlank() }?.toMutableList() ?: mutableListOf()
+        recent.remove(target); recent.add(0, target)
+        if (recent.size > 5) recent.removeAt(recent.size - 1)
+        sp.edit().putString("recent", recent.joinToString(",")).apply()
         val intent = Intent(this, com.mynote.android.ui.settings.SettingsActivity::class.java)
         intent.putExtra("open", target)
         startActivity(intent)
+    }
+
+    private fun findLabelByKey(key: String): String = when (key) {
+        "disease" -> "[疾病] 疾病速查"; "drug" -> "[药品] 用药参考"; "lab" -> "[检验] 检验参考值"
+        "imaging" -> "[影像] 影像征象"; "ecg" -> "[ECG] 心电图速查"; "guide" -> "[指南] 指南速查"
+        "pathway" -> "[路径] 临床路径"; "emergency" -> "[急救] 急救流程"; "abx" -> "[抗菌] 抗菌选药"
+        "transfusion" -> "[输血] 输血指征"; "tox" -> "[中毒] 中毒解毒"; "peds" -> "[儿科] 儿童生长"
+        "scores" -> "[量表] 临床量表"; "calc" -> "[工具] 医学计算器"; "ivdrip" -> "[工具] 输液速度"
+        "bsa" -> "[工具] 体表面积"; "pedidose" -> "[工具] 儿童剂量"; "trauma" -> "[工具] 创伤评分"
+        "pain" -> "[工具] 疼痛评估"; "pregdrug" -> "[工具] 妊娠用药"; "abg" -> "[工具] ABG血气"
+        "drugInteract" -> "[工具] 药物相互作用"; "aiLab" -> "[工具] AI化验单"
+        else -> "[工具] $key"
     }
 
     // ===== 标签管理 =====

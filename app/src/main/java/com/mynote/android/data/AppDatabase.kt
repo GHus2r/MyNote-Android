@@ -7,12 +7,15 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.mynote.android.data.dao.CategoryDao
+import com.mynote.android.data.dao.MeetingDao
+import com.mynote.android.data.dao.MedicalRecordDao
 import com.mynote.android.data.dao.NoteDao
 import com.mynote.android.data.dao.PatientDao
-import com.mynote.android.data.dao.MedicalRecordDao
 import com.mynote.android.data.dao.VitalSignsDao
 import com.mynote.android.data.entity.ContentItem
 import com.mynote.android.data.entity.MedicalRecord
+import com.mynote.android.data.entity.Meeting
+import com.mynote.android.data.entity.MeetingEntry
 import com.mynote.android.data.entity.Note
 import com.mynote.android.data.entity.ParentCategory
 import com.mynote.android.data.entity.Patient
@@ -27,9 +30,11 @@ import com.mynote.android.data.entity.VitalSigns
         ContentItem::class,
         Patient::class,
         MedicalRecord::class,
-        VitalSigns::class
+        VitalSigns::class,
+        Meeting::class,
+        MeetingEntry::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -39,6 +44,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun patientDao(): PatientDao
     abstract fun medicalRecordDao(): MedicalRecordDao
     abstract fun vitalSignsDao(): VitalSignsDao
+    abstract fun meetingDao(): MeetingDao
 
     companion object {
         @Volatile
@@ -126,6 +132,14 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `meetings` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `participants` TEXT NOT NULL, `startedAt` INTEGER NOT NULL, `endedAt` INTEGER NOT NULL DEFAULT 0, `summary` TEXT NOT NULL DEFAULT '', `report` TEXT NOT NULL DEFAULT '', `createdAt` INTEGER NOT NULL DEFAULT 0)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `meeting_entries` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `meetingId` INTEGER NOT NULL, `speaker` TEXT NOT NULL, `content` TEXT NOT NULL, `timestamp` INTEGER NOT NULL DEFAULT 0, FOREIGN KEY(`meetingId`) REFERENCES `meetings`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_meeting_entries_meetingId` ON `meeting_entries` (`meetingId`)")
+            }
+        }
+
         fun get(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -133,7 +147,11 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "mynote.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+                    .addMigrations(
+                        MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
+                        MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
+                        MIGRATION_11_12
+                    )
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { INSTANCE = it }

@@ -8,7 +8,6 @@ import com.mynote.android.data.entity.ParentCategory
 import com.mynote.android.data.entity.SubCategory
 import com.mynote.android.ui.settings.AdminReceiver
 import com.mynote.android.ui.recording.QuickRecordService
-import com.mynote.android.util.BaiduNetdisk
 import com.mynote.android.util.CrashHandler
 import com.mynote.android.util.DeptTemplates
 import com.mynote.android.util.DiseaseReference
@@ -38,8 +37,8 @@ class MyNoteApp : Application() {
         // 患者管理初始化
         PatientManager.init(this)
 
-        // 百度网盘 AppKey 加载
-        BaiduNetdisk.init(this)
+        // 知识库离线增量更新检查
+        com.mynote.android.util.DataUpdater.checkUpdate(this)
 
         // 疾病数据从 assets JSON 预加载
         DiseaseReference.init(this)
