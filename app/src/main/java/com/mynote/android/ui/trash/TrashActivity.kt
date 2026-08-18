@@ -68,7 +68,7 @@ class TrashActivity : AppCompatActivity() {
     }
 
     private fun permanentlyDelete(note: Note) {
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("彻底删除")
             .setMessage("「${note.title}」将被永久删除，无法恢复")
             .setPositiveButton("删除") { _, _ ->
@@ -85,7 +85,7 @@ class TrashActivity : AppCompatActivity() {
     }
 
     private fun confirmEmptyTrash() {
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("清空回收站")
             .setMessage("回收站中所有笔记将被永久删除，无法恢复")
             .setPositiveButton("清空") { _, _ ->

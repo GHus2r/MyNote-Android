@@ -141,6 +141,14 @@ class NoteItemAdapter(
         private val tvPreview = view.findViewById<TextView>(R.id.tv_preview)
         private val tvTime = view.findViewById<TextView>(R.id.tv_time)
         private val checkbox = view.findViewById<View>(R.id.checkbox)
+
+        init {
+            // 笔记卡片真玻璃背景
+            view.findViewById<androidx.compose.ui.platform.ComposeView>(R.id.note_card_glass)
+                ?.setContent {
+                    com.mynote.android.ui.glass.GlassCardBackground()
+                }
+        }
         private var startX = 0f
         private var startY = 0f
         private var isMoving = false

@@ -1,8 +1,8 @@
 *.apk
 *.keystore
 *.jks
-/build/
-/.gradle/
+build/
+.gradle/
 *.iml
 .idea/
 local.properties
@@ -10,3 +10,7 @@ hs_err_pid*.log
 replay_pid*.log
 app/release/
 *.hprof
+# 构建清理脚本产生的垃圾目录
+*_dead*/
+*_bak*/
+*.bak

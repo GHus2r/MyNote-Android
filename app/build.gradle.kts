@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
 }
 
@@ -17,14 +18,14 @@ java {
 
 android {
     namespace = "com.mynote.android"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.mynote.android"
         minSdk = 21
         targetSdk = 34
-        versionCode = 42
-        versionName = "4.2.0"
+        versionCode = 50
+        versionName = "5.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -44,12 +45,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         viewBinding = true
+        compose = true
     }
 }
 
@@ -68,10 +66,10 @@ dependencies {
     // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
-    // Room 数据库
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    // Room 数据库（2.7.2：修复 KSP2 的 suspend DAO "jvm signature V" 崩溃，且 minSdk 仍是 21；2.8.x 已把 minSdk 提到 23，故不用）
+    implementation("androidx.room:room-runtime:2.7.2")
+    implementation("androidx.room:room-ktx:2.7.2")
+    ksp("androidx.room:room-compiler:2.7.2")
 
     // 协程
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
@@ -91,4 +89,22 @@ dependencies {
 
     // 文件选择 SAF
     implementation("androidx.documentfile:documentfile:1.0.1")
+
+    // ── Jetpack Compose（为 Liquid Glass / backdrop 玻璃效果引入） ──
+    val composeBom = platform("androidx.compose:compose-bom:2025.07.00")
+    implementation(composeBom)
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation("androidx.activity:activity-compose:1.9.0")
+
+    // Liquid Glass 玻璃效果（Kyant0/backdrop，纯 Android Jetpack Compose 版）
+    implementation("io.github.kyant0:backdrop:1.0.0")
+
+    // Haze 玻璃模糊（对话框玻璃材质：hazeSource 标记背景内容 + hazeEffect 跨窗口模糊）
+    implementation("dev.chrisbanes.haze:haze:1.6.10")
+    // HazeMaterials 预置材质（regular()/ultraThin() 等）在独立 artifact 里，不在核心包
+    implementation("dev.chrisbanes.haze:haze-materials:1.6.10")
 }

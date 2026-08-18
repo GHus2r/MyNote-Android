@@ -144,7 +144,7 @@ class ImageAnnotationActivity : AppCompatActivity() {
             hint = "输入标注文字"
             setSelectAllOnFocus(true)
         }
-        android.app.AlertDialog.Builder(this, R.style.RoundedDialog)
+        android.app.AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("添加文字标注")
             .setView(input)
             .setPositiveButton("确定") { _, _ ->

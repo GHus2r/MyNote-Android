@@ -20,8 +20,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -34,7 +35,6 @@ import com.mynote.android.data.entity.SubCategory
 import com.mynote.android.ui.base.BaseActivity
 import com.mynote.android.ui.edit.EditActivity
 import com.mynote.android.ui.main.adapter.NoteItemAdapter
-import com.mynote.android.ui.main.adapter.ParentCategoryAdapter
 import com.mynote.android.ui.main.adapter.SubCategoryAdapter
 import com.mynote.android.ui.main.dialog.CategoryEditDialog
 import com.mynote.android.ui.main.dialog.DeletePasswordDialog
@@ -76,11 +76,15 @@ class MainActivity : BaseActivity() {
     private lateinit var btnSettings: TextView
     private var sortMode = 0 // 0=置顶优先, 1=最近更新, 2=按标题
     private val sortLabels = arrayOf("置顶↑", "时间↓", "标题")
-    private lateinit var rvParentCategories: RecyclerView
     private lateinit var rvSubCategories: RecyclerView
     private lateinit var rvNotes: RecyclerView
     private lateinit var tvEmpty: TextView
     private lateinit var fabCreate: FloatingActionButton
+    private lateinit var parentGridCompose: ComposeView
+    private lateinit var subCategoryCompose: ComposeView
+    private lateinit var topbarGlass: ComposeView
+
+    private val subCategoryState = mutableStateOf(SubCategoryUiState())
 
     // ===== Data =====
     private val db by lazy { AppDatabase.get(application) }
@@ -98,9 +102,12 @@ class MainActivity : BaseActivity() {
     private var lastSearch = ""
 
     // ===== Adapters =====
-    private lateinit var parentAdapter: ParentCategoryAdapter
     private lateinit var subAdapter: SubCategoryAdapter
     private lateinit var noteAdapter: NoteItemAdapter
+
+    // ===== 大主题网格 Compose 状态 =====
+    private val parentGridParents = mutableStateOf<List<ParentCategory>>(emptyList())
+    private val parentGridCounts = mutableStateOf<Map<String, Int>>(emptyMap())
 
     // ===== File Picker =====
     private val filePicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -131,6 +138,36 @@ class MainActivity : BaseActivity() {
 
     // ===== Init =====
     private fun initViews() {
+        // 静态玻璃顶栏（子主题/笔记/搜索层用）
+        topbarGlass = findViewById(R.id.topbar_glass)
+        topbarGlass.setContent { com.mynote.android.ui.glass.GlassBarBackground() }
+
+        // 大主题网格 + 透出滚动内容的玻璃顶栏（大主题层用）
+        parentGridCompose = findViewById(R.id.parent_grid_compose)
+        parentGridCompose.setContent {
+            com.mynote.android.ui.main.ParentGridScreen(
+                parents = parentGridParents.value,
+                counts = parentGridCounts.value,
+                onItemClick = { selectParent(it) },
+                onEditClick = { showEditParentDialog(it) },
+                onDeleteClick = { deleteParent(it) },
+                onAddClick = { showAddParentDialog() }
+            )
+        }
+
+        // 子主题列表（Compose 真玻璃：卡片滚动时从顶栏下方透出）
+        subCategoryCompose = findViewById(R.id.sub_category_compose)
+        subCategoryCompose.setContent {
+            val state = subCategoryState.value
+            SubCategoryScreen(
+                state = state,
+                onItemClick = { selectSub(it) },
+                onEditClick = { showEditSubDialog(it) },
+                onDeleteClick = { deleteSub(it) },
+                onAddClick = { showAddSubDialog() }
+            )
+        }
+
         btnBack = findViewById(R.id.btn_back)
         tvTitle = findViewById(R.id.tv_title)
         btnSearchToggle = findViewById(R.id.btn_search_toggle)
@@ -158,7 +195,6 @@ class MainActivity : BaseActivity() {
         btnSort = findViewById(R.id.btn_sort)
         btnExport.setOnClickListener { exportCurrent() }
         btnSort.setOnClickListener { cycleSortMode() }
-        rvParentCategories = findViewById(R.id.rv_parent_categories)
         rvSubCategories = findViewById(R.id.rv_sub_categories)
         rvNotes = findViewById(R.id.rv_notes)
         tvEmpty = findViewById(R.id.tv_empty)
@@ -213,15 +249,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun initAdapters() {
-        // Parent Category Adapter (2 columns grid)
-        rvParentCategories.layoutManager = GridLayoutManager(this, 2)
-        parentAdapter = ParentCategoryAdapter(
-            onItemClick = { selectParent(it) },
-            onEditClick = { showEditParentDialog(it) },
-            onDeleteClick = { deleteParent(it) },
-            onAddClick = { showAddParentDialog() }
-        )
-        rvParentCategories.adapter = parentAdapter
+        // 大主题网格已迁移到 Compose（parentGridCompose + ParentGridScreen），不再用 RecyclerView/adapter
 
         // Sub Category Adapter
         rvSubCategories.layoutManager = LinearLayoutManager(this)
@@ -290,12 +318,18 @@ class MainActivity : BaseActivity() {
     }
 
     // ===== UI Refresh =====
+    private fun setGridVisible(visible: Boolean) {
+        parentGridCompose.visibility = if (visible) View.VISIBLE else View.GONE
+    }
+
     private fun refreshUI() {
         when {
             isSearching -> {
-                rvParentCategories.visibility = View.GONE
+                setGridVisible(false)
+                subCategoryCompose.visibility = View.GONE
                 rvSubCategories.visibility = View.GONE
                 rvNotes.visibility = View.VISIBLE
+                topbarGlass.visibility = View.VISIBLE
                 fabCreate.visibility = View.GONE
                 btnSelectMode.visibility = View.GONE
                 btnExport.visibility = View.GONE
@@ -306,9 +340,11 @@ class MainActivity : BaseActivity() {
             }
             currentSubId != null -> {
                 // 笔记列表层
-                rvParentCategories.visibility = View.GONE
+                setGridVisible(false)
+                subCategoryCompose.visibility = View.GONE
                 rvSubCategories.visibility = View.GONE
                 rvNotes.visibility = View.VISIBLE
+                topbarGlass.visibility = View.VISIBLE
                 fabCreate.visibility = View.VISIBLE
                 btnSelectMode.visibility = View.VISIBLE
                 btnExport.visibility = View.VISIBLE
@@ -320,10 +356,12 @@ class MainActivity : BaseActivity() {
                 btnBack.visibility = View.VISIBLE
             }
             currentParentId != null -> {
-                // 子主题层
-                rvParentCategories.visibility = View.GONE
-                rvSubCategories.visibility = View.VISIBLE
+                // 子主题层（Compose 真玻璃）
+                setGridVisible(false)
+                rvSubCategories.visibility = View.GONE
                 rvNotes.visibility = View.GONE
+                subCategoryCompose.visibility = View.VISIBLE
+                topbarGlass.visibility = View.GONE
                 fabCreate.visibility = View.GONE
                 btnSelectMode.visibility = View.GONE
                 btnExport.visibility = View.GONE
@@ -336,13 +374,15 @@ class MainActivity : BaseActivity() {
                 val subs = allSubs.filter { it.parentId == currentParentId }
                 val counts = subs.associate { it.id to (noteCountMap[it.id] ?: 0) }
                 val parentColors = allParents.associate { it.id to it.color }
-                subAdapter.submitList(subs, counts, parentColors)
+                subCategoryState.value = SubCategoryUiState(subs, counts, parentColors)
             }
             else -> {
                 // 大主题网格层
-                rvParentCategories.visibility = View.VISIBLE
+                setGridVisible(true)
+                subCategoryCompose.visibility = View.GONE
                 rvSubCategories.visibility = View.GONE
                 rvNotes.visibility = View.GONE
+                topbarGlass.visibility = View.GONE
                 fabCreate.visibility = View.GONE
                 btnSelectMode.visibility = View.GONE
                 btnExport.visibility = View.GONE
@@ -353,7 +393,8 @@ class MainActivity : BaseActivity() {
                 tvTitle.text = "MyNote"
                 btnBack.visibility = View.GONE
                 val counts = allParents.associate { it.id to (noteCountMap[it.id] ?: 0) }
-                parentAdapter.submitList(allParents, counts)
+                parentGridParents.value = allParents
+                parentGridCounts.value = counts
             }
         }
         refreshNotes()
@@ -954,7 +995,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
         view.findViewById<TextView>(R.id.tv_dialog_subtitle).visibility = View.GONE
         etPwd.hint = ""
 
-        val dialog = AlertDialog.Builder(this, R.style.RoundedDialog)
+        val dialog = AlertDialog.Builder(this, R.style.GlassDialog)
             .setView(view)
             .create()
 
@@ -1130,7 +1171,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
             container.addView(groupContent)
             firstGroup = false
         }
-        dialog = AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("🛠 工具").setView(root as android.view.View)
+        dialog = AlertDialog.Builder(this, R.style.GlassDialog).setTitle("🛠 工具").setView(root as android.view.View)
             .setNegativeButton("关闭", null).create()
         dialog.show()
         dialog.window?.setLayout((resources.displayMetrics.widthPixels * 0.92).toInt(), (resources.displayMetrics.heightPixels * 0.78).toInt())
@@ -1235,7 +1276,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
             val sortedTags = tagCount.entries.sortedByDescending { it.value }
 
             if (sortedTags.isEmpty()) {
-                AlertDialog.Builder(this@MainActivity, R.style.RoundedDialog)
+                AlertDialog.Builder(this@MainActivity, R.style.GlassDialog)
                     .setTitle("标签管理")
                     .setMessage("暂无标签\n\n在笔记编辑页可添加标签（逗号分隔）")
                     .setPositiveButton("好的", null).show()
@@ -1243,7 +1284,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
             }
 
             val items = sortedTags.map { "${it.key}  (${it.value})" }.toTypedArray()
-            AlertDialog.Builder(this@MainActivity, R.style.RoundedDialog)
+            AlertDialog.Builder(this@MainActivity, R.style.GlassDialog)
                 .setTitle("标签管理 (${sortedTags.size})")
                 .setItems(items) { _, i ->
                     val tag = sortedTags[i].key
@@ -1255,7 +1296,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
     }
 
     private fun showTagActionsDialog(tag: String, count: Int) {
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("「$tag」($count 篇笔记)")
             .setItems(arrayOf("筛选此标签", "重命名", "删除")) { _, which ->
                 when (which) {
@@ -1280,7 +1321,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
             isSearching = false
             noteAdapter.searchQuery = ""
             noteAdapter.submitList(sortNotes(notes))
-            rvParentCategories.visibility = View.GONE
+            setGridVisible(false)
             rvSubCategories.visibility = View.GONE
             rvNotes.visibility = View.VISIBLE
             tvEmpty.visibility = if (notes.isEmpty()) View.VISIBLE else View.GONE
@@ -1295,7 +1336,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
             setText(oldTag); hint = "新标签名"
             setPadding(32, 16, 32, 16)
         }
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("重命名标签")
             .setView(et)
             .setPositiveButton("确认") { _, _ ->
@@ -1317,7 +1358,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
     }
 
     private fun showDeleteTagConfirmDialog(tag: String, count: Int) {
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("删除标签")
             .setMessage("确定删除标签「$tag」吗？将从 $count 篇笔记中移除此标签。笔记本身不会被删除。")
             .setPositiveButton("删除") { _, _ ->

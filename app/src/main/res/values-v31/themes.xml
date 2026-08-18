@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 玻璃对话框（API 31+）：系统级背景真模糊，模糊的是对话框后面整个应用内容 -->
+    <style name="GlassDialog" parent="Theme.Material3.DayNight.Dialog">
+        <item name="android:windowBackground">@drawable/dialog_glass_bg</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.10</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBlurBehindEnabled">true</item>
+        <item name="android:windowBlurBehindRadius">30dp</item>
+    </style>
+</resources>

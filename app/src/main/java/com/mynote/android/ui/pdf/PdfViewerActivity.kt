@@ -204,7 +204,7 @@ class PdfViewerActivity : AppCompatActivity() {
     }
 
     private fun clearCurrentPage() {
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("清除批注")
             .setMessage("确定要清除当前页面的所有批注吗？")
             .setPositiveButton("确定") { _, _ ->
@@ -265,7 +265,7 @@ class PdfViewerActivity : AppCompatActivity() {
             hint = "输入页码 (1-$pageCount)"
             setSelectAllOnFocus(true)
         }
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("跳转到页面")
             .setView(input)
             .setPositiveButton("跳转") { _, _ ->
@@ -334,7 +334,7 @@ class PdfViewerActivity : AppCompatActivity() {
         }
         val sorted = bookmarks.sorted()
         val items = sorted.map { "第 ${it + 1} 页" }.toTypedArray()
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("书签 (${bookmarks.size})")
             .setItems(items) { _, idx ->
                 vpPdf.setCurrentItem(sorted[idx], true)
@@ -654,7 +654,7 @@ class PdfViewerActivity : AppCompatActivity() {
             setPadding(16, 16, 16, 16)
             gravity = Gravity.TOP or Gravity.START; minLines = 3; maxLines = 8
         }
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("添加文字批注")
             .setView(input)
             .setPositiveButton("确定") { _, _ ->
@@ -671,7 +671,7 @@ class PdfViewerActivity : AppCompatActivity() {
             setPadding(16, 16, 16, 16)
             gravity = Gravity.TOP or Gravity.START; minLines = 3; maxLines = 8
         }
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("编辑文字批注")
             .setView(input)
             .setPositiveButton("确定") { _, _ ->
@@ -700,6 +700,6 @@ class PdfViewerActivity : AppCompatActivity() {
             }
             grid.addView(dot)
         }
-        AlertDialog.Builder(this).setTitle("选择颜色").setView(grid).setPositiveButton("关闭", null).show()
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("选择颜色").setView(grid).setPositiveButton("关闭", null).show()
     }
 }

@@ -28,4 +28,10 @@
 
     <!-- 图标 -->
     <color name="calc_bg">#37474F</color>
+
+    <!-- 设置页顶栏文字（浅紫白渐变背景用深紫字，夜间切白色） -->
+    <color name="settings_topbar_text">#4527A0</color>
+
+    <!-- 设置页顶栏底部分隔线（给透明顶栏勾出轮廓） -->
+    <color name="settings_topbar_divider">#B39DDB</color>
 </resources>

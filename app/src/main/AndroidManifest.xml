@@ -191,6 +191,12 @@
             android:exported="false"
             android:theme="@style/Theme.MyNote.NoActionBar" />
 
+        <!-- 液态玻璃效果演示（Compose / Kyant0 backdrop 示例，exported 便于 adb 直接启动） -->
+        <activity
+            android:name=".ui.glass.GlassDemoActivity"
+            android:exported="true"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
         <!-- FileProvider（拍照用） -->
         <provider
             android:name="androidx.core.content.FileProvider"

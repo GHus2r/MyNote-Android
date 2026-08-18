@@ -110,7 +110,7 @@ class FlashcardActivity : AppCompatActivity() {
             addView(frontInput, android.widget.LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = 12 })
             addView(backInput, android.widget.LinearLayout.LayoutParams(-1, -2))
         }
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("添加闪卡")
             .setView(layout)
             .setPositiveButton("添加") { _, _ ->
@@ -137,7 +137,7 @@ class FlashcardActivity : AppCompatActivity() {
             return
         }
         val items = all.mapIndexed { i, c -> "${i + 1}. ${c.front}" }.toTypedArray()
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("全部卡片 (${all.size})")
             .setItems(items, null)
             .setPositiveButton("删除全部") { _, _ ->

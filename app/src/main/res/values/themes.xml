@@ -51,6 +51,16 @@
         <item name="android:windowIsTranslucent">true</item>
     </style>
 
+    <!-- 玻璃对话框：API 31+ 系统级 windowBlurBehind 真模糊对话框后面的内容；
+         低版本回退为高不透明度磨砂底（见 drawable/dialog_glass_bg.xml）。
+         values-v31/themes.xml 覆盖追加 blur 属性。 -->
+    <style name="GlassDialog" parent="Theme.Material3.DayNight.Dialog">
+        <item name="android:windowBackground">@drawable/dialog_glass_bg</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.10</item>
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
     <!-- 伪装计算器按钮 -->
     <style name="FakeCalcButton">
         <item name="android:layout_width">0dp</item>

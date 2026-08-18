@@ -6,7 +6,7 @@
     "indications": "肺炎、脑膜炎、腹腔感染、淋病、莱姆病",
     "contraindications": "头孢类/青霉素过敏史",
     "caution": "皮试；含钙溶液禁止配伍",
-    "group": "三代头孢"
+    "group": "抗生素"
   },
   {
     "name": "头孢呋辛",
@@ -15,7 +15,7 @@
     "indications": "CAP、AECB、泌尿系感染、围手术期预防",
     "contraindications": "头孢类过敏",
     "caution": "皮试；肾功能减退减量",
-    "group": "二代头孢"
+    "group": "抗生素"
   },
   {
     "name": "头孢他啶",
@@ -24,7 +24,7 @@
     "indications": "铜绿假单胞菌感染、医院获得性肺炎",
     "contraindications": "头孢类过敏",
     "caution": "皮试；肾功能减退调整",
-    "group": "三代头孢"
+    "group": "抗生素"
   },
   {
     "name": "头孢哌酮舒巴坦",
@@ -33,7 +33,7 @@
     "indications": "腹腔感染、HAP/VAP、ESBL菌株",
     "contraindications": "头孢类过敏；VitK缺乏出血体质",
     "caution": "皮试；可致VitK缺乏",
-    "group": "三代+酶抑制剂"
+    "group": "抗生素"
   },
   {
     "name": "哌拉西林他唑巴坦",
@@ -42,7 +42,7 @@
     "indications": "腹腔感染、HAP、血流感染、中性粒细胞缺乏发热",
     "contraindications": "青霉素过敏",
     "caution": "皮试；肾功减退减量",
-    "group": "青霉素+酶抑制剂"
+    "group": "抗生素"
   },
   {
     "name": "阿莫西林克拉维酸",
@@ -51,7 +51,7 @@
     "indications": "CAP、AOM、鼻窦炎、皮肤软组织感染",
     "contraindications": "青霉素过敏；传单",
     "caution": "皮试",
-    "group": "青霉素+酶抑制剂"
+    "group": "抗生素"
   },
   {
     "name": "美罗培南",
@@ -60,7 +60,7 @@
     "indications": "多重耐药菌、ESBL菌株、严重院内感染",
     "contraindications": "碳青霉烯类过敏",
     "caution": "癫痫史慎用；肾功减量",
-    "group": "碳青霉烯"
+    "group": "抗生素"
   },
   {
     "name": "亚胺培南西司他丁",
@@ -69,7 +69,7 @@
     "indications": "同美罗培南；厌氧菌混合感染",
     "contraindications": "碳青霉烯类过敏；癫痫未控",
     "caution": "致癫痫风险高于美罗培南",
-    "group": "碳青霉烯"
+    "group": "抗生素"
   },
   {
     "name": "万古霉素",
@@ -78,7 +78,7 @@
     "indications": "MRSA、粪肠球菌、艰难梭菌(po)",
     "contraindications": "万古霉素过敏",
     "caution": "监测血药浓度10-20μg/mL；肾/耳毒性",
-    "group": "糖肽类"
+    "group": "抗生素"
   },
   {
     "name": "替考拉宁",
@@ -87,7 +87,7 @@
     "indications": "MRSA、G+球菌感染、骨科感染",
     "contraindications": "万古霉素/替考拉宁过敏",
     "caution": "血药浓度>10mg/L",
-    "group": "糖肽类"
+    "group": "抗生素"
   },
   {
     "name": "利奈唑胺",
@@ -96,7 +96,7 @@
     "indications": "MRSA/VRE感染、院内肺炎",
     "contraindications": "MAO抑制剂合用(间隔2周)",
     "caution": "骨髓抑制；视神经病变；5-HT综合征",
-    "group": "恶唑烷酮"
+    "group": "抗生素"
   },
   {
     "name": "左氧氟沙星",
@@ -105,7 +105,7 @@
     "indications": "CAP、泌尿系、肠道、皮肤感染",
     "contraindications": "<18岁；孕妇；癫痫史",
     "caution": "肌腱炎/断裂；QT延长；光敏",
-    "group": "喹诺酮"
+    "group": "抗生素"
   },
   {
     "name": "莫西沙星",
@@ -114,7 +114,7 @@
     "indications": "CAP、腹腔感染(需联合)；AECB",
     "contraindications": "<18岁；孕妇；QT延长",
     "caution": "肝功能异常慎用；不用于泌尿系",
-    "group": "喹诺酮"
+    "group": "抗生素"
   },
   {
     "name": "环丙沙星",
@@ -123,7 +123,7 @@
     "indications": "铜绿假单胞菌、泌尿系感染、肠道感染",
     "contraindications": "<18岁；孕妇；癫痫",
     "caution": "与茶碱/华法林相互作用",
-    "group": "喹诺酮"
+    "group": "抗生素"
   },
   {
     "name": "阿奇霉素",
@@ -132,7 +132,7 @@
     "indications": "CAP(非典型病原体)、支原体、军团菌、沙眼衣原体",
     "contraindications": "大环内酯过敏；QT延长未控",
     "caution": "肝功能异常慎用",
-    "group": "大环内酯"
+    "group": "抗生素"
   },
   {
     "name": "克拉霉素",
@@ -141,7 +141,7 @@
     "indications": "HP根除、非典型肺炎、NTM",
     "contraindications": "同阿奇霉素",
     "caution": "CYP3A4强抑制剂；与他汀/华法林相互作用",
-    "group": "大环内酯"
+    "group": "抗生素"
   },
   {
     "name": "甲硝唑",
@@ -150,7 +150,7 @@
     "indications": "厌氧菌、滴虫、阿米巴、CDI",
     "contraindications": "孕早期(相对)；酒精",
     "caution": "双硫仑反应；服药期间忌酒",
-    "group": "硝基咪唑"
+    "group": "抗生素"
   },
   {
     "name": "氟康唑",
@@ -159,7 +159,7 @@
     "indications": "念珠菌属(全身/黏膜)、隐球菌维持治疗",
     "contraindications": "唑类过敏；与多种药物相互作用",
     "caution": "肝功能监测；孕妇慎用",
-    "group": "抗真菌(唑类)"
+    "group": "抗生素"
   },
   {
     "name": "伏立康唑",
@@ -168,7 +168,7 @@
     "indications": "曲霉菌、念珠菌耐药、镰刀菌",
     "contraindications": "唑类过敏；与利福平/卡马西平联用",
     "caution": "视觉障碍；肝功能严重减量",
-    "group": "抗真菌(唑类)"
+    "group": "抗生素"
   },
   {
     "name": "卡泊芬净",
@@ -177,7 +177,7 @@
     "indications": "念珠菌(含耐药株)、曲霉菌",
     "contraindications": "棘白素类过敏",
     "caution": "肝功能中度减至35mg",
-    "group": "抗真菌(棘白素)"
+    "group": "抗生素"
   },
   {
     "name": "恩替卡韦",
@@ -186,7 +186,7 @@
     "indications": "慢性乙肝活动性",
     "contraindications": "恩替卡韦过敏",
     "caution": "长期治疗；低耐药；肾功减量",
-    "group": "抗乙肝"
+    "group": "抗生素"
   },
   {
     "name": "替诺福韦",
@@ -195,7 +195,7 @@
     "indications": "慢性乙肝(妊娠安全)、HIV",
     "contraindications": "替诺福韦过敏",
     "caution": "肾毒性监测；骨密度下降",
-    "group": "抗乙肝/HIV"
+    "group": "抗生素"
   },
   {
     "name": "阿昔洛韦",
@@ -204,7 +204,7 @@
     "indications": "带状疱疹、单纯疱疹、水痘",
     "contraindications": "阿昔洛韦过敏",
     "caution": "水化；肾小管结晶",
-    "group": "抗疱疹"
+    "group": "抗生素"
   },
   {
     "name": "更昔洛韦",
@@ -213,7 +213,7 @@
     "indications": "CMV肺炎/视网膜炎/胃肠炎",
     "contraindications": "中性粒细胞<0.5；血小板<25",
     "caution": "骨髓抑制；致畸",
-    "group": "抗CMV"
+    "group": "抗生素"
   },
   {
     "name": "利巴韦林",
@@ -222,7 +222,7 @@
     "indications": "RSV、C型肝炎(联合干扰素)",
     "contraindications": "孕妇(致畸)；严重心脏病",
     "caution": "贫血；致畸性持续6月",
-    "group": "广谱抗病毒"
+    "group": "抗生素"
   },
   {
     "name": "硝苯地平控释片",
@@ -231,7 +231,7 @@
     "indications": "高血压、冠心病稳定型心绞痛",
     "contraindications": "心源性休克；不稳定心绞痛;MI近期",
     "caution": "不可掰开；脚踝水肿；便秘",
-    "group": "CCB"
+    "group": "心血管药"
   },
   {
     "name": "氨氯地平",
@@ -240,7 +240,7 @@
     "indications": "高血压(老年首选)、CAD",
     "contraindications": "严重低血压；心源性休克",
     "caution": "踝部水肿；半衰期长",
-    "group": "CCB"
+    "group": "心血管药"
   },
   {
     "name": "非洛地平",
@@ -249,7 +249,7 @@
     "indications": "高血压",
     "contraindications": "同氨氯地平",
     "caution": "牙龈增生；与葡萄柚汁相互作用",
-    "group": "CCB"
+    "group": "心血管药"
   },
   {
     "name": "美托洛尔",
@@ -258,7 +258,7 @@
     "indications": "高血压、心绞痛、心梗后、心衰稳定期",
     "contraindications": "心动过缓<50; 心衰急性期; 哮喘急性发作",
     "caution": "不能骤停；COPD慎用",
-    "group": "β阻滞剂"
+    "group": "心血管药"
   },
   {
     "name": "比索洛尔",
@@ -267,7 +267,7 @@
     "indications": "心衰(稳定)、高血压",
     "contraindications": "同美托洛尔",
     "caution": "高选择性β1；心功能Ⅳ级慎用",
-    "group": "β阻滞剂"
+    "group": "心血管药"
   },
   {
     "name": "卡托普利",
@@ -276,7 +276,7 @@
     "indications": "高血压、心衰、心梗后、糖尿病肾病",
     "contraindications": "双侧肾动脉狭窄；高血钾>5.5；血管性水肿史",
     "caution": "干咳；Scr>265慎用",
-    "group": "ACEI"
+    "group": "心血管药"
   },
   {
     "name": "贝那普利",
@@ -285,7 +285,7 @@
     "indications": "同卡托普利",
     "contraindications": "同卡托普利",
     "caution": "干咳发生率低于卡托普利",
-    "group": "ACEI"
+    "group": "心血管药"
   },
   {
     "name": "缬沙坦",
@@ -294,7 +294,7 @@
     "indications": "高血压、心衰、心梗后不耐受ACEI者",
     "contraindications": "同ACEI；妊娠中晚期",
     "caution": "干咳少于ACEI；监测血钾",
-    "group": "ARB"
+    "group": "心血管药"
   },
   {
     "name": "厄贝沙坦",
@@ -303,7 +303,7 @@
     "indications": "高血压、2型糖尿病肾病",
     "contraindications": "同缬沙坦",
     "caution": "降压效果平和；肾保护证据充分",
-    "group": "ARB"
+    "group": "心血管药"
   },
   {
     "name": "呋塞米",
@@ -312,7 +312,7 @@
     "indications": "心衰、肾衰水肿、高血压急症",
     "contraindications": "无尿；严重电解质紊乱",
     "caution": "耳毒性(大剂量iv)；高尿酸",
-    "group": "袢利尿剂"
+    "group": "心血管药"
   },
   {
     "name": "螺内酯",
@@ -321,7 +321,7 @@
     "indications": "心衰(NYHAⅢ-Ⅳ)、肝硬化腹水、原醛",
     "contraindications": "高钾血症>5.5；严重肾衰无尿",
     "caution": "男性乳房发育；高血钾",
-    "group": "保钾利尿剂"
+    "group": "心血管药"
   },
   {
     "name": "氢氯噻嗪",
@@ -330,7 +330,7 @@
     "indications": "高血压(单用/联合)、轻度水肿",
     "contraindications": "严重肾衰；肝性脑病",
     "caution": "低钾；高尿酸；光敏",
-    "group": "噻嗪利尿剂"
+    "group": "心血管药"
   },
   {
     "name": "硝酸甘油",
@@ -339,7 +339,7 @@
     "indications": "心绞痛急性发作",
     "contraindications": "严重低血压<90/60；头部外伤；脑出血",
     "caution": "头痛；避免24h持续使用",
-    "group": "抗心绞痛(速效)"
+    "group": "心血管药"
   },
   {
     "name": "单硝酸异山梨酯",
@@ -348,7 +348,7 @@
     "indications": "心绞痛长期预防",
     "contraindications": "同硝酸甘油",
     "caution": "头痛；耐药性；需8h无药间隔",
-    "group": "抗心绞痛(缓释)"
+    "group": "心血管药"
   },
   {
     "name": "胺碘酮",
@@ -357,7 +357,7 @@
     "indications": "房颤/房扑/室速复律及维持",
     "contraindications": "甲亢未控；严重窦缓/传导阻滞",
     "caution": "肺纤维化；甲功异常；角膜沉着",
-    "group": "抗心律失常(Ⅲ类)"
+    "group": "心血管药"
   },
   {
     "name": "地高辛",
@@ -366,7 +366,7 @@
     "indications": "心衰(射血分数降低)+房颤心室率控制",
     "contraindications": "预激综合征伴房颤；肥厚型心肌病",
     "caution": "低钾易诱发中毒；血药浓度0.5-0.9ng/mL",
-    "group": "强心苷"
+    "group": "心血管药"
   },
   {
     "name": "多巴胺",
@@ -375,7 +375,7 @@
     "indications": "休克(各种类型)",
     "contraindications": "嗜铬细胞瘤；室性心律失常未控",
     "caution": "外渗坏死；剂量依赖效应",
-    "group": "血管活性"
+    "group": "急救"
   },
   {
     "name": "去甲肾上腺素",
@@ -384,7 +384,7 @@
     "indications": "感染性休克(首选)、其他低血压休克",
     "contraindications": "肠系膜血栓形成慎用",
     "caution": "必须中心静脉；外渗用酚妥拉明",
-    "group": "血管活性(升压首选)"
+    "group": "急救"
   },
   {
     "name": "阿托伐他汀",
@@ -393,7 +393,7 @@
     "indications": "高脂血症、ASCVD一级/二级预防",
     "contraindications": "活动性肝病；孕妇",
     "caution": "肌痛/CK升高；肝功能定期监测",
-    "group": "他汀(强效)"
+    "group": "心血管药"
   },
   {
     "name": "瑞舒伐他汀",
@@ -402,7 +402,7 @@
     "indications": "同阿托伐他汀",
     "contraindications": "同阿托伐他汀",
     "caution": "亚裔起始量偏低(5mg)",
-    "group": "他汀(强效)"
+    "group": "心血管药"
   },
   {
     "name": "依折麦布",
@@ -411,7 +411,7 @@
     "indications": "高胆固醇(他汀不耐受/单用不足)",
     "contraindications": "活动性肝病",
     "caution": "与他汀联用降LDL-C更佳",
-    "group": "胆固醇吸收抑制"
+    "group": "心血管药"
   },
   {
     "name": "奥美拉唑",
@@ -420,7 +420,7 @@
     "indications": "消化性溃疡、GERD、上消化道出血、ZES",
     "contraindications": "无绝对禁忌",
     "caution": "长期Clostridioides difficile风险；低镁",
-    "group": "PPI"
+    "group": "消化系统"
   },
   {
     "name": "泮托拉唑",
@@ -429,7 +429,7 @@
     "indications": "同奥美拉唑",
     "contraindications": "同奥美拉唑",
     "caution": "CYP450影响小；肠溶剂勿研碎",
-    "group": "PPI"
+    "group": "消化系统"
   },
   {
     "name": "铝碳酸镁",
@@ -438,7 +438,7 @@
     "indications": "GERD、胃灼热、胆盐相关胃炎",
     "contraindications": "严重肾衰",
     "caution": "餐后1h及睡前服",
-    "group": "抗酸/黏膜保护"
+    "group": "消化系统"
   },
   {
     "name": "硫糖铝",
@@ -447,7 +447,7 @@
     "indications": "消化性溃疡、胃炎",
     "contraindications": "无绝对禁忌",
     "caution": "便秘；与其他药间隔2h",
-    "group": "黏膜保护"
+    "group": "消化系统"
   },
   {
     "name": "蒙脱石散",
@@ -456,7 +456,7 @@
     "indications": "急性/慢性腹泻",
     "contraindications": "肠梗阻",
     "caution": "两餐间服；与其他药间隔2h",
-    "group": "止泻"
+    "group": "消化系统"
   },
   {
     "name": "甲氧氯普胺",
@@ -465,7 +465,7 @@
     "indications": "恶心呕吐、胃排空障碍、反流",
     "contraindications": "肠梗阻；消化道穿孔；嗜铬细胞瘤",
     "caution": "锥体外系反应；<18岁慎用",
-    "group": "止吐/促动力"
+    "group": "消化系统"
   },
   {
     "name": "昂丹司琼",
@@ -474,7 +474,7 @@
     "indications": "化疗/放疗/术后呕吐",
     "contraindications": "QT延长综合征(先天性)",
     "caution": "肝损中度减量",
-    "group": "止吐(5-HT3拮抗)"
+    "group": "消化系统"
   },
   {
     "name": "乳果糖",
@@ -483,7 +483,7 @@
     "indications": "慢性便秘、肝性脑病",
     "contraindications": "半乳糖不耐受",
     "caution": "肝性脑病30-50ml tid",
-    "group": "通便"
+    "group": "消化系统"
   },
   {
     "name": "莫沙必利",
@@ -492,7 +492,7 @@
     "indications": "功能性消化不良、GERD",
     "contraindications": "消化道出血/穿孔/梗阻",
     "caution": "与多潘立酮比不延长QT",
-    "group": "促动力(5-HT4)"
+    "group": "消化系统"
   },
   {
     "name": "匹维溴铵",
@@ -501,7 +501,7 @@
     "indications": "IBS、胆道痉挛",
     "contraindications": "肠梗阻",
     "caution": "餐时整片吞服不可嚼碎",
-    "group": "解痉"
+    "group": "消化系统"
   },
   {
     "name": "美沙拉嗪",
@@ -510,7 +510,7 @@
     "indications": "溃疡性结肠炎(活动期+维持)",
     "contraindications": "严重肾损；水杨酸过敏",
     "caution": "CKD慎用；定期肾功",
-    "group": "抗炎(IBD)"
+    "group": "消化系统"
   },
   {
     "name": "复方甘草酸苷",
@@ -519,7 +519,7 @@
     "indications": "慢性肝炎肝功能异常",
     "contraindications": "醛固酮增多症；低钾；心衰",
     "caution": "假性醛固酮增多；血压升高",
-    "group": "保肝"
+    "group": "消化系统"
   },
   {
     "name": "熊去氧胆酸",
@@ -528,7 +528,7 @@
     "indications": "原发性胆汁性胆管炎(PBC)、胆固醇结石",
     "contraindications": "急性胆囊炎；胆道完全梗阻",
     "caution": "PBC长期服用",
-    "group": "利胆"
+    "group": "消化系统"
   },
   {
     "name": "氨溴索",
@@ -537,7 +537,7 @@
     "indications": "急慢性呼吸道疾病伴痰液黏稠",
     "contraindications": "严重肝肾功能不全(相对)",
     "caution": "胃溃疡慎用",
-    "group": "祛痰"
+    "group": "呼吸系统"
   },
   {
     "name": "乙酰半胱氨酸",
@@ -546,7 +546,7 @@
     "indications": "痰液黏稠；对乙酰氨基酚中毒解毒",
     "contraindications": "严重哮喘(雾化)",
     "caution": "雾化可能诱发支气管痉挛",
-    "group": "祛痰/解毒"
+    "group": "呼吸系统"
   },
   {
     "name": "沙丁胺醇",
@@ -555,7 +555,7 @@
     "indications": "哮喘急性发作、COPD急性加重",
     "contraindications": "心动过速未控",
     "caution": "心悸；低钾；震颤",
-    "group": "β2激动SABA"
+    "group": "呼吸系统"
   },
   {
     "name": "布地奈德",
@@ -564,7 +564,7 @@
     "indications": "哮喘长期控制、COPD、急性喉炎",
     "contraindications": "无绝对禁忌",
     "caution": "雾化后漱口防念珠菌；1-2周起效",
-    "group": "吸入激素"
+    "group": "呼吸系统"
   },
   {
     "name": "异丙托溴铵",
@@ -573,7 +573,7 @@
     "indications": "COPD急性发作(联合β2激动剂)",
     "contraindications": "窄角型青光眼；前列腺增生尿潴留",
     "caution": "干口；避免接触眼睛",
-    "group": "抗胆碱SAMA"
+    "group": "呼吸系统"
   },
   {
     "name": "噻托溴铵",
@@ -582,7 +582,7 @@
     "indications": "COPD维持治疗",
     "contraindications": "闭角型青光眼；前列腺增生",
     "caution": "每日1次；勿用于急性发作",
-    "group": "抗胆碱LAMA"
+    "group": "呼吸系统"
   },
   {
     "name": "甲泼尼龙",
@@ -591,7 +591,7 @@
     "indications": "重度哮喘/COPD急性、过敏性休克、自身免疫病",
     "contraindications": "全身真菌感染(相对)",
     "caution": "需逐减停药；血糖/BP监测",
-    "group": "激素"
+    "group": "激素/代谢"
   },
   {
     "name": "孟鲁司特",
@@ -600,7 +600,7 @@
     "indications": "哮喘(运动诱发)、过敏性鼻炎",
     "contraindications": "无绝对禁忌",
     "caution": "罕见神经精神事件(CSS)",
-    "group": "白三烯受体拮抗"
+    "group": "呼吸系统"
   },
   {
     "name": "低分子肝素",
@@ -609,7 +609,7 @@
     "indications": "VTE预防/治疗、ACS、房颤(短期)",
     "contraindications": "活动性出血；肝素诱导血小板减少(HIT)",
     "caution": "CrCl<30减量；硬膜外镇痛",
-    "group": "抗凝(FXa)"
+    "group": "血液系统"
   },
   {
     "name": "华法林",
@@ -618,7 +618,7 @@
     "indications": "房颤/深静脉血栓/肺栓塞/心脏瓣膜长期抗凝",
     "contraindications": "活动性出血；妊娠早期/晚期；严重肝病",
     "caution": "频繁INR监测；VitK拮抗；多药相互作用",
-    "group": "抗凝(VitK拮抗)"
+    "group": "血液系统"
   },
   {
     "name": "利伐沙班",
@@ -627,7 +627,7 @@
     "indications": "NVAF卒中预防、VTE治疗",
     "contraindications": "活动性出血；CrCl<15；妊娠",
     "caution": "CrCl 15-30减量；与利福平相互作用",
-    "group": "抗凝(FXa-NOAC)"
+    "group": "血液系统"
   },
   {
     "name": "阿司匹林",
@@ -636,7 +636,7 @@
     "indications": "ASCVD一级/二级预防、ACS",
     "contraindications": "活动性消化性溃疡；活动性出血",
     "caution": "PPI联用护胃；术前停药7天",
-    "group": "抗血小板"
+    "group": "血液系统"
   },
   {
     "name": "氯吡格雷",
@@ -645,7 +645,7 @@
     "indications": "ACS、PCI术后(联用阿司匹林)",
     "contraindications": "活动性出血；严重肝损",
     "caution": "CYP2C19弱代谢型效果打折",
-    "group": "抗血小板(P2Y12)"
+    "group": "血液系统"
   },
   {
     "name": "氨甲环酸",
@@ -654,7 +654,7 @@
     "indications": "创伤/术后/产后出血、月经过多",
     "contraindications": "活动性血栓；ARF/血尿",
     "caution": "使用不超过数日",
-    "group": "止血/抗纤溶"
+    "group": "血液系统"
   },
   {
     "name": "蔗糖铁",
@@ -663,7 +663,7 @@
     "indications": "口服铁剂无效/不耐受的缺铁性贫血",
     "contraindications": "铁过载；非缺铁性贫血",
     "caution": "过敏反应；首剂小剂量测试；iv速度慢",
-    "group": "补铁iv"
+    "group": "血液系统"
   },
   {
     "name": "琥珀酸亚铁",
@@ -672,7 +672,7 @@
     "indications": "缺铁性贫血(轻度)",
     "contraindications": "铁过载；活动性消化性溃疡",
     "caution": "胃肠道刺激；黑便；Vc同服助吸收",
-    "group": "补铁po"
+    "group": "血液系统"
   },
   {
     "name": "二甲双胍",
@@ -681,7 +681,7 @@
     "indications": "2型糖尿病(一线首选)",
     "contraindications": "eGFR<30；急性心衰；乳酸酸中毒史",
     "caution": "eGFR<45减量；造影当日停用",
-    "group": "双胍类"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "格列美脲",
@@ -690,7 +690,7 @@
     "indications": "2型糖尿病(二甲双胍无效/不耐受)",
     "contraindications": "1型糖尿病；磺胺过敏；严重肝肾功能不全",
     "caution": "低血糖风险；体重增加",
-    "group": "磺脲类"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "西格列汀",
@@ -699,7 +699,7 @@
     "indications": "2型糖尿病(单用或联合)",
     "contraindications": "1型糖尿病；糖尿病酮症酸中毒",
     "caution": "eGFR<45减至50mg；胰腺炎罕见",
-    "group": "DPP-4i"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "达格列净",
@@ -708,7 +708,7 @@
     "indications": "2型糖尿病(HF/CKD获益)；心衰",
     "contraindications": "1型糖尿病；反复泌尿系感染；eGFR<25",
     "caution": "酮症酸中毒(血糖正常型)；泌尿感染",
-    "group": "SGLT2i"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "恩格列净",
@@ -717,7 +717,7 @@
     "indications": "2型糖尿病；射血分数降低心衰",
     "contraindications": "同达格列净",
     "caution": "HFrEF获益证据最充分",
-    "group": "SGLT2i"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "利拉鲁肽",
@@ -726,7 +726,7 @@
     "indications": "2型糖尿病(减重+控糖+CV保护)",
     "contraindications": "甲状腺髓样癌个人/家族史；MEN2",
     "caution": "缓慢递增；恶心呕吐常见",
-    "group": "GLP-1RA"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "司美格鲁肽",
@@ -735,7 +735,7 @@
     "indications": "同利拉鲁肽；肥胖(减重)",
     "contraindications": "同利拉鲁肽",
     "caution": "每周1次；恶心/呕吐；口服剂型有",
-    "group": "GLP-1RA"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "甘精胰岛素",
@@ -744,7 +744,7 @@
     "indications": "1型/2型糖尿病",
     "contraindications": "低血糖",
     "caution": "每日固定时间注射；不可与预混胰岛素混淆",
-    "group": "长效胰岛素"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "门冬胰岛素",
@@ -753,7 +753,7 @@
     "indications": "1型/2型糖尿病餐后控糖",
     "contraindications": "低血糖",
     "caution": "胰岛素泵可用",
-    "group": "速效胰岛素"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "地塞米松",
@@ -762,7 +762,7 @@
     "indications": "过敏/炎症/休克/脑水肿/化疗止吐",
     "contraindications": "全身真菌感染(相对)；活动性消化溃疡",
     "caution": "HPA轴抑制；高血糖；逐减停药",
-    "group": "糖皮质激素(长效)"
+    "group": "激素/代谢"
   },
   {
     "name": "氢化可的松",
@@ -771,7 +771,7 @@
     "indications": "肾上腺危象(首选)；严重过敏",
     "contraindications": "同地塞米松",
     "caution": "潴钠作用较强",
-    "group": "糖皮质激素(短效)"
+    "group": "激素/代谢"
   },
   {
     "name": "左甲状腺素钠",
@@ -780,7 +780,7 @@
     "indications": "甲状腺功能减退(原发/继发)",
     "contraindications": "甲亢未控；急性心梗",
     "caution": "TSH目标个体化；冠心病从小量起始",
-    "group": "甲状腺激素"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "甲巯咪唑",
@@ -789,7 +789,7 @@
     "indications": "甲亢(Graves病)",
     "contraindications": "粒细胞缺乏史；胆汁淤积性黄疸",
     "caution": "粒细胞缺乏/肝损监测每周(初3月)",
-    "group": "抗甲亢"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "甘露醇",
@@ -798,7 +798,7 @@
     "indications": "脑水肿/CVA/颅内高压",
     "contraindications": "心衰；活动性颅内出血；无尿肾衰",
     "caution": "结晶加热溶解；心肾功能监测",
-    "group": "脱水降颅压"
+    "group": "神经系统/精神科"
   },
   {
     "name": "丙戊酸钠",
@@ -807,7 +807,7 @@
     "indications": "全面性/局灶性癫痫",
     "contraindications": "严重肝病；尿素循环障碍",
     "caution": "肝功/PCP监测；致畸；胰腺炎",
-    "group": "抗癫痫(广谱)"
+    "group": "神经系统/精神科"
   },
   {
     "name": "左乙拉西坦",
@@ -816,7 +816,7 @@
     "indications": "局灶性癫痫(单用/添加)",
     "contraindications": "无绝对禁忌",
     "caution": "肾排出；CrCl<80减量；情绪行为变化",
-    "group": "抗癫痫(新型)"
+    "group": "神经系统/精神科"
   },
   {
     "name": "卡马西平",
@@ -825,7 +825,7 @@
     "indications": "局灶性癫痫；三叉N痛",
     "contraindications": "骨髓抑制；AV阻滞；SJS/TEN高风险(HLA-B*1502+)",
     "caution": "筛查HLA-B*1502(汉族)；多种酶诱导",
-    "group": "抗癫痫/神经痛"
+    "group": "神经系统/精神科"
   },
   {
     "name": "加巴喷丁",
@@ -834,7 +834,7 @@
     "indications": "神经病理性疼痛(DN/PHN)",
     "contraindications": "无绝对禁忌",
     "caution": "肾排出；头晕嗜睡",
-    "group": "神经痛"
+    "group": "神经系统/精神科"
   },
   {
     "name": "地西泮",
@@ -843,7 +843,7 @@
     "indications": "癫痫持续状态(一线)；焦虑；肌痉挛",
     "contraindications": "重症肌无力；急性闭角青光眼",
     "caution": "呼吸抑制；药物依赖",
-    "group": "苯二氮卓类"
+    "group": "神经系统/精神科"
   },
   {
     "name": "舍曲林",
@@ -852,7 +852,7 @@
     "indications": "抑郁/焦虑/强迫/PTSD",
     "contraindications": "MAOI联用(间隔2周)",
     "caution": "GI反应常见；性功能障碍",
-    "group": "SSRI"
+    "group": "神经系统/精神科"
   },
   {
     "name": "艾司西酞普兰",
@@ -861,7 +861,7 @@
     "indications": "抑郁/焦虑/惊恐",
     "contraindications": "同舍曲林",
     "caution": "QT延长慎用；>65岁最大10mg",
-    "group": "SSRI"
+    "group": "神经系统/精神科"
   },
   {
     "name": "文拉法辛",
@@ -870,7 +870,7 @@
     "indications": "抑郁/焦虑(含躯体症状)",
     "contraindications": "未控高血压",
     "caution": "血压升高；撤药综合征明显",
-    "group": "SNRI"
+    "group": "神经系统/精神科"
   },
   {
     "name": "奥氮平",
@@ -879,7 +879,7 @@
     "indications": "精神分裂症；双相躁狂",
     "contraindications": "窄角青光眼",
     "caution": "显著增重/代谢；吸烟加速代谢",
-    "group": "非典型抗精神病"
+    "group": "神经系统/精神科"
   },
   {
     "name": "阿普唑仑",
@@ -888,7 +888,7 @@
     "indications": "焦虑/惊恐发作",
     "contraindications": "同地西泮",
     "caution": "依赖性强；长期不推荐",
-    "group": "苯二氮卓类(短效)"
+    "group": "神经系统/精神科"
   },
   {
     "name": "肾上腺素",
@@ -897,7 +897,7 @@
     "indications": "心脏骤停；过敏性休克；严重哮喘",
     "contraindications": "无绝对禁忌(急救)",
     "caution": "剂量过高有害；IV需稀释",
-    "group": "血管活性/抗过敏"
+    "group": "急救"
   },
   {
     "name": "阿托品",
@@ -906,7 +906,7 @@
     "indications": "症状性心动过缓",
     "contraindications": "窄角青光眼；前列腺增生尿潴留",
     "caution": "有机磷中毒剂量可达数百mg",
-    "group": "抗胆碱"
+    "group": "急救"
   },
   {
     "name": "纳洛酮",
@@ -915,7 +915,7 @@
     "indications": "阿片类药物中毒/过量",
     "contraindications": "无(急救)",
     "caution": "作用时间短阿片类(30-60min)可能复发",
-    "group": "阿片拮抗"
+    "group": "急救"
   },
   {
     "name": "10%葡萄糖酸钙",
@@ -924,7 +924,7 @@
     "indications": "高钾血症；低钙抽搐；高镁血症",
     "contraindications": "高钙血症；地高辛中毒",
     "caution": "IV外渗组织坏死",
-    "group": "钙剂"
+    "group": "急救"
   },
   {
     "name": "50%葡萄糖",
@@ -933,7 +933,7 @@
     "indications": "严重低血糖昏迷",
     "contraindications": "颅内出血急性期(相对)",
     "caution": "高渗刺激静脉",
-    "group": "高糖"
+    "group": "急救"
   },
   {
     "name": "吗啡",
@@ -942,7 +942,7 @@
     "indications": "重度疼痛(术后/癌痛/心梗)",
     "contraindications": "呼吸抑制；急性胰腺炎(胆道痉挛)",
     "caution": "便秘；依赖；纳洛酮拮抗",
-    "group": "阿片μ受体激动"
+    "group": "麻醉镇痛"
   },
   {
     "name": "曲马多",
@@ -951,7 +951,7 @@
     "indications": "中重度疼痛",
     "contraindications": "癫痫未控；MAOI联用",
     "caution": "5-HT综合征风险；依赖<吗啡",
-    "group": "弱阿片+SNRI"
+    "group": "麻醉镇痛"
   },
   {
     "name": "帕瑞昔布",
@@ -960,7 +960,7 @@
     "indications": "围手术期中重度疼痛",
     "contraindications": "CABG围术期；严重心衰",
     "caution": "磺胺过敏禁用；胃肠道安全性较好",
-    "group": "NSAID(COX-2i)"
+    "group": "麻醉镇痛"
   },
   {
     "name": "酮咯酸氨丁三醇",
@@ -969,7 +969,7 @@
     "indications": "中重度急性疼痛(短期)",
     "contraindications": "活动性消化性溃疡；CKD≥3期",
     "caution": "连用不超过2天；肾毒性",
-    "group": "NSAID"
+    "group": "麻醉镇痛"
   },
   {
     "name": "丙泊酚",
@@ -978,7 +978,7 @@
     "indications": "全麻诱导/ICU镇静",
     "contraindications": "大豆/卵磷脂/蛋白过敏",
     "caution": "呼吸抑制严重；PRIS罕见",
-    "group": "静脉麻醉"
+    "group": "麻醉镇痛"
   },
   {
     "name": "利多卡因",
@@ -987,7 +987,7 @@
     "indications": "局部麻醉；室性心律失常",
     "contraindications": "严重AV阻滞",
     "caution": "CNS毒性(先兴奋后抑制)",
-    "group": "局麻/抗心律失常"
+    "group": "麻醉镇痛"
   },
   {
     "name": "对乙酰氨基酚",
@@ -996,7 +996,7 @@
     "indications": "发热；轻中度疼痛",
     "contraindications": "严重肝病",
     "caution": "肝毒性>150mg/kg；NAC拮抗",
-    "group": "解热镇痛"
+    "group": "麻醉镇痛"
   },
   {
     "name": "环磷酰胺",
@@ -1005,7 +1005,7 @@
     "indications": "淋巴瘤/乳腺癌/卵巢癌/肾炎/狼疮",
     "contraindications": "骨髓抑制重度；出血性膀胱炎",
     "caution": "水化；Mesna保护膀胱",
-    "group": "烷化剂"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "甲氨蝶呤",
@@ -1014,7 +1014,7 @@
     "indications": "ALL/淋巴瘤/RA/银屑病/异位妊娠",
     "contraindications": "严重肝肾损害；妊娠",
     "caution": "亚叶酸钙解救；骨髓/黏膜毒性",
-    "group": "抗代谢"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "环孢素",
@@ -1023,7 +1023,7 @@
     "indications": "器官移植排斥；难治性肾病；严重银屑病",
     "contraindications": "严重肾损害；未控高血压",
     "caution": "血药浓度监测；肾毒性；牙龈增生",
-    "group": "钙调磷酸酶抑制"
+    "group": "风湿免疫"
   },
   {
     "name": "他克莫司",
@@ -1032,7 +1032,7 @@
     "indications": "器官移植排斥(肝/肾/心)",
     "contraindications": "过敏",
     "caution": "血药浓度监测；肾毒性；血糖升高",
-    "group": "钙调磷酸酶抑制"
+    "group": "风湿免疫"
   },
   {
     "name": "吗替麦考酚酯",
@@ -1041,7 +1041,7 @@
     "indications": "器官移植排斥预防",
     "contraindications": "妊娠(致畸)",
     "caution": "腹泻/恶心；CMV感染风险",
-    "group": "IMPDH抑制"
+    "group": "风湿免疫"
   },
   {
     "name": "羟氯喹",
@@ -1050,7 +1050,7 @@
     "indications": "SLE/RA/皮肤型红斑狼疮",
     "contraindications": "视网膜病变；G6PD缺乏",
     "caution": "每6-12月眼科筛查",
-    "group": "DMARD"
+    "group": "风湿免疫"
   },
   {
     "name": "来氟米特",
@@ -1059,7 +1059,7 @@
     "indications": "RA/银屑病关节炎",
     "contraindications": "重度肝损伤；妊娠",
     "caution": "肝酶/血压监测；致畸",
-    "group": "DMARD"
+    "group": "风湿免疫"
   },
   {
     "name": "托法替布",
@@ -1068,7 +1068,7 @@
     "indications": "RA(MTX无效后)",
     "contraindications": "严重感染(活动TB)；严重肝损",
     "caution": "TB/HBV筛查；血栓风险",
-    "group": "JAKi"
+    "group": "风湿免疫"
   },
   {
     "name": "阿达木单抗",
@@ -1077,7 +1077,7 @@
     "indications": "RA/AS/IBD/银屑病/葡萄膜炎",
     "contraindications": "活动性感染(TB/HBV)",
     "caution": "TB筛查必需；不可与活疫苗同用",
-    "group": "TNFαi"
+    "group": "风湿免疫"
   },
   {
     "name": "塞来昔布",
@@ -1086,7 +1086,7 @@
     "indications": "OA/RA/AS疼痛",
     "contraindications": "CABG围术期；严重心衰",
     "caution": "磺胺过敏禁用；心血管风险",
-    "group": "COX-2i(NSAID)"
+    "group": "麻醉镇痛"
   },
   {
     "name": "秋水仙碱",
@@ -1095,7 +1095,7 @@
     "indications": "痛风急性发作；家族性地中海热",
     "contraindications": "CrCl<30；/严重肝病",
     "caution": "腹泻常见；CYP3A4/P-gp强抑制禁忌",
-    "group": "抗炎/抗痛风"
+    "group": "风湿免疫"
   },
   {
     "name": "非布司他",
@@ -1104,7 +1104,7 @@
     "indications": "痛风慢性期降尿酸",
     "contraindications": "心血管疾病(相对)",
     "caution": "起始治疗需预防痛风发作",
-    "group": "黄嘌呤氧化酶抑制"
+    "group": "风湿免疫"
   },
   {
     "name": "苯溴马隆",
@@ -1113,7 +1113,7 @@
     "indications": "痛风(排尿酸型)",
     "contraindications": "eGFR<20；肾结石/肾积水",
     "caution": "多饮水；碱化尿液",
-    "group": "促尿酸排泄"
+    "group": "风湿免疫"
   },
   {
     "name": "缩宫素",
@@ -1122,7 +1122,7 @@
     "indications": "引产/催产/预防和治疗产后出血",
     "contraindications": "明显头盆不称；横位",
     "caution": "强直宫缩；水中毒(大剂量)",
-    "group": "宫缩剂"
+    "group": "妇产科"
   },
   {
     "name": "卡前列素氨丁三醇",
@@ -1131,7 +1131,7 @@
     "indications": "产后出血(子宫收缩乏力>缩宫素无效)",
     "contraindications": "哮喘；严重心/肝/肾疾病",
     "caution": "欣母沛；费用高",
-    "group": "宫缩剂(PGF2α)"
+    "group": "妇产科"
   },
   {
     "name": "米索前列醇",
@@ -1140,7 +1140,7 @@
     "indications": "引产(促宫颈成熟)、产后出血",
     "contraindications": "妊娠(非引产用途)",
     "caution": "腹泻/发热",
-    "group": "前列腺素E1"
+    "group": "妇产科"
   },
   {
     "name": "地屈孕酮",
@@ -1149,7 +1149,7 @@
     "indications": "先兆流产；黄体功能不足；调经",
     "contraindications": "原因不明阴道出血",
     "caution": "无明显男性化/糖代谢副作用",
-    "group": "孕激素(口服)"
+    "group": "妇产科"
   },
   {
     "name": "碳酸钙(降磷用)",
@@ -1158,7 +1158,7 @@
     "indications": "CKD高磷血症",
     "contraindications": "高钙血症",
     "caution": "监测血钙磷",
-    "group": "磷结合剂"
+    "group": "泌尿/肾脏"
   },
   {
     "name": "司维拉姆",
@@ -1167,7 +1167,7 @@
     "indications": "CKD高磷血症(尤其伴高钙)",
     "contraindications": "肠梗阻",
     "caution": "胃肠道不适；不含钙不引起高钙",
-    "group": "非钙磷结合剂"
+    "group": "泌尿/肾脏"
   },
   {
     "name": "骨化三醇",
@@ -1176,7 +1176,7 @@
     "indications": "肾性骨病；甲状旁腺功能减退",
     "contraindications": "高钙血症",
     "caution": "监测血钙磷",
-    "group": "活性VitD3"
+    "group": "激素/代谢"
   },
   {
     "name": "托拉塞米",
@@ -1185,7 +1185,7 @@
     "indications": "CKD水肿；心衰；肝硬化腹水",
     "contraindications": "无尿；肝昏迷",
     "caution": "比呋塞米强效；半衰期长",
-    "group": "袢利尿剂(长效)"
+    "group": "心血管药"
   },
   {
     "name": "坦索罗辛",
@@ -1194,7 +1194,7 @@
     "indications": "良性前列腺增生(BPH)",
     "contraindications": "体位性低血压",
     "caution": "射精异常；首剂直立性低血压",
-    "group": "α1阻滞剂(URO)"
+    "group": "泌尿/肾脏"
   },
   {
     "name": "非那雄胺",
@@ -1203,7 +1203,7 @@
     "indications": "BPH(>40g)；男性秃发(1mg)",
     "contraindications": "妊娠女性接触",
     "caution": "6个月起效；PSA减半",
-    "group": "5α还原酶抑制"
+    "group": "泌尿/肾脏"
   },
   {
     "name": "索利那新",
@@ -1212,7 +1212,7 @@
     "indications": "膀胱过度活动症(OAB)",
     "contraindications": "尿潴留；胃潴留；窄角青光眼",
     "caution": "便秘；口干",
-    "group": "M受体拮抗(URO)"
+    "group": "泌尿/肾脏"
   },
   {
     "name": "复合维生素B",
@@ -1221,7 +1221,7 @@
     "indications": "维生素B族缺乏(脚气病/糙皮病)",
     "contraindications": "无",
     "caution": "多发性神经病患者检测B12水平",
-    "group": "水溶性维生素"
+    "group": "营养/维生素"
   },
   {
     "name": "维生素B12",
@@ -1230,7 +1230,7 @@
     "indications": "巨幼细胞贫血；恶性贫血；多发性神经病",
     "contraindications": "无",
     "caution": "缺B12者叶酸可掩盖症状",
-    "group": "氰钴胺/甲钴胺"
+    "group": "营养/维生素"
   },
   {
     "name": "叶酸",
@@ -1239,7 +1239,7 @@
     "indications": "巨幼细胞贫血；孕前/孕期神经管缺陷预防",
     "contraindications": "B12缺乏未纠正",
     "caution": "孕前3月至孕早期0.4mg/d",
-    "group": "维生素B9"
+    "group": "营养/维生素"
   },
   {
     "name": "维生素K1",
@@ -1248,7 +1248,7 @@
     "indications": "维生素K缺乏致出血/PT延长",
     "contraindications": "严重肝病(合成II因子障碍)",
     "caution": "IV需缓慢；注意过敏",
-    "group": "脂溶性维生素"
+    "group": "营养/维生素"
   },
   {
     "name": "肠内营养液(TP)",
@@ -1257,7 +1257,7 @@
     "indications": "吞咽困难/昏迷等需营养支持",
     "contraindications": "肠梗阻；肠穿孔",
     "caution": "根据热量需求个体化调整",
-    "group": "肠内营养"
+    "group": "营养/维生素"
   },
   {
     "name": "脂肪乳(20%)",
@@ -1266,7 +1266,7 @@
     "indications": "肠外营养(TPN)必需组成",
     "contraindications": "严重高脂血症；胰腺炎急性期",
     "caution": "输注速度缓慢；肝功能监测",
-    "group": "肠外营养"
+    "group": "营养/维生素"
   },
   {
     "name": "妥布霉素地塞米松",
@@ -1275,7 +1275,7 @@
     "indications": "细菌性眼炎伴明显炎症",
     "contraindications": "角膜上皮缺损；病毒/真菌性眼炎",
     "caution": "长期使用可致青光眼/白内障",
-    "group": "抗生素+激素眼用"
+    "group": "眼科"
   },
   {
     "name": "左氧氟沙星眼水",
@@ -1284,7 +1284,7 @@
     "indications": "细菌性结膜炎/角膜炎",
     "contraindications": "喹诺酮过敏",
     "caution": "<18岁慎用",
-    "group": "喹诺酮类眼用"
+    "group": "眼科"
   },
   {
     "name": "阿托品眼水1%",
@@ -1293,7 +1293,7 @@
     "indications": "虹膜睫状体炎；散瞳检查",
     "contraindications": "闭角型青光眼；窄前房",
     "caution": "全身毒性(面红口干心慌)",
-    "group": "散瞳(睫状肌麻痹)"
+    "group": "眼科"
   },
   {
     "name": "毛果芸香碱眼水",
@@ -1302,7 +1302,7 @@
     "indications": "开角型青光眼；急性闭角青光眼发作",
     "contraindications": "虹膜睫状体炎急性期",
     "caution": "近视加深；暗适应下降",
-    "group": "缩瞳/降眼压"
+    "group": "眼科"
   },
   {
     "name": "溴莫尼定眼水",
@@ -1311,7 +1311,7 @@
     "indications": "开角型青光眼/高眼压",
     "contraindications": "MAO抑制剂使用者",
     "caution": "过敏反应(迟发)；嗜睡",
-    "group": "α2激动/降眼压"
+    "group": "眼科"
   },
   {
     "name": "糠酸莫米松",
@@ -1320,7 +1320,7 @@
     "indications": "湿疹/皮炎/银屑病/过敏瘙痒",
     "contraindications": "病毒/真菌/细菌性皮损",
     "caution": "面部≤5天；皮肤萎缩",
-    "group": "外用激素(强效)"
+    "group": "皮肤科"
   },
   {
     "name": "莫匹罗星软膏",
@@ -1329,7 +1329,7 @@
     "indications": "皮肤细菌感染(MRSA有效)",
     "contraindications": "大面积烧伤使用辅料",
     "caution": "短期使用不超过10天",
-    "group": "外用抗生素"
+    "group": "皮肤科"
   },
   {
     "name": "酮康唑乳膏",
@@ -1338,7 +1338,7 @@
     "indications": "体股癣/花斑癣/念珠菌",
     "contraindications": "唑类过敏",
     "caution": "皮肤轻度刺激",
-    "group": "外用抗真菌"
+    "group": "皮肤科"
   },
   {
     "name": "氯雷他定",
@@ -1347,7 +1347,7 @@
     "indications": "过敏性鼻炎/荨麻疹/皮肤过敏",
     "contraindications": "过敏",
     "caution": "无嗜睡；肝损减量",
-    "group": "抗组胺(无嗜睡)"
+    "group": "皮肤科"
   },
   {
     "name": "西替利嗪",
@@ -1356,7 +1356,7 @@
     "indications": "同氯雷他定",
     "contraindications": "严重肾衰(CrCl<10)",
     "caution": "轻度嗜睡；仅肾排泄",
-    "group": "抗组胺(轻度嗜睡)"
+    "group": "皮肤科"
   },
   {
     "name": "桉柠蒎肠溶胶囊",
@@ -1365,7 +1365,7 @@
     "indications": "鼻窦炎/分泌性中耳炎",
     "contraindications": "肠溶衣勿破损",
     "caution": "不可嚼碎",
-    "group": "黏液促排"
+    "group": "呼吸系统"
   },
   {
     "name": "布地奈德鼻喷雾",
@@ -1374,7 +1374,7 @@
     "indications": "过敏性鼻炎/鼻息肉",
     "contraindications": "无",
     "caution": "起效慢(需持续使用)",
-    "group": "鼻用激素"
+    "group": "耳鼻喉/儿科/其他"
   },
   {
     "name": "口服补液盐III",
@@ -1383,7 +1383,7 @@
     "indications": "儿童腹泻脱水预防/治疗",
     "contraindications": "严重脱水需静脉",
     "caution": "WHO推荐；配比不可任意改变",
-    "group": "ORS(低渗配方)"
+    "group": "耳鼻喉/儿科/其他"
   },
   {
     "name": "氨酚黄那敏(小儿)",
@@ -1392,7 +1392,7 @@
     "indications": "儿童感冒发热",
     "contraindications": "蚕豆病/G6PD缺乏",
     "caution": "含对乙酰氨基酚；勿叠加退热药",
-    "group": "复方感冒药"
+    "group": "耳鼻喉/儿科/其他"
   },
   {
     "name": "头孢克洛",
@@ -1401,7 +1401,7 @@
     "indications": "儿童呼吸道/中耳炎/泌尿系感染",
     "contraindications": "头孢过敏",
     "caution": "相对广谱；味道佳",
-    "group": "二代头孢(口服)"
+    "group": "抗生素"
   },
   {
     "name": "阿奇霉素(儿童)",
@@ -1410,7 +1410,7 @@
     "indications": "儿童呼吸道支原体/衣原体感染",
     "contraindications": "大环内酯过敏",
     "caution": "餐前1h或餐后2h服用",
-    "group": "大环内酯"
+    "group": "抗生素"
   },
   {
     "name": "头孢地尼",
@@ -1419,7 +1419,7 @@
     "indications": "呼吸道/泌尿道/皮肤软组织感染",
     "contraindications": "头孢过敏",
     "caution": "三代口服抗生素代表",
-    "group": "三代头孢(口服)"
+    "group": "抗生素"
   },
   {
     "name": "克拉维酸单独",
@@ -1428,7 +1428,7 @@
     "indications": "产酶菌株感染(联合用药)",
     "contraindications": "过敏",
     "caution": "不单独使用",
-    "group": "β内酰胺酶抑制剂"
+    "group": "抗生素"
   },
   {
     "name": "两性霉素B",
@@ -1437,7 +1437,7 @@
     "indications": "深部真菌(曲霉/毛霉/隐球菌)",
     "contraindications": "严重肾衰",
     "caution": "肾毒性显著；需要预处理",
-    "group": "抗真菌(多烯)"
+    "group": "抗生素"
   },
   {
     "name": "非洛地平",
@@ -1446,7 +1446,7 @@
     "indications": "高血压",
     "contraindications": "严重低血压",
     "caution": "牙龈增生；与葡萄柚汁相互作用",
-    "group": "CCB"
+    "group": "心血管药"
   },
   {
     "name": "普罗帕酮",
@@ -1455,7 +1455,7 @@
     "indications": "房颤/室上速/室早",
     "contraindications": "器质性心脏病；Brugada综合征",
     "caution": "负性肌力；禁用于心衰",
-    "group": "抗心律失常Ⅰc"
+    "group": "心血管药"
   },
   {
     "name": "多巴酚丁胺",
@@ -1464,7 +1464,7 @@
     "indications": "急性心衰短期支持",
     "contraindications": "肥厚型心肌病",
     "caution": "心率增快；心律失常",
-    "group": "正性肌力"
+    "group": "急救"
   },
   {
     "name": "硝酸异山梨酯",
@@ -1473,7 +1473,7 @@
     "indications": "心绞痛预防",
     "contraindications": "同硝酸甘油",
     "caution": "短效；需8h无药间隔",
-    "group": "抗心绞痛"
+    "group": "心血管药"
   },
   {
     "name": "洛哌丁胺",
@@ -1482,7 +1482,7 @@
     "indications": "急性非感染性腹泻",
     "contraindications": "感染性腹泻(血便/发热)",
     "caution": "腹胀；肠梗阻禁忌",
-    "group": "止泻(作用于肠壁)"
+    "group": "消化系统"
   },
   {
     "name": "多潘立酮",
@@ -1491,7 +1491,7 @@
     "indications": "恶心/呕吐/消化不良",
     "contraindications": "消化道出血/梗阻",
     "caution": "QT延长风险；限成人短期使用",
-    "group": "促动力(D2拮抗)"
+    "group": "消化系统"
   },
   {
     "name": "昂丹司琼(口服)",
@@ -1500,7 +1500,7 @@
     "indications": "化疗/术后恶心呕吐",
     "contraindications": "QT延长综合征",
     "caution": "便秘常见",
-    "group": "止吐"
+    "group": "消化系统"
   },
   {
     "name": "柳氮磺吡啶",
@@ -1509,7 +1509,7 @@
     "indications": "RA/AS/溃疡性结肠炎",
     "contraindications": "磺胺过敏；卟啉症",
     "caution": "补充叶酸；男性不育可逆",
-    "group": "DMARD/IBD"
+    "group": "风湿免疫"
   },
   {
     "name": "氨苯蝶啶",
@@ -1518,7 +1518,7 @@
     "indications": "保钾利尿(轻度/联合)",
     "contraindications": "高钾血症",
     "caution": "单用效弱；常与氢氯噻嗪联用",
-    "group": "保钾利尿剂"
+    "group": "心血管药"
   },
   {
     "name": "硝酸异山梨酯片",
@@ -1527,7 +1527,7 @@
     "indications": "心绞痛急性发作",
     "contraindications": "严重低血压",
     "caution": "同类硝酸甘油；头痛",
-    "group": "抗心绞痛"
+    "group": "心血管药"
   },
   {
     "name": "琥珀酸美托洛尔",
@@ -1536,7 +1536,7 @@
     "indications": "同美托洛尔(缓释剂型)",
     "contraindications": "同美托洛尔",
     "caution": "缓释QD剂型",
-    "group": "β阻滞剂(缓释)"
+    "group": "心血管药"
   },
   {
     "name": "氯沙坦",
@@ -1545,7 +1545,7 @@
     "indications": "高血压(降尿酸协同)",
     "contraindications": "同缬沙坦",
     "caution": "促尿酸排泄独特优势",
-    "group": "ARB"
+    "group": "心血管药"
   },
   {
     "name": "缬沙坦氢氯噻嗪",
@@ -1554,7 +1554,7 @@
     "indications": "单用血压不达标需联合",
     "contraindications": "同组分禁忌",
     "caution": "复方单片",
-    "group": "ARB+利尿复方"
+    "group": "心血管药"
   },
   {
     "name": "厄贝沙坦氢氯噻嗪",
@@ -1563,7 +1563,7 @@
     "indications": "同缬沙坦氢氯噻嗪",
     "contraindications": "同组分禁忌",
     "caution": "复方单片",
-    "group": "ARB+利尿复方"
+    "group": "心血管药"
   },
   {
     "name": "瑞格列奈",
@@ -1572,7 +1572,7 @@
     "indications": "2型糖尿病(餐后高)",
     "contraindications": "1型糖尿病；DKA",
     "caution": "低血糖风险低于磺脲",
-    "group": "促泌剂(格列奈)"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "吡格列酮",
@@ -1581,7 +1581,7 @@
     "indications": "2型糖尿病(胰岛素抵抗为主)",
     "contraindications": "心衰NYHAⅠ-Ⅳ；活动性肝病",
     "caution": "水肿/心衰；膀胱癌风险(争议)",
-    "group": "TZD"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "地特胰岛素",
@@ -1590,7 +1590,7 @@
     "indications": "1型/2型糖尿病",
     "contraindications": "低血糖",
     "caution": "体重增加少于甘精",
-    "group": "长效胰岛素"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "替米沙坦",
@@ -1599,7 +1599,7 @@
     "indications": "高血压；脑卒中二级预防",
     "contraindications": "同缬沙坦",
     "caution": "部分PPARγ激动",
-    "group": "ARB"
+    "group": "心血管药"
   },
   {
     "name": "拉贝洛尔",
@@ -1608,7 +1608,7 @@
     "indications": "妊娠期高血压(优选)；高血压急症",
     "contraindications": "哮喘；心衰；严重心动过缓",
     "caution": "妊娠安全用药",
-    "group": "α+β阻滞剂"
+    "group": "心血管药"
   },
   {
     "name": "硝普钠",
@@ -1617,7 +1617,7 @@
     "indications": "高血压急症(可控降压)",
     "contraindications": "动静脉分流；脑水肿",
     "caution": "氰化物中毒风险(>2μg/kg/min)",
-    "group": "血管扩张剂"
+    "group": "心血管药"
   },
   {
     "name": "地尔硫卓",
@@ -1626,7 +1626,7 @@
     "indications": "高血压；室上性心动过速",
     "contraindications": "病窦；AV阻滞；心衰(SHFrEF)",
     "caution": "负性心率/肌力；禁与β阻滞合用",
-    "group": "非二氢吡啶CCB"
+    "group": "心血管药"
   },
   {
     "name": "阿托品眼膏1%",
@@ -1635,7 +1635,7 @@
     "indications": "虹膜睫状体炎；弱视遮盖",
     "contraindications": "闭角青光眼",
     "caution": "作用持续长(约1周)",
-    "group": "散瞳睫状肌麻痹"
+    "group": "眼科"
   },
   {
     "name": "噻吗洛尔眼水",
@@ -1644,7 +1644,7 @@
     "indications": "开角型青光眼/高眼压",
     "contraindications": "哮喘/COPD慎用；心动过缓",
     "caution": "全身吸收后致心率减慢",
-    "group": "β阻滞剂眼用"
+    "group": "眼科"
   },
   {
     "name": "异丙嗪",
@@ -1653,7 +1653,7 @@
     "indications": "过敏；晕动病",
     "contraindications": "2岁以下(呼吸抑制)",
     "caution": "镇静显著",
-    "group": "抗组胺H1"
+    "group": "皮肤科"
   },
   {
     "name": "奥司他韦",
@@ -1662,7 +1662,7 @@
     "indications": "流感A/B(发病48h内)",
     "contraindications": "无",
     "caution": "预防75mg qd；肾功能减量",
-    "group": "神经氨酸酶抑制"
+    "group": "抗生素"
   },
   {
     "name": "巴洛沙韦",
@@ -1671,7 +1671,7 @@
     "indications": "流感A/B(>12岁)",
     "contraindications": "无",
     "caution": "比奥司他韦便捷，单剂即可",
-    "group": "Cap依赖内切酶抑制"
+    "group": "抗生素"
   },
   {
     "name": "莫西沙星",
@@ -1680,7 +1680,7 @@
     "indications": "CAP/AECOPD/腹腔",
     "contraindications": "QT延长；<18岁；癫痫",
     "caution": "口服生物利用度高，不需覆盖厌氧时用左氧",
-    "group": "氟喹诺酮"
+    "group": "抗生素"
   },
   {
     "name": "头孢曲松",
@@ -1689,7 +1689,7 @@
     "indications": "CAP/脑膜炎/淋病/腹腔",
     "contraindications": "高胆红素新生儿(胆红素脑病)",
     "caution": "CNS穿透好；肝肾双通道排泄",
-    "group": "三代头孢"
+    "group": "抗生素"
   },
   {
     "name": "头孢哌酮舒巴坦",
@@ -1698,7 +1698,7 @@
     "indications": "MDR G-杆菌/腹腔",
     "contraindications": "凝血异常(VitK缺乏)",
     "caution": "含舒巴坦抗不动杆菌；监测PT/PTT",
-    "group": "三代头孢+酶抑制"
+    "group": "抗生素"
   },
   {
     "name": "替加环素",
@@ -1707,7 +1707,7 @@
     "indications": "MDR菌/复杂腹腔",
     "contraindications": "胰腺炎史",
     "caution": "广谱除PA；组织浓度高",
-    "group": "甘氨酰环素"
+    "group": "抗生素"
   },
   {
     "name": "厄他培南",
@@ -1716,7 +1716,7 @@
     "indications": "社区腹腔/盆腔/糖尿病足",
     "contraindications": "CNS疾病",
     "caution": "不覆盖PA/AB，对ESBL好",
-    "group": "碳青霉烯"
+    "group": "抗生素"
   },
   {
     "name": "利奈唑胺",
@@ -1725,7 +1725,7 @@
     "indications": "MRSA/VRE/耐药阳性球菌",
     "contraindications": "5-HT能药物(5-HT综合征)",
     "caution": "MAO抑制；>2周监测骨髓抑制",
-    "group": "恶唑烷酮"
+    "group": "抗生素"
   },
   {
     "name": "达托霉素",
@@ -1734,7 +1734,7 @@
     "indications": "MRSA菌血症/右心心内膜炎",
     "contraindications": "肺炎(被肺表面活性物质灭活)",
     "caution": "监测CPK(肌病)",
-    "group": "脂肽类"
+    "group": "抗生素"
   },
   {
     "name": "替考拉宁",
@@ -1743,7 +1743,7 @@
     "indications": "MRSA/G+球菌",
     "contraindications": "万古过敏",
     "caution": "半衰期长可qd；类似万古",
-    "group": "糖肽类"
+    "group": "抗生素"
   },
   {
     "name": "泊沙康唑",
@@ -1752,7 +1752,7 @@
     "indications": "侵袭性曲霉菌/念珠菌",
     "contraindications": "CYP3A4底物",
     "caution": "预防用缓释片；监测血药浓度",
-    "group": "三唑类抗真菌"
+    "group": "抗生素"
   },
   {
     "name": "卡泊芬净",
@@ -1761,7 +1761,7 @@
     "indications": "侵袭性念珠菌/曲霉菌（二线）",
     "contraindications": "无",
     "caution": "安全性好；妊娠C类",
-    "group": "棘白菌素"
+    "group": "抗生素"
   },
   {
     "name": "缬更昔洛韦",
@@ -1770,7 +1770,7 @@
     "indications": "CMV视网膜炎/移植预防",
     "contraindications": "ANC<500/Plt<25K",
     "caution": "骨髓抑制显著；避孕",
-    "group": "抗CMV"
+    "group": "抗生素"
   },
   {
     "name": "恩替卡韦",
@@ -1779,7 +1779,7 @@
     "indications": "慢性乙肝",
     "contraindications": "拉米夫定耐药需1mg",
     "caution": "耐药率极低；空腹服用",
-    "group": "核苷类似物"
+    "group": "抗生素"
   },
   {
     "name": "替诺福韦",
@@ -1788,7 +1788,7 @@
     "indications": "慢性乙肝/HIV",
     "contraindications": "肾功能异常",
     "caution": "TAF 25mg替代减少肾毒性",
-    "group": "核苷酸类"
+    "group": "抗生素"
   },
   {
     "name": "索磷布韦维帕他韦",
@@ -1797,7 +1797,7 @@
     "indications": "HCV全基因型",
     "contraindications": "严重肾损害(eGFR<30)",
     "caution": "治愈率>95%",
-    "group": "DAA抗HCV"
+    "group": "抗生素"
   },
   {
     "name": "多西环素",
@@ -1806,7 +1806,7 @@
     "indications": "非典型肺炎/疟疾预防/痤疮",
     "contraindications": "<8岁(牙齿变色)；妊娠",
     "caution": "光敏反应",
-    "group": "四环素类"
+    "group": "抗生素"
   },
   {
     "name": "复方新诺明",
@@ -1815,7 +1815,7 @@
     "indications": "PCP/UTI/诺卡菌",
     "contraindications": "G6PD缺乏/妊娠后期",
     "caution": "磺胺过敏；注意高钾",
-    "group": "磺胺+TMP"
+    "group": "抗生素"
   },
   {
     "name": "呋喃妥因",
@@ -1824,7 +1824,7 @@
     "indications": "单纯性UTI",
     "contraindications": "eGFR<30",
     "caution": "仅用于下尿路；肺部毒性罕见",
-    "group": "硝基呋喃"
+    "group": "抗生素"
   },
   {
     "name": "甲硝唑",
@@ -1833,7 +1833,7 @@
     "indications": "厌氧菌/滴虫/CDI",
     "contraindications": "妊娠早期(po)",
     "caution": "金属味/双硫仑反应",
-    "group": "硝基咪唑"
+    "group": "抗生素"
   },
   {
     "name": "万古霉素口服",
@@ -1842,7 +1842,7 @@
     "indications": "艰难梭菌(仅口服)",
     "contraindications": "肠道梗阻",
     "caution": "口服不吸收，仅用于CDI",
-    "group": "糖肽类(口服)"
+    "group": "抗生素"
   },
   {
     "name": "非奈利酮",
@@ -1851,7 +1851,7 @@
     "indications": "CKD+T2DM(减少CV/肾终点)",
     "contraindications": "eGFR<15/高钾",
     "caution": "比螺内酯选择性强/副作用少",
-    "group": "非甾体MRA"
+    "group": "心血管药"
   },
   {
     "name": "沙库巴曲缬沙坦",
@@ -1860,7 +1860,7 @@
     "indications": "HFrEF(EF≤40%)",
     "contraindications": "血管性水肿史/妊娠/SBP<100",
     "caution": "优于ACEi；禁与ACEi联用(36h洗脱)",
-    "group": "ARNI"
+    "group": "心血管药"
   },
   {
     "name": "伊伐布雷定",
@@ -1869,7 +1869,7 @@
     "indications": "HFrEF 窦律HR≥70",
     "contraindications": "静息HR<60/房颤/SSS",
     "caution": "仅减慢心率无负性肌力",
-    "group": "If通道抑制"
+    "group": "心血管药"
   },
   {
     "name": "维立西呱",
@@ -1878,7 +1878,7 @@
     "indications": "HFrEF恶化后",
     "contraindications": "SBP<100/PDE5i联用",
     "caution": "新靶点；增加cGMP",
-    "group": "sGC激动剂"
+    "group": "心血管药"
   },
   {
     "name": "达格列净",
@@ -1887,7 +1887,7 @@
     "indications": "HFrEF/CKD/T2DM",
     "contraindications": "eGFR<15/透析/妊娠",
     "caution": "CV/肾双重保护",
-    "group": "SGLT2i"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "恩格列净",
@@ -1896,7 +1896,7 @@
     "indications": "HFpEF/T2DM/CKD",
     "contraindications": "eGFR<15",
     "caution": "EMPEROR-Reduced/Preserved证据",
-    "group": "SGLT2i"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "司美格鲁肽",
@@ -1905,7 +1905,7 @@
     "indications": "T2DM/减重(2.4mg)",
     "contraindications": "MEN2史/胰腺炎",
     "caution": "CV保护证据强；口服版14mg qd",
-    "group": "GLP-1RA"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "替尔泊肽",
@@ -1914,7 +1914,7 @@
     "indications": "T2DM/减重",
     "contraindications": "MEN2史/胰腺炎",
     "caution": "减重效果优于司美格鲁肽",
-    "group": "GIP/GLP-1双靶"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "门冬胰岛素",
@@ -1923,7 +1923,7 @@
     "indications": "T1DM/T2DM",
     "contraindications": "低血糖",
     "caution": "起效15min，持续3-5h",
-    "group": "速效胰岛素"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "德谷胰岛素",
@@ -1932,7 +1932,7 @@
     "indications": "T1DM/T2DM基础",
     "contraindications": "低血糖",
     "caution": "持续>42h；低血糖风险低",
-    "group": "超长效胰岛素"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "阿哌沙班",
@@ -1941,7 +1941,7 @@
     "indications": "NVAF抗凝/VTE治疗",
     "contraindications": "CrCl<15/活动出血",
     "caution": "NOAC中消化道出血最低；无需监测",
-    "group": "FXa抑制(D)"
+    "group": "血液系统"
   },
   {
     "name": "替格瑞洛",
@@ -1950,7 +1950,7 @@
     "indications": "ACS(与ASA联用)",
     "contraindications": "活动出血/ICH史",
     "caution": "比氯吡格雷快、强、可逆；呼吸困难",
-    "group": "P2Y₁₂拮抗"
+    "group": "血液系统"
   },
   {
     "name": "依度沙班",
@@ -1959,7 +1959,7 @@
     "indications": "NVAF/VTE",
     "contraindications": "CrCl<15",
     "caution": "qd服法；减量标准多",
-    "group": "FXa抑制(D)"
+    "group": "血液系统"
   },
   {
     "name": "比伐卢定",
@@ -1968,7 +1968,7 @@
     "indications": "PCI抗凝",
     "contraindications": "活动出血",
     "caution": "比UFH出血少",
-    "group": "直接凝血酶抑制"
+    "group": "血液系统"
   },
   {
     "name": "替奈普酶",
@@ -1977,7 +1977,7 @@
     "indications": "STEMI溶栓",
     "contraindications": "活动出血/近期卒中/手术",
     "caution": "比阿替普酶方便(单剂)：ASSENT-4",
-    "group": "纤溶酶原激活剂"
+    "group": "血液系统"
   },
   {
     "name": "去甲肾上腺素",
@@ -1986,7 +1986,7 @@
     "indications": "感染性休克(一线)",
     "contraindications": "肠系膜缺血",
     "caution": "外周渗漏→酚妥拉明解救",
-    "group": "α₁/β₁激动"
+    "group": "急救"
   },
   {
     "name": "多巴酚丁胺",
@@ -1995,7 +1995,7 @@
     "indications": "急性心衰/心源性休克",
     "contraindications": "肥厚型心肌病",
     "caution": "增加心排量不升压",
-    "group": "β₁激动"
+    "group": "急救"
   },
   {
     "name": "左西孟旦",
@@ -2004,7 +2004,7 @@
     "indications": "急性失代偿心衰",
     "contraindications": "严重低血压",
     "caution": "不增加心肌氧耗；半衰期长",
-    "group": "钙增敏剂"
+    "group": "心血管药"
   },
   {
     "name": "胺碘酮",
@@ -2013,7 +2013,7 @@
     "indications": "房颤/室速/室颤",
     "contraindications": "碘过敏/甲亢/AVB",
     "caution": "甲状腺/肺/肝/角膜毒性；长期口服",
-    "group": "III类抗心律失常"
+    "group": "心血管药"
   },
   {
     "name": "利多卡因",
@@ -2022,7 +2022,7 @@
     "indications": "室速/室颤",
     "contraindications": "AVB/严重肝病",
     "caution": "尖端扭转型不用",
-    "group": "IB类抗心律失常"
+    "group": "心血管药"
   },
   {
     "name": "腺苷",
@@ -2031,7 +2031,7 @@
     "indications": "PSVT诊断+转复",
     "contraindications": "AVB/SSS/哮喘",
     "caution": "极短半衰期(<10s)；告知胸痛感",
-    "group": "嘌呤核苷"
+    "group": "心血管药"
   },
   {
     "name": "左乙拉西坦",
@@ -2040,7 +2040,7 @@
     "indications": "局灶/全面性癫痫",
     "contraindications": "无",
     "caution": "副作用少；妊娠相对安全",
-    "group": "SV2A调节"
+    "group": "神经系统/精神科"
   },
   {
     "name": "丙戊酸钠",
@@ -2049,7 +2049,7 @@
     "indications": "全面性/肌阵挛/LGS",
     "contraindications": "肝病/线粒体病/妊娠",
     "caution": "致畸(PKH)；监测肝功/血氨/Plt",
-    "group": "多机制"
+    "group": "神经系统/精神科"
   },
   {
     "name": "拉莫三嗪",
@@ -2058,7 +2058,7 @@
     "indications": "局灶/全面性/LGS",
     "contraindications": "皮疹(尤其快加量)",
     "caution": "妊娠相对安全(监测血药浓度)",
-    "group": "Na⁺通道+谷氨酸"
+    "group": "神经系统/精神科"
   },
   {
     "name": "卡马西平",
@@ -2067,7 +2067,7 @@
     "indications": "局灶性/三叉神经痛",
     "contraindications": "AVB/卟啉病/HLA-B*1502",
     "caution": "CYP450强诱导；监测CBC/LFT/血药",
-    "group": "Na⁺通道阻断"
+    "group": "神经系统/精神科"
   },
   {
     "name": "奥卡西平",
@@ -2076,7 +2076,7 @@
     "indications": "局灶性癫痫",
     "contraindications": "对卡马西平过敏",
     "caution": "比卡马西平副作用少",
-    "group": "Na⁺通道阻断"
+    "group": "神经系统/精神科"
   },
   {
     "name": "托吡酯",
@@ -2085,7 +2085,7 @@
     "indications": "局灶性/偏头痛预防",
     "contraindications": "代谢性酸中毒倾向",
     "caution": "减重用(Qsymia)；认知副作用",
-    "group": "多机制"
+    "group": "神经系统/精神科"
   },
   {
     "name": "苯巴比妥",
@@ -2094,7 +2094,7 @@
     "indications": "癫痫持续状态/新生儿",
     "contraindications": "卟啉病/呼吸抑制",
     "caution": "CYP450强诱导；监测血药浓度",
-    "group": "GABA增强"
+    "group": "神经系统/精神科"
   },
   {
     "name": "加巴喷丁",
@@ -2103,7 +2103,7 @@
     "indications": "神经痛/PHN/RLS",
     "contraindications": "无",
     "caution": "肾排泄；嗜睡",
-    "group": "钙通道α₂δ"
+    "group": "神经系统/精神科"
   },
   {
     "name": "普瑞巴林",
@@ -2112,7 +2112,7 @@
     "indications": "神经痛/纤维肌痛/GAD",
     "contraindications": "无",
     "caution": "比加巴喷丁吸收快/效强",
-    "group": "钙通道α₂δ"
+    "group": "神经系统/精神科"
   },
   {
     "name": "度洛西汀",
@@ -2121,7 +2121,7 @@
     "indications": "抑郁/GAD/DPNP/FM",
     "contraindications": "MAOI联用/肝病",
     "caution": "尿潴留(5%男性)",
-    "group": "SNRI"
+    "group": "神经系统/精神科"
   },
   {
     "name": "舍曲林",
@@ -2130,7 +2130,7 @@
     "indications": "抑郁/OCD/PTSD/经前烦躁",
     "contraindications": "MAOI联用",
     "caution": "SSRI中药物相互作用较少",
-    "group": "SSRI"
+    "group": "神经系统/精神科"
   },
   {
     "name": "艾司西酞普兰",
@@ -2139,7 +2139,7 @@
     "indications": "抑郁/GAD",
     "contraindications": "MAOI联用/QT延长",
     "caution": "SSRI中选择性最强；耐受性好",
-    "group": "SSRI"
+    "group": "神经系统/精神科"
   },
   {
     "name": "奥氮平",
@@ -2148,7 +2148,7 @@
     "indications": "精分/双相躁狂",
     "contraindications": "闭角青光眼",
     "caution": "代谢综合征(体重↑↑/血脂/血糖)",
-    "group": "SGA"
+    "group": "神经系统/精神科"
   },
   {
     "name": "利培酮",
@@ -2157,7 +2157,7 @@
     "indications": "精分/双相",
     "contraindications": "帕金森病",
     "caution": "高催乳素血症",
-    "group": "SGA"
+    "group": "神经系统/精神科"
   },
   {
     "name": "阿立哌唑",
@@ -2166,7 +2166,7 @@
     "indications": "精分/双相/Tourette",
     "contraindications": "无",
     "caution": "代谢副作用少；冲动控制问题",
-    "group": "SGA(部分激动)"
+    "group": "神经系统/精神科"
   },
   {
     "name": "喹硫平",
@@ -2175,7 +2175,7 @@
     "indications": "精分/双相/抑郁增效",
     "contraindications": "闭角青光眼",
     "caution": "镇静强；代谢综合征",
-    "group": "SGA"
+    "group": "神经系统/精神科"
   },
   {
     "name": "劳拉西泮",
@@ -2184,7 +2184,7 @@
     "indications": "焦虑/癫痫/术前镇静",
     "contraindications": "MG/严重呼衰",
     "caution": "中效；无活性代谢物(肝病可用)",
-    "group": "BZD"
+    "group": "神经系统/精神科"
   },
   {
     "name": "地西泮",
@@ -2193,7 +2193,7 @@
     "indications": "焦虑/肌痉/癫痫/ETOH戒断",
     "contraindications": "MG/严重呼衰",
     "caution": "长半衰期；活性代谢物蓄积",
-    "group": "BZD"
+    "group": "神经系统/精神科"
   },
   {
     "name": "咪达唑仑",
@@ -2202,7 +2202,7 @@
     "indications": "短时镇静/麻醉诱导",
     "contraindications": "MG/休克",
     "caution": "仅注射；丙二醇载体",
-    "group": "BZD(短效)"
+    "group": "神经系统/精神科"
   },
   {
     "name": "右美托咪定",
@@ -2211,7 +2211,7 @@
     "indications": "ICU镇静/清醒插管",
     "contraindications": "AVB/低血容量",
     "caution": "不抑制呼吸；可唤醒",
-    "group": "α₂激动"
+    "group": "麻醉镇痛"
   },
   {
     "name": "丙泊酚",
@@ -2220,7 +2220,7 @@
     "indications": "麻醉/VAP镇静",
     "contraindications": "大豆/卵磷脂过敏",
     "caution": "PRIS(长期大剂量)；高脂血症",
-    "group": "GABA激动"
+    "group": "麻醉镇痛"
   },
   {
     "name": "芬太尼",
@@ -2229,7 +2229,7 @@
     "indications": "术中/ICU/癌痛",
     "contraindications": "呼衰/颅内高压",
     "caution": "100×吗啡效价；胸壁僵硬",
-    "group": "阿片μ激动"
+    "group": "麻醉镇痛"
   },
   {
     "name": "舒芬太尼",
@@ -2238,7 +2238,7 @@
     "indications": "大手术麻醉",
     "contraindications": "呼衰",
     "caution": "1000×吗啡效价；心血管稳定",
-    "group": "阿片μ激动"
+    "group": "麻醉镇痛"
   },
   {
     "name": "瑞芬太尼",
@@ -2247,7 +2247,7 @@
     "indications": "全麻维持(TIVA)",
     "contraindications": "硬膜外/鞘内",
     "caution": "超短效(停药5-10min恢复)",
-    "group": "阿片μ激动(酯酶代谢)"
+    "group": "麻醉镇痛"
   },
   {
     "name": "塞来昔布",
@@ -2256,7 +2256,7 @@
     "indications": "OA/RA/疼痛",
     "contraindications": "磺胺过敏/CABG后/CKD",
     "caution": "GI安全性好；心血管风险",
-    "group": "COX-2选择"
+    "group": "麻醉镇痛"
   },
   {
     "name": "依托考昔",
@@ -2265,7 +2265,7 @@
     "indications": "OA/痛风急性",
     "contraindications": "CVD/CABG后",
     "caution": "120mg仅短期",
-    "group": "COX-2选择"
+    "group": "麻醉镇痛"
   },
   {
     "name": "曲马多",
@@ -2274,7 +2274,7 @@
     "indications": "中重度疼痛",
     "contraindications": "癫痫/MAOI",
     "caution": "5-HT综合征风险（与其他5-HT能药合用时）",
-    "group": "μ激动+SNRI"
+    "group": "麻醉镇痛"
   },
   {
     "name": "丁丙诺啡透皮贴",
@@ -2283,7 +2283,7 @@
     "indications": "慢性非癌痛/癌痛",
     "contraindications": "严重呼衰",
     "caution": "呼吸抑制有天花板效应；安全性好",
-    "group": "部分μ激动"
+    "group": "麻醉镇痛"
   },
   {
     "name": "孟鲁司特",
@@ -2292,7 +2292,7 @@
     "indications": "哮喘/AR",
     "contraindications": "无",
     "caution": "NPS警告(精神症状罕见)",
-    "group": "LTR拮抗"
+    "group": "呼吸系统"
   },
   {
     "name": "福莫特罗",
@@ -2301,7 +2301,7 @@
     "indications": "哮喘/COPD",
     "contraindications": "严重呼衰",
     "caution": "速效LABA(1-3min起效)",
-    "group": "LABA"
+    "group": "呼吸系统"
   },
   {
     "name": "噻托溴铵",
@@ -2310,7 +2310,7 @@
     "indications": "COPD维持",
     "contraindications": "闭角青光眼",
     "caution": "比异丙托长效；预防AECOPD",
-    "group": "LAMA"
+    "group": "呼吸系统"
   },
   {
     "name": "奥马珠单抗",
@@ -2319,7 +2319,7 @@
     "indications": "中重度过敏性哮喘",
     "contraindications": "无",
     "caution": "需监测过敏反应",
-    "group": "抗IgE"
+    "group": "呼吸系统"
   },
   {
     "name": "度普利尤单抗",
@@ -2328,7 +2328,7 @@
     "indications": "中重度AD/哮喘/CRSwNP",
     "contraindications": "无",
     "caution": "嗜酸粒细胞增多罕见",
-    "group": "抗IL-4Rα"
+    "group": "皮肤科"
   },
   {
     "name": "曲妥珠单抗",
@@ -2337,7 +2337,7 @@
     "indications": "HER2+乳腺癌/胃癌",
     "contraindications": "LVEF<50%",
     "caution": "心脏毒性(监测LVEF)",
-    "group": "抗HER2"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "帕博利珠单抗",
@@ -2346,7 +2346,7 @@
     "indications": "多种实体瘤/MSI-H/dMMR",
     "contraindications": "活动性自身免疫病",
     "caution": "免疫相关AEs(肠炎/肺炎/肝炎)",
-    "group": "抗PD-1"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "奥希替尼",
@@ -2355,7 +2355,7 @@
     "indications": "EGFRm NSCLC(包括T790M)",
     "contraindications": "无",
     "caution": "CNS穿透好；ILD风险",
-    "group": "EGFR TKI(三代)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "阿来替尼",
@@ -2364,7 +2364,7 @@
     "indications": "ALK+ NSCLC",
     "contraindications": "严重肝损",
     "caution": "CNS转移一线；ILD风险低",
-    "group": "ALK TKI(二代)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "伊马替尼",
@@ -2373,7 +2373,7 @@
     "indications": "CML/GIST",
     "contraindications": "严重心衰",
     "caution": "监测CBC/LFT/TSH",
-    "group": "BCR-ABL TKI"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "来那度胺",
@@ -2382,7 +2382,7 @@
     "indications": "MM/MDS 5q-",
     "contraindications": "妊娠(致畸)",
     "caution": "PE/DVT预防(ASA/LMWH)",
-    "group": "免疫调节"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "利妥昔单抗",
@@ -2391,7 +2391,7 @@
     "indications": "B细胞淋巴瘤/RA/ANCA",
     "contraindications": "活动性HBV感染",
     "caution": "输注反应/晚发粒缺",
-    "group": "抗CD20"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "恩美曲妥珠单抗",
@@ -2400,7 +2400,7 @@
     "indications": "HER2+ BC二线",
     "contraindications": "LVEF<40%",
     "caution": "T-DM1；含化疗载荷",
-    "group": "ADC(抗HER2+DM1)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "贝伐珠单抗",
@@ -2409,7 +2409,7 @@
     "indications": "mCRC/NSCLC/Glioma",
     "contraindications": "出血/近期手术/咯血",
     "caution": "增加出血/血栓/胃肠道穿孔风险",
-    "group": "抗VEGF"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "伊匹木单抗",
@@ -2418,7 +2418,7 @@
     "indications": "黑色素瘤/RCC(联合Nivo)",
     "contraindications": "活动性自身免疫",
     "caution": "双免疫毒性叠加效应",
-    "group": "抗CTLA-4"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "戈舍瑞林",
@@ -2427,7 +2427,7 @@
     "indications": "前列腺癌/乳腺癌/内膜异位",
     "contraindications": "妊娠",
     "caution": "初始雄激素一过性升高",
-    "group": "GnRH激动剂"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "阿比特龙",
@@ -2436,7 +2436,7 @@
     "indications": "mCRPC",
     "contraindications": "严重肝损/妊娠",
     "caution": "监测LFT/BP/K/水肿；激素替代",
-    "group": "CYP17抑制"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "他莫昔芬",
@@ -2445,7 +2445,7 @@
     "indications": "HR+乳腺癌",
     "contraindications": "DVT/PE史",
     "caution": "增加内膜癌/血栓风险",
-    "group": "SERM"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "非那雄胺",
@@ -2454,7 +2454,7 @@
     "indications": "BPH/雄激素脱发(1mg)",
     "contraindications": "妊娠/儿童",
     "caution": "降低PSA约50%",
-    "group": "5α-还原酶抑制"
+    "group": "泌尿/肾脏"
   },
   {
     "name": "羟氯喹",
@@ -2463,7 +2463,7 @@
     "indications": "SLE/RA/COVID-19",
     "contraindications": "G6PD缺乏/视网膜病变",
     "caution": "每年查眼底；累积>1000g风险↑↑",
-    "group": "免疫调节"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "甲氨蝶呤",
@@ -2472,7 +2472,7 @@
     "indications": "RA/PsA/Crohn/ALL",
     "contraindications": "肝硬化/乙醇/HBV/HCV",
     "caution": "补充叶酸；每周一次！(每日=中毒)",
-    "group": "叶酸拮抗"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "来氟米特",
@@ -2481,7 +2481,7 @@
     "indications": "RA/PsA",
     "contraindications": "肝病/HBV/HCV/妊娠",
     "caution": "半衰期长(2周)；可用考来烯胺清洗",
-    "group": "嘧啶合成抑制"
+    "group": "风湿免疫"
   },
   {
     "name": "阿达木单抗",
@@ -2490,7 +2490,7 @@
     "indications": "RA/PsA/AS/CD/UC/PsO/HS",
     "contraindications": "活动性TB/HBV/心衰III-IV",
     "caution": "筛查TB/HBV/HCV；注射反应",
-    "group": "抗TNFα"
+    "group": "风湿免疫"
   },
   {
     "name": "英夫利西单抗",
@@ -2499,7 +2499,7 @@
     "indications": "CD/UC/RA/AS/PsO",
     "contraindications": "TB活动/中重度心衰",
     "caution": "急性输液反应/迟发型过敏",
-    "group": "抗TNFα"
+    "group": "风湿免疫"
   },
   {
     "name": "乌司奴单抗",
@@ -2508,7 +2508,7 @@
     "indications": "PsO/PsA/CD/UC",
     "contraindications": "活动性感染",
     "caution": "安全性好；只需q12w给药",
-    "group": "抗IL-12/23"
+    "group": "风湿免疫"
   },
   {
     "name": "司库奇尤单抗",
@@ -2517,7 +2517,7 @@
     "indications": "PsO/PsA/AS",
     "contraindications": "活动性IBD",
     "caution": "IBD患者可能恶化",
-    "group": "抗IL-17A"
+    "group": "风湿免疫"
   },
   {
     "name": "瑞莎珠单抗",
@@ -2526,7 +2526,7 @@
     "indications": "PsO/CD",
     "contraindications": "活动性感染/TB",
     "caution": "比IL-17更特异；IBD可用",
-    "group": "抗IL-23 p19"
+    "group": "风湿免疫"
   },
   {
     "name": "阿巴西普",
@@ -2535,7 +2535,7 @@
     "indications": "RA/PsA(JAKi不耐受)",
     "contraindications": "COPD(加重)需警惕；活动性感染",
     "caution": "T细胞调节；起效慢(3-6月)",
-    "group": "CTLA4-Ig融合蛋白"
+    "group": "风湿免疫"
   },
   {
     "name": "托珠单抗",
@@ -2544,7 +2544,7 @@
     "indications": "RA/GCA/SJIA/CAR-T CRS",
     "contraindications": "ANC<2000/Plt<100K/LFT3×",
     "caution": "CRP极度抑制且不可作为感染指标",
-    "group": "抗IL-6R"
+    "group": "风湿免疫"
   },
   {
     "name": "吗替麦考酚酯",
@@ -2553,7 +2553,7 @@
     "indications": "LN/SLE/器官移植",
     "contraindications": "妊娠(致畸)",
     "caution": "消化道不耐受常见；监测CBC",
-    "group": "IMPDH抑制"
+    "group": "风湿免疫"
   },
   {
     "name": "环孢素",
@@ -2562,7 +2562,7 @@
     "indications": "器官移植/RA/银屑病/NS",
     "contraindications": "未控制HTN/肾衰/肿瘤",
     "caution": "监测血药浓度+肾功+BP；牙龈增生",
-    "group": "钙调磷酸酶抑制"
+    "group": "风湿免疫"
   },
   {
     "name": "他克莫司",
@@ -2571,7 +2571,7 @@
     "indications": "移植/NS/RA",
     "contraindications": "环孢素类似",
     "caution": "比环孢素强10-100×；神经毒性↑",
-    "group": "钙调磷酸酶抑制"
+    "group": "风湿免疫"
   },
   {
     "name": "强的松 / 泼尼松",
@@ -2580,7 +2580,7 @@
     "indications": "多系统炎症/自身免疫/过敏/移植/肿瘤",
     "contraindications": "全身真菌感染/未控制HTN/DM",
     "caution": "HPA轴抑制(>3周需渐减)；骨质疏松/胃保护",
-    "group": "糖皮质激素"
+    "group": "激素/代谢"
   },
   {
     "name": "甲泼尼龙",
@@ -2589,7 +2589,7 @@
     "indications": "重症炎症/移植排斥/脊髓损伤/ANCA",
     "contraindications": "同泼尼松",
     "caution": "水钠潴留轻；冲击需心电监护",
-    "group": "糖皮质激素(iv)"
+    "group": "激素/代谢"
   },
   {
     "name": "地塞米松",
@@ -2598,7 +2598,7 @@
     "indications": "脑水肿/COVID-19重症/化疗止吐",
     "contraindications": "全身真菌/未控制感染",
     "caution": "HPA↑；NO盐皮质激素活性",
-    "group": "糖皮质激素(长效)"
+    "group": "激素/代谢"
   },
   {
     "name": "氨氯地平",
@@ -2607,7 +2607,7 @@
     "indications": "高血压/心绞痛",
     "contraindications": "严重低血压",
     "caution": "水肿常见；起效慢但持久",
-    "group": "CCB"
+    "group": "心血管药"
   },
   {
     "name": "硝苯地平控释片",
@@ -2616,7 +2616,7 @@
     "indications": "高血压/变异心绞痛",
     "contraindications": "严重AS/低血压",
     "caution": "控释制剂不能掰开",
-    "group": "CCB"
+    "group": "心血管药"
   },
   {
     "name": "非洛地平",
@@ -2625,7 +2625,7 @@
     "indications": "高血压",
     "contraindications": "严重低血压/妊娠",
     "caution": "牙龈增生；与葡萄柚汁合用↑",
-    "group": "CCB"
+    "group": "心血管药"
   },
   {
     "name": "乐卡地平",
@@ -2634,7 +2634,7 @@
     "indications": "高血压",
     "contraindications": "不推荐与环孢素同服",
     "caution": "水肿少；亲脂性高",
-    "group": "CCB"
+    "group": "心血管药"
   },
   {
     "name": "地尔硫卓",
@@ -2643,7 +2643,7 @@
     "indications": "高血压/房颤心率控制/变异型心绞痛",
     "contraindications": "AVB/SSS/HFrEF",
     "caution": "负性肌力；减慢心率",
-    "group": "非DHP CCB"
+    "group": "心血管药"
   },
   {
     "name": "维拉帕米",
@@ -2652,7 +2652,7 @@
     "indications": "高血压/SVT/变异型",
     "contraindications": "HFrEF/AVB/SSS",
     "caution": "抑制肠道蠕动(便秘)",
-    "group": "非DHP CCB"
+    "group": "心血管药"
   },
   {
     "name": "氯沙坦",
@@ -2661,7 +2661,7 @@
     "indications": "高血压/HF/蛋白尿",
     "contraindications": "妊娠/双侧肾动脉狭窄",
     "caution": "可降尿酸；含ARB最老的",
-    "group": "ARB"
+    "group": "心血管药"
   },
   {
     "name": "缬沙坦",
@@ -2670,7 +2670,7 @@
     "indications": "高血压/HF",
     "contraindications": "妊娠/ARAS",
     "caution": "HF证据好(Val-HeFT)",
-    "group": "ARB"
+    "group": "心血管药"
   },
   {
     "name": "替米沙坦",
@@ -2679,7 +2679,7 @@
     "indications": "高血压/CKD",
     "contraindications": "妊娠/ARAS",
     "caution": "半衰期最长；PPAR-γ激动",
-    "group": "ARB"
+    "group": "心血管药"
   },
   {
     "name": "坎地沙坦",
@@ -2688,7 +2688,7 @@
     "indications": "高血压/HF",
     "contraindications": "妊娠/ARAS",
     "caution": "HF证据(SCOPE/CHARM)",
-    "group": "ARB"
+    "group": "心血管药"
   },
   {
     "name": "依普利酮",
@@ -2697,7 +2697,7 @@
     "indications": "心衰/高血压",
     "contraindications": "CrCl<30/K>5.5",
     "caution": "比螺内酯选择性多；男性乳房发育少",
-    "group": "甾体MRA"
+    "group": "心血管药"
   },
   {
     "name": "雷米普利",
@@ -2706,7 +2706,7 @@
     "indications": "高血压/HF/蛋白尿",
     "contraindications": "妊娠/ARAS/血管水肿",
     "caution": "HOPE证据(高CVD风险)",
-    "group": "ACEI"
+    "group": "心血管药"
   },
   {
     "name": "培哚普利",
@@ -2715,7 +2715,7 @@
     "indications": "高血压/冠心病",
     "contraindications": "妊娠/ARAS/血管水肿",
     "caution": "EUROPA证据(CAD稳定)",
-    "group": "ACEI"
+    "group": "心血管药"
   },
   {
     "name": "赖诺普利",
@@ -2724,7 +2724,7 @@
     "indications": "高血压/HF",
     "contraindications": "妊娠/ARAS/血管水肿",
     "caution": "水溶性(非前药)；HF证据",
-    "group": "ACEI"
+    "group": "心血管药"
   },
   {
     "name": "比索洛尔",
@@ -2733,7 +2733,7 @@
     "indications": "HFrEF/高血压/心绞痛",
     "contraindications": "AVB/SSS/严重哮喘",
     "caution": "CIBIS-II；心脏选择性最高之一",
-    "group": "β1-BB"
+    "group": "心血管药"
   },
   {
     "name": "卡维地洛",
@@ -2742,7 +2742,7 @@
     "indications": "HFrEF/高血压",
     "contraindications": "AVB/SSS/严重哮喘/肝病",
     "caution": "COPERNICUS证据；抗氧化作用",
-    "group": "α1+β1+β2 BB"
+    "group": "心血管药"
   },
   {
     "name": "美托洛尔",
@@ -2751,7 +2751,7 @@
     "indications": "HFrEF/高血压/心绞痛",
     "contraindications": "AVB/SSS/严重哮喘",
     "caution": "MERIT-HF证据；酒石酸vs琥珀酸",
-    "group": "β1-BB"
+    "group": "心血管药"
   },
   {
     "name": "瑞舒伐他汀",
@@ -2760,7 +2760,7 @@
     "indications": "高LDL-C/CVD预防",
     "contraindications": "活动性肝病/妊娠",
     "caution": "亚洲人>20mg rhabdo风险↑",
-    "group": "他汀(强效)"
+    "group": "心血管药"
   },
   {
     "name": "阿托伐他汀",
@@ -2769,7 +2769,7 @@
     "indications": "高LDL-C/CVD预防",
     "contraindications": "活动性肝病/妊娠",
     "caution": "最多证据；SPARCL卒中二级预防",
-    "group": "他汀(强效)"
+    "group": "心血管药"
   },
   {
     "name": "依折麦布",
@@ -2778,7 +2778,7 @@
     "indications": "高LDL-C(他汀联合)",
     "contraindications": "活动性肝病",
     "caution": "肠道胆固醇吸收抑制",
-    "group": "NPC1L1抑制"
+    "group": "心血管药"
   },
   {
     "name": "非诺贝特",
@@ -2787,7 +2787,7 @@
     "indications": "高TG/混合型高血脂",
     "contraindications": "严重肝/肾/胆囊病",
     "caution": "与Statins联用小心肌肉损伤",
-    "group": "PPAR-α激动"
+    "group": "心血管药"
   },
   {
     "name": "阿利西尤单抗",
@@ -2796,7 +2796,7 @@
     "indications": "他汀不耐受高危CVD",
     "contraindications": "无",
     "caution": "LDL-C降60%；可qd/月",
-    "group": "PCSK9i"
+    "group": "心血管药"
   },
   {
     "name": "二甲双胍",
@@ -2805,7 +2805,7 @@
     "indications": "T2DM一线",
     "contraindications": "eGFR<30/肝衰/酸中毒",
     "caution": "PCOS；B12监测",
-    "group": "双胍类"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "格列美脲",
@@ -2814,7 +2814,7 @@
     "indications": "T2DM二线",
     "contraindications": "严重肝/肾",
     "caution": "低血糖/体重增加",
-    "group": "磺脲类"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "西格列汀",
@@ -2823,7 +2823,7 @@
     "indications": "T2DM三线",
     "contraindications": "胰腺炎史",
     "caution": "中性；肾功减量",
-    "group": "DPP-4i"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "维格列汀",
@@ -2832,7 +2832,7 @@
     "indications": "T2DM",
     "contraindications": "肝病>3×ULN",
     "caution": "肝监测",
-    "group": "DPP-4i"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "利格列汀",
@@ -2841,7 +2841,7 @@
     "indications": "T2DM/CKD",
     "contraindications": "胰腺炎史",
     "caution": "唯一不需肾功调整的DPP-4i",
-    "group": "DPP-4i"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "阿卡波糖",
@@ -2850,7 +2850,7 @@
     "indications": "T2DM/糖耐量异常",
     "contraindications": "IBD/肠梗阻/GFR<20",
     "caution": "降低餐后血糖；GI副作用",
-    "group": "α-糖苷酶抑制"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "恩格列净+二甲双胍",
@@ -2859,7 +2859,7 @@
     "indications": "T2DM合并CV/CKD",
     "contraindications": "eGFR<45/酸中毒",
     "caution": "复方制剂；CV获益",
-    "group": "SGLT2i+双胍"
+    "group": "内分泌/糖尿病"
   },
   {
     "name": "氢氯噻嗪",
@@ -2868,7 +2868,7 @@
     "indications": "高血压/水肿",
     "contraindications": "痛风/严重肾衰",
     "caution": "低钾/高尿酸/高钙",
-    "group": "噻嗪类利尿"
+    "group": "心血管药"
   },
   {
     "name": "呋塞米",
@@ -2877,7 +2877,7 @@
     "indications": "水肿/HF/肾衰",
     "contraindications": "无尿",
     "caution": "耳毒性(快速iv/高剂量)",
-    "group": "袢利尿剂"
+    "group": "心血管药"
   },
   {
     "name": "螺内酯",
@@ -2886,7 +2886,7 @@
     "indications": "HF/肝硬化腹水/HA",
     "contraindications": "K>5.5/CrCl<30",
     "caution": "乳腺发育(男性)；高钾",
-    "group": "MRA"
+    "group": "心血管药"
   },
   {
     "name": "氨苯蝶啶",
@@ -2895,7 +2895,7 @@
     "indications": "高血压/水肿(联合排钾)",
     "contraindications": "严重肾衰/高钾",
     "caution": "结石形成(肾)；叶酸拮抗",
-    "group": "ENaC阻断"
+    "group": "心血管药"
   },
   {
     "name": "孟鲁司特",
@@ -2904,7 +2904,7 @@
     "indications": "哮喘/过敏性鼻炎",
     "contraindications": "无",
     "caution": "NPS警告(精神副作用罕见)",
-    "group": "LTR拮抗剂"
+    "group": "呼吸系统"
   },
   {
     "name": "沙丁胺醇",
@@ -2913,7 +2913,7 @@
     "indications": "哮喘急性发作",
     "contraindications": "无",
     "caution": "β₂选择性；心动过速/震颤",
-    "group": "SABA"
+    "group": "呼吸系统"
   },
   {
     "name": "布地奈德",
@@ -2922,7 +2922,7 @@
     "indications": "哮喘维持/COPD",
     "contraindications": "无",
     "caution": "局部；妊娠B类(布地奈德)",
-    "group": "ICS"
+    "group": "呼吸系统"
   },
   {
     "name": "氟替卡松",
@@ -2931,7 +2931,7 @@
     "indications": "哮喘/COPD",
     "contraindications": "无",
     "caution": "高亲脂性；长效",
-    "group": "ICS"
+    "group": "呼吸系统"
   },
   {
     "name": "布地奈德福莫特罗",
@@ -2940,7 +2940,7 @@
     "indications": "哮喘/COPD",
     "contraindications": "无",
     "caution": "SMART方案；递增或维持",
-    "group": "ICS+LABA"
+    "group": "呼吸系统"
   },
   {
     "name": "氟替卡松维兰特罗",
@@ -2949,7 +2949,7 @@
     "indications": "哮喘/COPD",
     "contraindications": "无",
     "caution": "qd服法；比沙美特罗长效",
-    "group": "ICS+LABA"
+    "group": "呼吸系统"
   },
   {
     "name": "沙美特罗氟替卡松",
@@ -2958,7 +2958,7 @@
     "indications": "哮喘/COPD",
     "contraindications": "无",
     "caution": "慢起效；经典",
-    "group": "ICS+LABA"
+    "group": "呼吸系统"
   },
   {
     "name": "罗氟司特",
@@ -2967,7 +2967,7 @@
     "indications": "重度COPD(含慢支)+频繁加重",
     "contraindications": "肝病(NYHA III-IV)",
     "caution": "体重↓；自杀意念(罕见)",
-    "group": "PDE-4抑制"
+    "group": "呼吸系统"
   },
   {
     "name": "厄洛替尼",
@@ -2976,7 +2976,7 @@
     "indications": "EGFRm NSCLC",
     "contraindications": "无",
     "caution": "皮疹/腹泻；CYP3A4底物",
-    "group": "EGFR TKI(一代)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "吉非替尼",
@@ -2985,7 +2985,7 @@
     "indications": "EGFRm NSCLC",
     "contraindications": "无",
     "caution": "ILD风险；亚洲人首选",
-    "group": "EGFR TKI(一代)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "舒尼替尼",
@@ -2994,7 +2994,7 @@
     "indications": "RCC/GIST",
     "contraindications": "肝病/左室功能不全",
     "caution": "高血压/甲减/手足综合征",
-    "group": "多靶点TKI"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "索拉非尼",
@@ -3003,7 +3003,7 @@
     "indications": "HCC/RCC/甲状腺癌",
     "contraindications": "无",
     "caution": "手足皮肤反应；腹泻",
-    "group": "多靶点TKI"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "仑伐替尼",
@@ -3012,7 +3012,7 @@
     "indications": "HCC/甲状腺癌/RCC",
     "contraindications": "无",
     "caution": "高血压/蛋白尿；比索拉强效",
-    "group": "多靶点TKI"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "安罗替尼",
@@ -3021,7 +3021,7 @@
     "indications": "NSCLC/SCLC/STS/MTC",
     "contraindications": "咯血/空洞",
     "caution": "手足/高血压/出血",
-    "group": "多靶点TKI(国产)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "阿帕替尼",
@@ -3030,7 +3030,7 @@
     "indications": "胃癌三线/HCC",
     "contraindications": "出血/空洞",
     "caution": "手足/高血压/蛋白尿",
-    "group": "VEGFR-2 TKI(国产)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "泽布替尼",
@@ -3039,7 +3039,7 @@
     "indications": "MCL/CLL/WM",
     "contraindications": "肝损",
     "caution": "比伊布替尼副作用少(房颤↓/出血↓)",
-    "group": "BTK抑制"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "达雷妥尤单抗",
@@ -3048,7 +3048,7 @@
     "indications": "MM",
     "contraindications": "无",
     "caution": "输液反应；血型干扰(间接抗球蛋白)",
-    "group": "抗CD38"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "沙利度胺",
@@ -3057,7 +3057,7 @@
     "indications": "MM/ENL",
     "contraindications": "妊娠(致畸)",
     "caution": "周围神经病/血栓预防；镇静",
-    "group": "免疫调节/抗血管"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "泊马度胺",
@@ -3066,7 +3066,7 @@
     "indications": "RRMM(来那度胺耐药后)",
     "contraindications": "妊娠(致畸)",
     "caution": "强效；中性粒细胞减少主要毒性",
-    "group": "免疫调节(三代)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "塞替派",
@@ -3075,7 +3075,7 @@
     "indications": "自体移植前预处理",
     "contraindications": "严重骨髓抑制",
     "caution": "穿透CNS；副作用显著",
-    "group": "烷化剂"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "顺铂",
@@ -3084,7 +3084,7 @@
     "indications": "睾丸/卵巢/头颈/肺/膀胱",
     "contraindications": "肾衰/听力受损",
     "caution": "肾毒性(需水化)；耳鸣不可逆",
-    "group": "铂类"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "卡铂",
@@ -3093,7 +3093,7 @@
     "indications": "卵巢/肺/乳腺",
     "contraindications": "严重骨髓抑制",
     "caution": "比顺铂消化道毒性小；血小板低为主",
-    "group": "铂类(二代)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "奥沙利铂",
@@ -3102,7 +3102,7 @@
     "indications": "结直肠(与5-FU联用)",
     "contraindications": "神经病变(冷触发)",
     "caution": "累计量导致喉痉挛/吞咽困难(寒冷)",
-    "group": "铂类(三代)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "5-FU",
@@ -3111,7 +3111,7 @@
     "indications": "结直肠/胃/乳腺/头颈",
     "contraindications": "DPD缺乏/严重骨髓抑制",
     "caution": "心脏毒性(输注期间)/口腔炎/腹泻",
-    "group": "嘧啶类似物"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "卡培他滨",
@@ -3120,7 +3120,7 @@
     "indications": "结直肠/乳腺/胃癌",
     "contraindications": "DPD缺乏/CrCl<30",
     "caution": "手足综合征；拟5-FU",
-    "group": "5-FU前药(口服)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "吉西他滨",
@@ -3129,7 +3129,7 @@
     "indications": "胰腺/肺/膀胱/乳腺/卵巢",
     "contraindications": "严重肝/肾损",
     "caution": "放射敏感剂(放疗+同期不能用>7d内)",
-    "group": "嘧啶类似物"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "紫杉醇",
@@ -3138,7 +3138,7 @@
     "indications": "卵巢/乳腺/肺/头颈/Kaposi",
     "contraindications": "ANC<1500/严重肝病",
     "caution": "神经病变；过敏反应(需术前给药)",
-    "group": "紫杉烷"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "多西他赛",
@@ -3147,7 +3147,7 @@
     "indications": "乳腺/肺/前列腺/胃癌/头颈",
     "contraindications": "肝病/ANC<1500",
     "caution": "水肿(累积)；指甲变化",
-    "group": "紫杉烷(半合成)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "长春瑞滨",
@@ -3156,7 +3156,7 @@
     "indications": "NSCLC/乳腺癌",
     "contraindications": "ANC<1500/严重肝病",
     "caution": "便秘/末梢神经病",
-    "group": "长春碱类"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "长春新碱",
@@ -3165,7 +3165,7 @@
     "indications": "ALL/HL/NHL/横纹肌肉瘤/Wilms",
     "contraindications": "Charcot-Marie-Tooth",
     "caution": "袜套样神经病；便秘；SIADH",
-    "group": "长春碱"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "博来霉素",
@@ -3174,7 +3174,7 @@
     "indications": "HL/睾丸癌/头颈/卡波西",
     "contraindications": "严重肺/肾功能",
     "caution": "肺纤维化(累积终生>400U)；无骨髓抑制",
-    "group": "细胞毒性糖肽"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "环磷酰胺",
@@ -3183,7 +3183,7 @@
     "indications": "HL/NHL/ALL/CLL/MM/乳腺癌/ANCA/SLE",
     "contraindications": "出血性膀胱炎",
     "caution": "美司钠+水化；继发MDS/AML/膀胱癌",
-    "group": "氮芥类烷化剂"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "甲氨蝶呤高剂量",
@@ -3192,7 +3192,7 @@
     "indications": "ALL/NHL/骨肉瘤/淋巴瘤CNS",
     "contraindications": "肌酐升高/酸性尿",
     "caution": "CF解救/碱化尿液/MTX血药浓度监测",
-    "group": "叶酸拮抗"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "伊立替康",
@@ -3201,7 +3201,7 @@
     "indications": "结直肠(一线/二线转换)",
     "contraindications": "UGT1A1*28纯合/肠道梗阻",
     "caution": "早发/迟发腹泻(阿托品/止泻)；胆碱能综合征",
-    "group": "拓扑异构酶I抑制"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "依托泊苷",
@@ -3210,7 +3210,7 @@
     "indications": "SCLC/NHL/睾丸(挽救)",
     "contraindications": "严重肝肾/骨髓抑制",
     "caution": "继发MDS/AML患者",
-    "group": "拓扑异构酶II抑制"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "美法仑",
@@ -3219,7 +3219,7 @@
     "indications": "骨髓抑制/肾功能",
     "contraindications": "",
     "caution": "口服 vs 高剂量iv用于干细胞动员；黏膜炎严重",
-    "group": "烷化剂"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "白消安",
@@ -3228,7 +3228,7 @@
     "indications": "严重肝/肾功能",
     "contraindications": "",
     "caution": "VOD/SOS(肝)；癫痫预防(IV)",
-    "group": "烷化剂"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "来曲唑",
@@ -3237,7 +3237,7 @@
     "indications": "HR+乳腺癌",
     "contraindications": "premenopausal",
     "caution": "骨质疏松/关节痛",
-    "group": "芳香化酶抑制剂"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "阿那曲唑",
@@ -3246,7 +3246,7 @@
     "indications": "HR+乳腺癌",
     "contraindications": "同来曲唑",
     "caution": "同上",
-    "group": "芳香化酶抑制剂"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "比卡鲁胺",
@@ -3255,7 +3255,7 @@
     "indications": "前列腺癌(CAB)",
     "contraindications": "无",
     "caution": "男性乳房发育/潮热",
-    "group": "抗雄激素"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "恩杂鲁胺",
@@ -3264,7 +3264,7 @@
     "indications": "mCRPC/mHSPC",
     "contraindications": "癫痫发作；严重CVD",
     "caution": "穿透BBB；癫痫报告；CYP诱导",
-    "group": "AR信号抑制"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "阿帕鲁胺",
@@ -3273,7 +3273,7 @@
     "indications": "nmCRPC/mHSPC",
     "contraindications": "严重不稳定CVD/癫痫",
     "caution": "跌倒/骨折率高",
-    "group": "AR信号抑制(二代)"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "醋酸戈舍瑞林植入剂",
@@ -3282,7 +3282,7 @@
     "indications": "前列腺癌",
     "contraindications": "妊娠",
     "caution": "长效给药(3月)；初始雄激素一过性升高",
-    "group": "GnRH激动剂"
+    "group": "抗肿瘤/免疫"
   },
   {
     "name": "磷酸芦可替尼",
@@ -3291,6 +3291,6 @@
     "indications": "骨髓纤维化/PV",
     "contraindications": "血小板<50K",
     "caution": "血小板/贫血；带状疱疹再激活",
-    "group": "JAK1/2抑制"
+    "group": "抗肿瘤/免疫"
   }
 ]

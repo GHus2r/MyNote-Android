@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.mynote.android.R
 import com.mynote.android.data.AppDatabase
 import com.mynote.android.data.entity.ContentItem
 import com.mynote.android.data.entity.Meeting
@@ -419,7 +420,7 @@ class MeetingActivity : AppCompatActivity() {
 
     private fun showAddParticipant() {
         val input = EditText(this).apply { hint = "姓名"; setSingleLine(); setPadding(18, 14, 18, 14); textSize = 14f }
-        val dlg = android.app.AlertDialog.Builder(this)
+        val dlg = android.app.AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("添加参会人")
             .setView(input)
             .setPositiveButton("添加") { _, _ ->

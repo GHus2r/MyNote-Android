@@ -56,24 +56,19 @@ class SubCategoryAdapter(
         fun bind(item: SubCategory, count: Int) {
             tvName.text = item.name
             tvCount.text = "${count} 篇"
-            try {
-                val colorStr = item.color.takeIf { it.isNotBlank() }
+            val colorStr = try {
+                item.color.takeIf { it.isNotBlank() }
                     ?: parentColors[item.parentId]
                     ?: "#2196F3"
-                val baseColor = Color.parseColor(colorStr)
-                (colorDot.background as? GradientDrawable)?.setColor(baseColor)
+            } catch (_: Exception) { "#2196F3" }
+            val baseColor = try { Color.parseColor(colorStr) } catch (_: Exception) { Color.parseColor("#2196F3") }
+            (colorDot.background as? GradientDrawable)?.setColor(baseColor)
 
-                val lightColor = Color.argb(40, Color.red(baseColor), Color.green(baseColor), Color.blue(baseColor))
-                val gradient = GradientDrawable(
-                    GradientDrawable.Orientation.TL_BR,
-                    intArrayOf(lightColor, Color.WHITE)
-                )
-                val radius = 12 * itemView.context.resources.displayMetrics.density
-                gradient.cornerRadius = radius
-                itemView.background = gradient
-            } catch (_: Exception) {
-                itemView.setBackgroundResource(R.color.bg_card)
-            }
+            // 子主题卡片真玻璃背景（透主题色淡光斑）
+            itemView.findViewById<androidx.compose.ui.platform.ComposeView>(R.id.sub_card_glass)
+                ?.setContent {
+                    com.mynote.android.ui.glass.GlassCardBackground(tintHex = colorStr)
+                }
 
             itemView.setOnClickListener { onItemClick(item) }
             btnEdit.setOnClickListener { onEditClick(item) }

@@ -16,8 +16,10 @@ import android.os.Bundle
 import android.text.InputType
 import android.util.TypedValue
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -26,6 +28,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SwitchCompat
 import androidx.biometric.BiometricManager
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.getSystemService
 import androidx.lifecycle.lifecycleScope
 import com.mynote.android.R
@@ -63,41 +67,8 @@ class SettingsActivity : BaseActivity() {
 
     override fun exemptFromLock() = true
 
-    // 安全设置
-    private lateinit var switchPassword: SwitchCompat
-    private lateinit var itemChangePwd: View
-    private lateinit var switchFingerprint: SwitchCompat
-    private lateinit var itemFingerprint: View
-    private lateinit var tvFingerprintHint: TextView
-    private lateinit var itemLockTime: View
-    private lateinit var tvLockTimeValue: TextView
-    private lateinit var switchAntiUninstall: SwitchCompat
-    private lateinit var tvAntiUninstallHint: TextView
-
-    // 备份
-    private lateinit var tvLastBackup: TextView
-    private lateinit var itemLocalBackup: View
-    private lateinit var itemDbBackup: View
-    private lateinit var itemExportAll: View
-    private lateinit var itemRestoreZip: View
-    private lateinit var itemRestoreBackup: View
-    private lateinit var itemManageBackups: View
-    private lateinit var tvBackupCount: TextView
-    private lateinit var itemCreateShortcut: View
-    private lateinit var switchQuickRecord: SwitchCompat
-    private lateinit var tvQuickRecordHint: TextView
-    private lateinit var itemShakeSensitive: View
-    private lateinit var tvShakeSensitive: TextView
-    private lateinit var itemCrashLogs: View
-    private lateinit var itemIatConfig: View
-    private lateinit var itemTianyiConfig: View
-    private lateinit var itemQwenConfig: View
-    private lateinit var itemDeepseekConfig: View
-    private lateinit var tvCrashCount: TextView
-    private lateinit var itemPatientMgr: View
-    private lateinit var tvPatientCount: TextView
-    private lateinit var itemStorage: View
-    private lateinit var tvStorageSize: TextView
+    // 设置项 Compose 状态
+    private val settingsState = mutableStateOf(SettingsState())
     private var pendingRestoreUri: Uri? = null
 
     private val lockTimeLabels = listOf("立即", "1分钟", "3分钟", "5分钟", "10分钟", "从不")
@@ -125,156 +96,126 @@ class SettingsActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        switchPassword = findViewById(R.id.switch_password)
-        itemChangePwd = findViewById(R.id.item_change_password)
-        switchFingerprint = findViewById(R.id.switch_fingerprint)
-        itemFingerprint = findViewById(R.id.item_fingerprint)
-        tvFingerprintHint = findViewById(R.id.tv_fingerprint_hint)
-        itemLockTime = findViewById(R.id.item_lock_time)
-        tvLockTimeValue = findViewById(R.id.tv_lock_time_value)
-        switchAntiUninstall = findViewById(R.id.switch_anti_uninstall)
-        tvAntiUninstallHint = findViewById(R.id.tv_anti_uninstall_hint)
-        tvLastBackup = findViewById(R.id.tv_last_backup)
-        itemLocalBackup = findViewById(R.id.item_local_backup)
-        itemDbBackup = findViewById(R.id.item_db_backup)
-        itemExportAll = findViewById(R.id.item_export_all)
-        itemRestoreZip = findViewById(R.id.item_restore_zip)
-        itemRestoreBackup = findViewById(R.id.item_restore_backup)
-        itemManageBackups = findViewById(R.id.item_manage_backups)
-        tvBackupCount = findViewById(R.id.tv_backup_count)
-        itemCreateShortcut = findViewById(R.id.item_create_shortcut)
-        switchQuickRecord = findViewById(R.id.switch_quick_record)
-        tvQuickRecordHint = findViewById(R.id.tv_quick_record_hint)
-        itemShakeSensitive = findViewById(R.id.item_shake_sensitive)
-        tvShakeSensitive = findViewById(R.id.tv_shake_sensitive)
-        itemCrashLogs = findViewById(R.id.item_crash_logs)
-        itemIatConfig = findViewById(R.id.item_iat_config)
-        itemTianyiConfig = findViewById(R.id.item_tianyi_config)
-        itemQwenConfig = findViewById(R.id.item_qwen_config)
-        itemDeepseekConfig = findViewById(R.id.item_deepseek_config)
-        tvCrashCount = findViewById(R.id.tv_crash_count)
-        itemPatientMgr = findViewById(R.id.item_patient_mgr)
-        tvPatientCount = findViewById(R.id.tv_patient_count)
-        itemStorage = findViewById(R.id.item_storage)
-        tvStorageSize = findViewById(R.id.tv_storage_size)
+        // 状态栏透明：让浅紫白渐变背景从屏幕最顶透出
+        // 日间浅背景用深色系统图标，夜间深紫背景用浅色图标
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        val isNightMode = (resources.configuration.uiMode and
+                android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+                android.content.res.Configuration.UI_MODE_NIGHT_YES
+        androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
+            .isAppearanceLightStatusBars = !isNightMode
+
+        // 设置项列表 Compose（含玻璃顶栏透出滚动内容）
+        findViewById<ComposeView>(R.id.settings_compose).setContent {
+            val state = settingsState.value
+            SettingsScreen(
+                state = state,
+                onPasswordToggle = { checked ->
+                    prefs.passwordEnabled = checked
+                    if (checked && prefs.password.isNullOrEmpty()) showSetPasswordDialog()
+                    refreshUI()
+                },
+                onChangePassword = { showSetPasswordDialog() },
+                onFingerprintToggle = { checked ->
+                    prefs.fingerprintEnabled = checked
+                    Toast.makeText(this@SettingsActivity, if (checked) "指纹解锁已开启" else "指纹解锁已关闭", Toast.LENGTH_SHORT).show()
+                },
+                onLockTimeClick = { showLockTimeDialog() },
+                onAntiUninstallToggle = { checked ->
+                    if (checked) enableAntiUninstall() else disableAntiUninstall()
+                },
+                onLocalBackupClick = { showBackupOptionsDialog() },
+                onDbBackupClick = { startDbBackup() },
+                onRestoreBackupClick = { startRestore() },
+                onManageBackupsClick = { showManageBackupsDialog() },
+                onCreateShortcutClick = {
+                    AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog)
+                        .setTitle("快捷方式")
+                        .setItems(arrayOf("创建桌面快捷方式", "切换图标样式")) { _, which ->
+                            if (which == 0) createShortcut() else switchIconStyle()
+                        }
+                        .setNegativeButton("取消", null)
+                        .show()
+                },
+                onExportAllClick = { exportAllData() },
+                onRestoreZipClick = { pickZipForRestore() },
+                onPatientMgrClick = { showPatientManager() },
+                onQuickRecordToggle = { checked ->
+                    prefs.quickRecordEnabled = checked
+                    if (checked) {
+                        com.mynote.android.ui.recording.QuickRecordService.start(this@SettingsActivity)
+                        Toast.makeText(this@SettingsActivity, "摇一摇快速录音已开启", Toast.LENGTH_SHORT).show()
+                    } else {
+                        com.mynote.android.ui.recording.QuickRecordService.stop(this@SettingsActivity)
+                        Toast.makeText(this@SettingsActivity, "摇一摇快速录音已关闭", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onShakeSensitiveClick = { showShakeSensitivityDialog() },
+                onStorageClick = { showStorageDialog() },
+                onIatConfigClick = { showIatConfigDialog() },
+                onTianyiConfigClick = { showTianyiConfigDialog() },
+                onQwenConfigClick = { showQwenConfigDialog() },
+                onDeepseekConfigClick = { showDeepseekConfigDialog() },
+                onCrashLogsClick = { exportCrashLogs() }
+            )
+        }
 
         refreshUI()
-        setupListeners()
+        refreshStorageSize()
         initAntiUninstall()
+
+        // 启动时恢复摇一摇录音状态
+        if (prefs.quickRecordEnabled) {
+            com.mynote.android.ui.recording.QuickRecordService.start(this)
+        }
 
         // 初始化 DDInter 药物相互作用引擎
         com.mynote.android.util.DrugInteractionEngine.init(this)
 
         findViewById<TextView>(R.id.btn_settings_back).setOnClickListener { finish() }
+
+        // 处理工具跳转
+        handleToolIntent()
     }
 
     private fun refreshUI() {
-        switchPassword.isChecked = prefs.passwordEnabled
-        itemChangePwd.visibility = if (prefs.passwordEnabled) View.VISIBLE else View.GONE
-
         val canBio = BiometricManager.from(this).canAuthenticate(
             BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.BIOMETRIC_WEAK
         ) != BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE
-        itemFingerprint.visibility = if (prefs.passwordEnabled) View.VISIBLE else View.GONE
-        switchFingerprint.isChecked = prefs.fingerprintEnabled && canBio
-        switchFingerprint.isEnabled = canBio
-        tvFingerprintHint.visibility = if (!canBio) View.VISIBLE else View.GONE
-        if (!canBio) switchFingerprint.isChecked = false
 
         val lockIdx = lockTimeValues.indexOf(prefs.lockTimeMinutes).takeIf { it >= 0 } ?: 0
-        tvLockTimeValue.text = lockTimeLabels[lockIdx]
 
-        switchAntiUninstall.isChecked = prefs.antiUninstallEnabled
         val realActive = isAdminActive()
-        tvAntiUninstallHint.text = when {
+        val antiHint = when {
             realActive -> "保护中 — 需停用设备管理员才能卸载"
             prefs.antiUninstallEnabled -> "状态异常 — 请重新激活"
             else -> "激活后可防止恶意卸载"
         }
         if (prefs.antiUninstallEnabled != realActive) {
             prefs.antiUninstallEnabled = realActive
-            switchAntiUninstall.isChecked = realActive
         }
 
-        refreshBackupInfo()
-        refreshCrashCount()
-    }
+        val patientCount = try { com.mynote.android.util.PatientManager.getAll().size } catch (e: Exception) { 0 }
 
-    private fun refreshBackupInfo() {
-        tvLastBackup.text = prefs.lastBackupTime ?: "从未备份"
-        val backupFiles = BackupManager.listBackupFiles(this)
-        tvBackupCount.text = "${backupFiles.size}个"
-    }
-
-    private fun setupListeners() {
-        switchPassword.setOnCheckedChangeListener { _, checked ->
-            prefs.passwordEnabled = checked
-            if (checked && prefs.password.isNullOrEmpty()) showSetPasswordDialog()
-            refreshUI()
-        }
-        itemChangePwd.setOnClickListener { showSetPasswordDialog() }
-
-        switchFingerprint.setOnCheckedChangeListener { _, checked ->
-            prefs.fingerprintEnabled = checked
-            Toast.makeText(this, if (checked) "指纹解锁已开启" else "指纹解锁已关闭", Toast.LENGTH_SHORT).show()
-        }
-
-        itemLockTime.setOnClickListener { showLockTimeDialog() }
-
-        switchAntiUninstall.setOnCheckedChangeListener { _, checked ->
-            if (checked) enableAntiUninstall() else disableAntiUninstall()
-        }
-
-        itemLocalBackup.setOnClickListener { showBackupOptionsDialog() }
-        itemDbBackup.setOnClickListener { startDbBackup() }
-        itemExportAll.setOnClickListener { exportAllData() }
-        itemRestoreZip.setOnClickListener { pickZipForRestore() }
-        itemPatientMgr.setOnClickListener { showPatientManager() }
-
-        itemRestoreBackup.setOnClickListener { startRestore() }
-        itemManageBackups.setOnClickListener { showManageBackupsDialog() }
-        itemCreateShortcut.setOnClickListener {
-            AlertDialog.Builder(this, R.style.RoundedDialog)
-                .setTitle("快捷方式")
-                .setItems(arrayOf("创建桌面快捷方式", "切换图标样式")) { _, which ->
-                    if (which == 0) createShortcut() else switchIconStyle()
-                }
-                .setNegativeButton("取消", null)
-                .show()
-        }
-        itemCrashLogs.setOnClickListener { exportCrashLogs() }
-        itemIatConfig.setOnClickListener { showIatConfigDialog() }
-        itemTianyiConfig.setOnClickListener { showTianyiConfigDialog() }
-        itemQwenConfig.setOnClickListener { showQwenConfigDialog() }
-        itemDeepseekConfig.setOnClickListener { showDeepseekConfigDialog() }
-        itemShakeSensitive.setOnClickListener { showShakeSensitivityDialog() }
-        itemStorage.setOnClickListener { showStorageDialog() }
-        refreshStorageSize()
-
-        // 摇一摇灵敏度
-        refreshShakeSensitivity()
-
-        // 启动时恢复状态（先设值再设监听器，避免初始值触发监听器）
-        switchQuickRecord.isChecked = prefs.quickRecordEnabled
-        if (prefs.quickRecordEnabled) {
-            com.mynote.android.ui.recording.QuickRecordService.start(this)
-        }
-
-        switchQuickRecord.setOnCheckedChangeListener { _, checked ->
-            prefs.quickRecordEnabled = checked
-            if (checked) {
-                com.mynote.android.ui.recording.QuickRecordService.start(this)
-                Toast.makeText(this, "摇一摇快速录音已开启", Toast.LENGTH_SHORT).show()
-            } else {
-                com.mynote.android.ui.recording.QuickRecordService.stop(this)
-                Toast.makeText(this, "摇一摇快速录音已关闭", Toast.LENGTH_SHORT).show()
-            }
-        }
-        handleToolIntent()
+        settingsState.value = SettingsState(
+            passwordEnabled = prefs.passwordEnabled,
+            fingerprintEnabled = prefs.fingerprintEnabled && canBio,
+            antiUninstallEnabled = prefs.antiUninstallEnabled,
+            quickRecordEnabled = prefs.quickRecordEnabled,
+            canBio = canBio,
+            lockTimeLabel = lockTimeLabels[lockIdx],
+            shakeSensitiveLabel = if (prefs.shakeSensitive) "灵敏(摇3次)" else "迟钝(摇4次)",
+            lastBackupLabel = prefs.lastBackupTime ?: "从未备份",
+            backupCountLabel = "${BackupManager.listBackupFiles(this).size}个",
+            patientCountLabel = "${patientCount}人",
+            storageSizeLabel = settingsState.value.storageSizeLabel,
+            crashCountLabel = "${CrashHandler.listLogs().size}条",
+            antiUninstallHint = antiHint
+        )
     }
 
     private fun refreshShakeSensitivity() {
-        tvShakeSensitive.text = if (prefs.shakeSensitive) "灵敏(摇3次)" else "迟钝(摇4次)"
+        refreshUI()
     }
 
     // ===== 工具跳转 =====
@@ -312,7 +253,7 @@ class SettingsActivity : BaseActivity() {
     }
     private fun showDrugPickerFromSettings() {
         // 用药参考：直接打开疾病药品选择
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("用药参考")
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("用药参考")
             .setMessage("药品种类繁多，请使用搜索功能。\n\n设置中查看完整367种药品。")
             .setPositiveButton("打开完整药品库") { _, _ ->
                 // Trigger existing drug lookup
@@ -323,7 +264,7 @@ class SettingsActivity : BaseActivity() {
 
     private fun showShakeSensitivityDialog() {
         val items = arrayOf("灵敏 (摇3次触发)", "迟钝 (摇4次触发)")
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("摇一摇灵敏度")
             .setItems(items) { _, which ->
                 prefs.shakeSensitive = (which == 0)
@@ -341,14 +282,13 @@ class SettingsActivity : BaseActivity() {
         val title = view.findViewById<TextView>(R.id.tv_dialog_title)
         title.text = if (isNew) "设置安全码" else "修改安全码"
 
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setView(view)
             .setPositiveButton("确定") { _, _ ->
                 val pwd = etPwd.text.toString().trim()
                 if (pwd.length >= 3) {
                     prefs.password = pwd
                     prefs.passwordEnabled = true
-                    switchPassword.isChecked = true
                     refreshUI()
                     Toast.makeText(this, "密码已设置", Toast.LENGTH_SHORT).show()
                 } else {
@@ -360,7 +300,7 @@ class SettingsActivity : BaseActivity() {
     }
 
     private fun showLockTimeDialog() {
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("自动锁定时间")
             .setItems(lockTimeLabels.toTypedArray()) { _, which ->
                 prefs.lockTimeMinutes = lockTimeValues[which]
@@ -394,7 +334,6 @@ class SettingsActivity : BaseActivity() {
             startActivity(intent)
             // onResume 中会检查激活状态并弹对话框
         } catch (e: Exception) {
-            switchAntiUninstall.isChecked = false
             Toast.makeText(this, "设备不支持", Toast.LENGTH_SHORT).show()
         }
     }
@@ -402,38 +341,35 @@ class SettingsActivity : BaseActivity() {
     private fun disableAntiUninstall() {
         val component = adminComponent
         if (component != null && dpm?.isAdminActive(component) == true) {
-            AlertDialog.Builder(this, R.style.RoundedDialog)
+            AlertDialog.Builder(this, R.style.GlassDialog)
                 .setTitle("停用防卸载")
                 .setMessage("停用后应用将自动锁定，需要密码才能访问数据。\n\n确定继续？")
                 .setPositiveButton("停用") { _, _ ->
                     dpm?.removeActiveAdmin(component)
                     prefs.antiUninstallEnabled = false
                     IconManager.removeAllDynamicShortcuts(this@SettingsActivity)
-                    switchAntiUninstall.isChecked = false
                     refreshUI()
                 }
                 .setNegativeButton("取消") { _, _ ->
-                    switchAntiUninstall.isChecked = true
+                    refreshUI()
                 }
                 .show()
         } else {
             prefs.antiUninstallEnabled = false
             IconManager.removeAllDynamicShortcuts(this)
-            switchAntiUninstall.isChecked = false
             refreshUI()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        refreshBackupInfo()
+        refreshUI()
         // 从系统激活界面返回后同步管理员真实状态
         val realActive = isAdminActive()
         val prefsActive = prefs.antiUninstallEnabled
         if (prefsActive != realActive) {
             prefs.antiUninstallEnabled = realActive
-            switchAntiUninstall.isChecked = realActive
-            tvAntiUninstallHint.text = if (realActive) "保护中 — 需停用设备管理员才能卸载" else "激活后可防止恶意卸载"
+            refreshUI()
             if (realActive && !prefs.shortcutPromptDismissed) {
                 // 首次从系统激活页返回，且用户未点过"暂不"
                 showCreateShortcutPrompt()
@@ -447,7 +383,7 @@ class SettingsActivity : BaseActivity() {
      * 防卸载激活后，弹出提示询问是否创建桌面快捷方式
      */
     private fun showCreateShortcutPrompt() {
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("桌面快捷方式")
             .setMessage("防卸载已激活！\n\n点击桌面图标将显示伪装计算器界面。\n建议创建「MN」快捷方式作为真实入口。\n\n是否现在创建？")
             .setPositiveButton("创建") { _, _ ->
@@ -468,7 +404,7 @@ class SettingsActivity : BaseActivity() {
             "极简绿点" to R.drawable.ic_shortcut_minimal,
             "MN 文字" to R.drawable.ic_shortcut_mn
         )
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("选择图标样式")
             .setItems(icons.map { it.first }.toTypedArray()) { _, which ->
                 createShortcutWithIcon(icons[which].second)
@@ -545,7 +481,7 @@ class SettingsActivity : BaseActivity() {
             "⚙️ 配置坚果云 WebDAV",
             "📥 从坚果云恢复备份")
 
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("选择备份方式")
             .setItems(items.toTypedArray()) { _, which ->
                 when (which) {
@@ -590,7 +526,7 @@ class SettingsActivity : BaseActivity() {
         layout.addView(etPass)
         layout.addView(hint)
 
-        AlertDialog.Builder(this)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("⚙️ 坚果云 WebDAV 配置")
             .setView(layout)
             .setPositiveButton("保存") { _, _ ->
@@ -630,7 +566,7 @@ class SettingsActivity : BaseActivity() {
         layout.addView(statusText)
         layout.addView(switchRow)
 
-        val builder = AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("☁️ 坚果云备份")
             .setView(layout)
             .setPositiveButton("保存设置") { _, _ ->
@@ -660,7 +596,7 @@ class SettingsActivity : BaseActivity() {
             val files = WebDAVBackup.listBackupFiles(this@SettingsActivity)
             runOnUiThread {
                 if (files.isEmpty()) {
-                    AlertDialog.Builder(this@SettingsActivity)
+                    AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog)
                         .setTitle("📥 云端备份列表")
                         .setMessage("坚果云 /MyNote/ 下暂无备份文件")
                         .setPositiveButton("确定", null)
@@ -668,11 +604,11 @@ class SettingsActivity : BaseActivity() {
                     return@runOnUiThread
                 }
                 val labels = files.map { "${it.name}  (${it.time} · ${formatFileSize(it.size)})" }.toTypedArray()
-                AlertDialog.Builder(this@SettingsActivity)
+                AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog)
                     .setTitle("📥 云端备份列表 (${files.size}个)")
                     .setItems(labels) { _, which ->
                         val f = files[which]
-                        AlertDialog.Builder(this@SettingsActivity)
+                        AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog)
                             .setTitle("确认恢复")
                             .setMessage("将从云端下载并恢复:\n${f.name}\n\n⚠️ 当前数据将被覆盖")
                             .setPositiveButton("确认恢复") { _, _ ->
@@ -681,7 +617,7 @@ class SettingsActivity : BaseActivity() {
                                     val json = WebDAVBackup.downloadBackup(this@SettingsActivity, f.path)
                                     if (json != null) {
                                         runOnUiThread {
-                                            AlertDialog.Builder(this@SettingsActivity)
+                                            AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog)
                                                 .setTitle("恢复方式")
                                                 .setItems(arrayOf("覆盖当前数据（清空后导入）", "追加到当前数据")) { _, mode ->
                                                     lifecycleScope.launch {
@@ -689,7 +625,7 @@ class SettingsActivity : BaseActivity() {
                                                             val ok = BackupManager.importJsonString(this@SettingsActivity, json, mode == 0)
                                                             runOnUiThread {
                                                                 Toast.makeText(this@SettingsActivity, if (ok) "✅ 恢复成功" else "❌ 恢复失败", Toast.LENGTH_SHORT).show()
-                                                                refreshBackupInfo()
+                                                                refreshUI()
                                                             }
                                                         } catch (e: Exception) {
                                                             runOnUiThread { Toast.makeText(this@SettingsActivity, "恢复失败: ${e.message}", Toast.LENGTH_SHORT).show() }
@@ -741,7 +677,7 @@ class SettingsActivity : BaseActivity() {
                     is BackupManager.BackupResult.Error ->
                         Toast.makeText(this@SettingsActivity, "备份失败: ${result.message}", Toast.LENGTH_SHORT).show()
                 }
-                refreshBackupInfo()
+                refreshUI()
             } catch (e: Exception) {
                 runOnUiThread { Toast.makeText(this@SettingsActivity, "备份失败: ${e.message}", Toast.LENGTH_SHORT).show() }
             }
@@ -793,14 +729,14 @@ class SettingsActivity : BaseActivity() {
             val zones = listOf("头部/颈部" to 1, "面部" to 2, "胸部" to 3, "腹部/盆腔" to 4, "四肢/骨盆" to 5, "体表" to 6)
             val selected = mutableMapOf<Int, Int>()
             val et = android.widget.EditText(this).apply { hint = "各区域AIS分数,用逗号分隔\n例: 4,3,2"; setSingleLine() }
-            AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("ISS 创伤严重度").setView(et)
+            AlertDialog.Builder(this, R.style.GlassDialog).setTitle("ISS 创伤严重度").setView(et)
                 .setMessage("输入各受伤区域的AIS分数(AIS 1-6),逗号分隔。\nISS = 最高的三个AIS²之和")
                 .setPositiveButton("计算") { _, _ ->
                     val aisStr = et.text.toString().split(",", "，").mapNotNull { it.trim().toIntOrNull() }.filter { it in 1..6 }
                     if (aisStr.size >= 1) {
                         val r = com.mynote.android.util.MedicalCalculator.iss(aisStr)
                         val msg = "ISS=${r.iss}分\n${r.risk}\n${r.mortality}"
-                        AlertDialog.Builder(this@SettingsActivity, R.style.RoundedDialog).setTitle("ISS 创伤严重度")
+                        AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog).setTitle("ISS 创伤严重度")
                             .setMessage(msg).setPositiveButton("确定", null)
                             .setNeutralButton("📋 复制") { _, _ ->
                                 getSystemService(android.content.ClipboardManager::class.java)?.setPrimaryClip(
@@ -810,7 +746,7 @@ class SettingsActivity : BaseActivity() {
                     }
                 }.setNegativeButton("取消", null).show()
         }, "RTS 改良创伤评分" to { showTraumaRts() })
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("创伤评分").setItems(items.map { it.first }.toTypedArray()) { _, i -> items[i].second() }
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("创伤评分").setItems(items.map { it.first }.toTypedArray()) { _, i -> items[i].second() }
             .setNegativeButton("关闭", null).show()
     }
 
@@ -820,12 +756,12 @@ class SettingsActivity : BaseActivity() {
         val etRr = android.widget.EditText(this).apply { hint = "呼吸频率(/min)"; setSingleLine(); inputType = android.text.InputType.TYPE_CLASS_NUMBER }
         val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(40, 20, 40, 10) }
         layout.addView(etGcs); layout.addView(etSbp); layout.addView(etRr)
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("RTS 改良创伤评分").setView(layout)
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("RTS 改良创伤评分").setView(layout)
             .setPositiveButton("计算") { _, _ ->
                 val g = etGcs.text.toString().toIntOrNull() ?: 15; val s = etSbp.text.toString().toIntOrNull() ?: 120; val r = etRr.text.toString().toIntOrNull() ?: 20
                 val result = com.mynote.android.util.MedicalCalculator.rts(g, s, r)
                 val rtMsg = "RTS=${result.rts}\n${result.coded}\n${result.surv}"
-                AlertDialog.Builder(this@SettingsActivity, R.style.RoundedDialog).setTitle("RTS 改良创伤评分")
+                AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog).setTitle("RTS 改良创伤评分")
                     .setMessage(rtMsg).setPositiveButton("确定", null)
                     .setNeutralButton("📋 复制") { _, _ ->
                         getSystemService(android.content.ClipboardManager::class.java)?.setPrimaryClip(
@@ -837,10 +773,10 @@ class SettingsActivity : BaseActivity() {
 
     private fun showPainAssessment() {
         val scores = (0..10).map { "$it 分" }.toTypedArray()
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("疼痛评估 NRS").setItems(scores) { _, i ->
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("疼痛评估 NRS").setItems(scores) { _, i ->
             val r = com.mynote.android.util.MedicalCalculator.painAssess(i)
             val painMsg = "NRS ${r.nrs}分 — ${r.level}\n处理建议:\n${r.mgmt}"
-            AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("NRS ${r.nrs}分 — ${r.level}")
+            AlertDialog.Builder(this, R.style.GlassDialog).setTitle("NRS ${r.nrs}分 — ${r.level}")
                 .setMessage("处理建议:\n${r.mgmt}").setPositiveButton("确定", null)
                 .setNeutralButton("📋 复制") { _, _ ->
                     getSystemService(android.content.ClipboardManager::class.java)?.setPrimaryClip(
@@ -855,13 +791,13 @@ class SettingsActivity : BaseActivity() {
         val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(40, 20, 40, 10) }
         val tvCat = TextView(this).apply { text = "A=安全 B=较安全 C=权衡 D=慎用 X=禁忌"; textSize = 11f; setTextColor(Color.GRAY); setPadding(0, 4, 0, 0) }
         layout.addView(et); layout.addView(tvCat)
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("妊娠用药分级(FDA)").setView(layout)
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("妊娠用药分级(FDA)").setView(layout)
             .setPositiveButton("查询") { _, _ ->
                 val name = et.text.toString().trim()
                 val r = com.mynote.android.util.MedicalCalculator.pregnancyDrug(name)
                 if (r != null) {
                     val catInfo = com.mynote.android.util.MedicalCalculator.pregnancyCategories.firstOrNull { it.first == r.cat.take(1) }?.second ?: ""
-                    AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("${r.drug} → ${r.cat}类")
+                    AlertDialog.Builder(this, R.style.GlassDialog).setTitle("${r.drug} → ${r.cat}类")
                         .setMessage("$catInfo\n\nA=安全 B=较安全 C=权衡利弊 D=慎用(危及生命) X=禁忌")
                         .setPositiveButton("确定", null).show()
                 } else {
@@ -881,10 +817,10 @@ class SettingsActivity : BaseActivity() {
         fun build(list: List<Pair<String, String>>) {
             dlg?.dismiss()
             val labels = list.map { it.first }.toTypedArray()
-            dlg = AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(title).setView(root)
+            dlg = AlertDialog.Builder(this, R.style.GlassDialog).setTitle(title).setView(root)
                 .setItems(labels) { _, i2 ->
                     val itemTitle = list[i2].first; val itemContent = list[i2].second
-                    val builder = AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(itemTitle)
+                    val builder = AlertDialog.Builder(this, R.style.GlassDialog).setTitle(itemTitle)
                         .setMessage(itemContent)
                         .setPositiveButton("确定", null)
                         .setNeutralButton("📋 复制") { _, _ ->
@@ -991,11 +927,11 @@ class SettingsActivity : BaseActivity() {
         btnHist.setOnClickListener {
             val hist = histSp.getString("list", "")?.split("||")?.filter { it.isNotBlank() } ?: emptyList()
             if (hist.isEmpty()) { Toast.makeText(this, "暂无记录", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
-            AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("计算历史 (最近20条)")
+            AlertDialog.Builder(this, R.style.GlassDialog).setTitle("计算历史 (最近20条)")
                 .setItems(hist.toTypedArray(), null).setPositiveButton("关闭", null).show()
         }
 
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(title).setView(layout)
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle(title).setView(layout)
             .setPositiveButton("关闭", null).show()
     }
 
@@ -1029,7 +965,7 @@ class SettingsActivity : BaseActivity() {
         val actions = cats.map { cat ->
             {
                 val subs = cat.second
-                AlertDialog.Builder(this, R.style.RoundedDialog)
+                AlertDialog.Builder(this, R.style.GlassDialog)
                     .setTitle(cat.first)
                     .setItems(subs.map { it.first }.toTypedArray()) { _, i2 -> subs[i2].second() }
                     .setNegativeButton("返回") { _, _ -> showMedicalCalculator() }
@@ -1039,7 +975,7 @@ class SettingsActivity : BaseActivity() {
 
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(20, 8, 20, 8) }
         root.addView(histBtn)
-        val dlg = AlertDialog.Builder(this, R.style.RoundedDialog)
+        val dlg = AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("医学计算器 (${cats.sumOf { it.second.size }}项)")
             .setView(root)
             .setItems(items.toTypedArray()) { _, i -> actions[i]() }
@@ -1062,7 +998,7 @@ class SettingsActivity : BaseActivity() {
             Toast.makeText(this, "暂无计算历史", Toast.LENGTH_SHORT).show()
             return
         }
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("计算历史 (最近${list.size}条)")
             .setItems(list.take(20).toTypedArray(), null)
             .setPositiveButton("清空") { _, _ -> prefs.clearCalcHistory(); showMedicalCalculator() }
@@ -1084,7 +1020,7 @@ class SettingsActivity : BaseActivity() {
                 }
             }
         }
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("计算结果").setView(msg)
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("计算结果").setView(msg)
             .setPositiveButton("确定", null)
             .setNeutralButton("📋 复制") { _, _ ->
                 val clipboard = getSystemService(android.content.ClipboardManager::class.java)
@@ -1103,7 +1039,7 @@ class SettingsActivity : BaseActivity() {
             val et = EditText(this).apply { this.hint = hint; inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL }
             ets.add(et); root.addView(et)
         }
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(title).setView(root)
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle(title).setView(root)
             .setPositiveButton("计算") { _, _ ->
                 showCalcResult(title, calc(ets.map { it.text.toString().trim() }))
             }.setNegativeButton("取消", null).show()
@@ -1113,7 +1049,7 @@ class SettingsActivity : BaseActivity() {
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(40, 16, 40, 0) }
         val cb = mutableListOf<android.widget.CheckBox>()
         for (it in items) { val c = android.widget.CheckBox(this).apply { text = it }; cb.add(c); root.addView(c) }
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(title).setView(root)
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle(title).setView(root)
             .setPositiveButton("计算") { _, _ ->
                 showCalcResult(title, calc(cb.map { if (it.isChecked) 1 else 0 }))
             }.setNegativeButton("取消", null).show()
@@ -1147,7 +1083,7 @@ class SettingsActivity : BaseActivity() {
     private fun showCalcCaAg() { calcInputDialog("矫正血钙+AG", listOf("血钙 mmol/L" to "", "白蛋白 g/L" to "", "Na mmol/L" to "", "Cl mmol/L" to "", "HCO₃ mmol/L" to "")) { v -> "矫正Ca: %.2f\n阴离子间隙: %.1f".format(MedicalCalculator.correctedCalcium(v[0].toDouble(),v[1].toDouble()), MedicalCalculator.anionGap(v[2].toDouble(),v[3].toDouble(),v[4].toDouble())) } }
     private fun showSerumOsmCalc() { calcInputDialog("血渗透压", listOf("Na mmol/L" to "", "血糖 mmol/L" to "", "BUN mmol/L" to "")) { v -> "血渗透压: %.0f mOsm/kg".format(MedicalCalculator.serumOsm(v[0].toDouble(),v[1].toDouble(),v[2].toDouble())) } }
     private fun showKDeficitCalc() { calcInputDialog("补钾量", listOf("体重 kg" to "", "目标K" to "", "当前K" to "")) { v -> val d = MedicalCalculator.potassiumDeficit(v[0].toDouble(),v[1].toDouble(),v[2].toDouble()); "缺K: %.0f mmol\n≈ %.0f mL 15%%KCl".format(d, d/2.0) } }
-    private fun showSteroidCalc() { val drugs = arrayOf("泼尼松/强的松", "甲泼尼龙", "地塞米松", "氢化可的松"); AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("激素等效换算").setItems(drugs) { _, i -> calcInputDialog("${drugs[i]}等效剂量", listOf("剂量 mg" to "")) { v -> val eq = MedicalCalculator.prednisoneEquivalent(v[0].toDouble(), drugs[i]); "等效泼尼松: %.1f mg".format(eq) } }.setNegativeButton("取消", null).show() }
+    private fun showSteroidCalc() { val drugs = arrayOf("泼尼松/强的松", "甲泼尼龙", "地塞米松", "氢化可的松"); AlertDialog.Builder(this, R.style.GlassDialog).setTitle("激素等效换算").setItems(drugs) { _, i -> calcInputDialog("${drugs[i]}等效剂量", listOf("剂量 mg" to "")) { v -> val eq = MedicalCalculator.prednisoneEquivalent(v[0].toDouble(), drugs[i]); "等效泼尼松: %.1f mg".format(eq) } }.setNegativeButton("取消", null).show() }
 
     // new calculators
     private fun showSofaCalc() { calcInputDialog("SOFA 评分", listOf("呼吸 PaO₂/FiO₂ 0-4" to "", "凝血 血小板 0-4" to "", "肝 胆红素 0-4" to "", "心血管 MAP/升压药 0-4" to "", "CNS GCS 0-4" to "", "肾 肌酐/尿量 0-4" to "")) { v -> val r = MedicalCalculator.sofa(v[0].toInt(),v[1].toInt(),v[2].toInt(),v[3].toInt(),v[4].toInt(),v[5].toInt()); "SOFA=${r.score}分 ${r.mortality}" } }
@@ -1212,20 +1148,20 @@ class SettingsActivity : BaseActivity() {
             override fun afterTextChanged(s: android.text.Editable?) {
                 val q = s.toString().trim().lowercase(); if (q.length < 1) return
                 val matched = diseases.filter { it.name.lowercase().contains(q) || it.department.lowercase().contains(q) || it.symptoms.lowercase().contains(q) }
-                AlertDialog.Builder(this@SettingsActivity, R.style.RoundedDialog).setTitle("\"$q\" (${matched.size})")
+                AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog).setTitle("\"$q\" (${matched.size})")
                     .setItems(matched.map { "${it.name} [${it.department}]" }.toTypedArray()) { _, i -> showDiseaseDetail(matched[i]) }
                     .setNegativeButton("返回", null).show()
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("疾病速查 · 32科室·960种").setView(root).setNegativeButton("关闭", null).show()
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("疾病速查 · 32科室·960种").setView(root).setNegativeButton("关闭", null).show()
     }
 
     private fun showFavorites() {
         val diseases = com.mynote.android.util.DiseaseReference.getAll()
         val favs = diseaseFavorites.mapNotNull { name -> diseases.find { it.name == name } }
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("⭐ 收藏疾病")
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("⭐ 收藏疾病")
             .setItems(favs.map { "${it.name} [${it.department}]" }.toTypedArray()) { _, i -> showDiseaseDetail(favs[i]) }
             .setNegativeButton("返回") { _, _ -> showDiseaseLookup() }.show()
     }
@@ -1233,13 +1169,13 @@ class SettingsActivity : BaseActivity() {
     private fun showDiseaseRecent() {
         val diseases = com.mynote.android.util.DiseaseReference.getAll()
         val recents = diseaseRecent.mapNotNull { name -> diseases.find { it.name == name } }
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("🕐 最近查看")
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("🕐 最近查看")
             .setItems(recents.map { "${it.name} [${it.department}]" }.toTypedArray()) { _, i -> showDiseaseDetail(recents[i]) }
             .setNegativeButton("返回") { _, _ -> showDiseaseLookup() }.show()
     }
 
     private fun showDiseaseDept(list: List<com.mynote.android.util.DiseaseReference.Disease>) {
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(list.firstOrNull()?.department ?: "")
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle(list.firstOrNull()?.department ?: "")
             .setItems(list.map { it.name }.toTypedArray()) { _, i -> showDiseaseDetail(list[i]) }
             .setNegativeButton("返回") { _, _ -> showDiseaseLookup() }.show()
     }
@@ -1251,7 +1187,7 @@ class SettingsActivity : BaseActivity() {
         val isFav = d.name in diseaseFavorites
         val m = "【症状】${d.symptoms}\n\n【鉴别诊断】${d.differential}\n\n【常用药物】${d.drugs}\n\n【治疗手段】${d.treatment}"
         val full = "${d.name} [${d.department}]\n${m}"
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("${d.name} [${d.department}]${if (isFav) " ⭐" else ""}")
             .setMessage(m)
             .setPositiveButton("📋 复制") { _, _ ->
@@ -1313,7 +1249,7 @@ class SettingsActivity : BaseActivity() {
             textSize = 11f; setTextColor(Color.GRAY); setPadding(0, 12, 0, 0)
         })
 
-        val dlg = AlertDialog.Builder(this, R.style.RoundedDialog)
+        val dlg = AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("用药相互作用检查")
             .setView(root)
             .setPositiveButton("检查") { _, _ ->
@@ -1323,7 +1259,7 @@ class SettingsActivity : BaseActivity() {
                     showDrugMainDialog()
                     return@setPositiveButton
                 }
-                AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("相互作用")
+                AlertDialog.Builder(this, R.style.GlassDialog).setTitle("相互作用")
                     .setMessage(checkDrugInteraction(a, b)).setPositiveButton("确定", null).show()
             }
             .setNegativeButton("取消") { _, _ -> currentDialog = null }
@@ -1399,7 +1335,7 @@ class SettingsActivity : BaseActivity() {
 
         refreshList()
 
-        val dlg = AlertDialog.Builder(this, R.style.RoundedDialog)
+        val dlg = AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle(title)
             .setView(root)
             .setNegativeButton("取消") { _, _ -> showDrugMainDialog() }
@@ -1640,7 +1576,7 @@ class SettingsActivity : BaseActivity() {
 
     // ===== 指南速查 =====
     private fun showGuideLookup() {
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("指南速查")
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("指南速查")
             .setItems(arrayOf("按科室查看", "按年份查看 (2024-2026)")) { _, mode ->
                 if (mode == 0) showGuideByDept() else showGuideByYear()
             }.setNegativeButton("关闭", null).show()
@@ -1649,16 +1585,16 @@ class SettingsActivity : BaseActivity() {
     private fun showGuideByDept() {
         val diseases = com.mynote.android.util.DiseaseReference.getAll()
         val depts = diseases.map { it.department }.distinct()
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("指南速查 · 按科室")
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("指南速查 · 按科室")
             .setItems(depts.map { d -> "${d} (${diseases.count { it.department == d }})" }.toTypedArray()) { _, di ->
                 val deptDiseases = diseases.filter { it.department == depts[di] }
-                AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("${depts[di]} (${deptDiseases.size})")
+                AlertDialog.Builder(this, R.style.GlassDialog).setTitle("${depts[di]} (${deptDiseases.size})")
                     .setItems(deptDiseases.map { it.name }.toTypedArray()) { _, i ->
                         val d = deptDiseases[i]
                         val years = mutableListOf<String>()
                         if (d.treatment.contains("202")) years.addAll(listOf("2024", "2025", "2026").filter { d.treatment.contains(it) || d.drugs.contains(it) })
                         val msg = "${if (years.isNotEmpty()) "【指南 (${years.joinToString("/")})】\n" else ""}${d.drugs}\n\n【治疗】${d.treatment.take(200)}\n\n【症状】${d.symptoms.take(150)}\n【鉴别】${d.differential.take(150)}"
-                        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("${d.name} ${if (years.isNotEmpty()) "· ${years.joinToString("/")}" else ""}")
+                        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("${d.name} ${if (years.isNotEmpty()) "· ${years.joinToString("/")}" else ""}")
                             .setMessage(msg)
                             .setPositiveButton("关闭", null)
                             .setNeutralButton("📋 复制") { _, _ ->
@@ -1672,19 +1608,19 @@ class SettingsActivity : BaseActivity() {
 
     private fun showGuideByYear() {
         val diseases = com.mynote.android.util.DiseaseReference.getAll()
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("指南速查 · 按年份")
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("指南速查 · 按年份")
             .setItems(arrayOf("2026", "2025", "2024")) { _, yi ->
                 val y = if (yi == 0) "2026" else if (yi == 1) "2025" else "2024"
                 val m = diseases.filter { it.treatment.contains(y) || it.drugs.contains(y) }
                 val depts = m.map { it.department }.distinct()
-                AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("${y}年 (${m.size}疾病)")
+                AlertDialog.Builder(this, R.style.GlassDialog).setTitle("${y}年 (${m.size}疾病)")
                     .setItems(depts.map { "$it (${m.count { d -> d.department == it }})" }.toTypedArray()) { _, di ->
                         val list = m.filter { it.department == depts[di] }
-                        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("${depts[di]} · $y")
+                        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("${depts[di]} · $y")
                             .setItems(list.map { it.name }.toTypedArray()) { _, i ->
                                 val d = list[i]
                                 val msg2 = "【${y}指南用药】${d.drugs}\n\n【${y}指南治疗】${d.treatment}\n\n【症状】${d.symptoms}\n【鉴别】${d.differential}"
-                                AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(d.name)
+                                AlertDialog.Builder(this, R.style.GlassDialog).setTitle(d.name)
                                     .setMessage(msg2)
                                     .setPositiveButton("关闭", null)
                                     .setNeutralButton("📋 复制") { _, _ ->
@@ -1708,7 +1644,7 @@ class SettingsActivity : BaseActivity() {
         var dlg: AlertDialog? = null
         fun buildDialog(items: List<String>) {
             dlg?.dismiss()
-            dlg = AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("临床路径 · 决策流程")
+            dlg = AlertDialog.Builder(this, R.style.GlassDialog).setTitle("临床路径 · 决策流程")
                 .setView(root)
                 .setItems(items.toTypedArray()) { _, i2 ->
                     val idx = paths.indexOfFirst { it.title == items[i2] }
@@ -1775,7 +1711,7 @@ class SettingsActivity : BaseActivity() {
     private fun showPathwayNode(node: com.mynote.android.util.ClinicalPathways.Node) {
         if (node.children.isEmpty()) {
             val text = node.content.ifBlank { "无详细内容" }
-            AlertDialog.Builder(this, R.style.RoundedDialog)
+            AlertDialog.Builder(this, R.style.GlassDialog)
                 .setTitle(node.title).setMessage(text)
                 .setPositiveButton("📋 复制") { _, _ ->
                     (getSystemService(Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager)
@@ -1785,7 +1721,7 @@ class SettingsActivity : BaseActivity() {
                 .setNegativeButton("关闭", null).show()
             return
         }
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle(node.title)
             .setItems(node.children.map { it.title }.toTypedArray()) { _, i ->
                 showPathwayNode(node.children[i])
@@ -1822,7 +1758,7 @@ class SettingsActivity : BaseActivity() {
             webViewClient = WebViewClient()
             loadDataWithBaseURL(null, sb.toString(), "text/html", "UTF-8", null)
         }
-        val dlg = AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("${node.title} · 流程图")
+        val dlg = AlertDialog.Builder(this, R.style.GlassDialog).setTitle("${node.title} · 流程图")
             .setView(wv).setPositiveButton("关闭", null).create()
         dlg.show()
         dlg.window?.setLayout((resources.displayMetrics.widthPixels * 0.95).toInt(), (resources.displayMetrics.heightPixels * 0.75).toInt())
@@ -1838,11 +1774,11 @@ class SettingsActivity : BaseActivity() {
         root.addView(tv)
 
         fun showList(items: List<com.mynote.android.util.LabReference.LabItem>) {
-            AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("检验参考值").setView(root)
+            AlertDialog.Builder(this, R.style.GlassDialog).setTitle("检验参考值").setView(root)
                 .setItems(items.map { "${it.name} (${it.normalRange} ${it.unit})" }.toTypedArray()) { _, i ->
                     val item = items[i]
                     val info = "[${item.category}] ${item.name}\n\n正常值: ${item.normalRange} ${item.unit}\n\n危急值: ${if (item.criticalLow != "-") "低 <${item.criticalLow} ${item.unit}" else "—"}  ${if (item.criticalHigh != "-") "高 >${item.criticalHigh} ${item.unit}" else "—"}\n\n临床意义: ${item.significance}"
-                    AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(item.name).setMessage(info)
+                    AlertDialog.Builder(this, R.style.GlassDialog).setTitle(item.name).setMessage(info)
                         .setPositiveButton("📋 复制") { _, _ ->
                             (getSystemService(android.content.ClipboardManager::class.java))?.setPrimaryClip(android.content.ClipData.newPlainText("lab", info))
                             Toast.makeText(this, "已复制", Toast.LENGTH_SHORT).show()
@@ -1897,7 +1833,7 @@ class SettingsActivity : BaseActivity() {
                         setTextColor(Color.DKGRAY)
                         setOnClickListener {
                             val url = item.imageUrl.ifBlank { "https://radiopaedia.org/search?q=${item.title.replace(" ", "+")}" }
-                            AlertDialog.Builder(this@SettingsActivity, R.style.RoundedDialog).setTitle(item.title)
+                            AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog).setTitle(item.title)
                                 .setMessage("【方式】${item.modality}\n【系统】${item.system}\n\n${item.description}")
                                 .setPositiveButton("🔗 在线图例") { _, _ ->
                                     try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
@@ -1925,7 +1861,7 @@ class SettingsActivity : BaseActivity() {
             override fun onTextChanged(s: CharSequence?, st: Int, b: Int, c: Int) {}
         })
 
-        val dlg = AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("影像征象速查").setView(root)
+        val dlg = AlertDialog.Builder(this, R.style.GlassDialog).setTitle("影像征象速查").setView(root)
             .setNegativeButton("关闭", null).create()
         dlg.show()
         dlg.window?.setLayout((resources.displayMetrics.widthPixels * 0.95).toInt(), (resources.displayMetrics.heightPixels * 0.75).toInt())
@@ -1938,7 +1874,7 @@ class SettingsActivity : BaseActivity() {
     }
 
     private fun startAiLabReader() {
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("AI 读化验单")
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("AI 读化验单")
             .setMessage("选择化验单图片，AI 自动分析异常指标并给出建议。")
             .setPositiveButton("🖼 选择图片") { _, _ -> aiLabLauncher.launch("image/*") }
             .setNegativeButton("取消", null).show()
@@ -1946,7 +1882,7 @@ class SettingsActivity : BaseActivity() {
 
     private fun recognizeLabReport(uri: Uri) {
         val tv = TextView(this).apply { text = "⏳ AI 正在分析化验单..."; textSize = 14f; setPadding(32, 24, 32, 24); gravity = android.view.Gravity.CENTER }
-        val dlg = AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("AI 分析中").setView(tv).setNegativeButton("关闭", null).show()
+        val dlg = AlertDialog.Builder(this, R.style.GlassDialog).setTitle("AI 分析中").setView(tv).setNegativeButton("关闭", null).show()
 
         Thread {
             try {
@@ -1979,7 +1915,7 @@ class SettingsActivity : BaseActivity() {
 
                 runOnUiThread {
                     dlg.dismiss()
-                    AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("AI 分析结果")
+                    AlertDialog.Builder(this, R.style.GlassDialog).setTitle("AI 分析结果")
                         .setMessage("【OCR原文】\n${ocrText.take(300)}...\n\n【AI分析】\n$reply")
                         .setPositiveButton("📋 复制全部") { _, _ ->
                             (getSystemService(android.content.ClipboardManager::class.java))?.setPrimaryClip(android.content.ClipData.newPlainText("lab", "$ocrText\n\n--- AI 分析 ---\n$reply"))
@@ -1989,7 +1925,7 @@ class SettingsActivity : BaseActivity() {
             } catch (e: Exception) {
                 runOnUiThread {
                     dlg.dismiss()
-                    AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("失败").setMessage("${e.message}").setPositiveButton("确定", null).show()
+                    AlertDialog.Builder(this, R.style.GlassDialog).setTitle("失败").setMessage("${e.message}").setPositiveButton("确定", null).show()
                 }
             }
         }.start()
@@ -2023,7 +1959,7 @@ class SettingsActivity : BaseActivity() {
                         textSize = 14f; setPadding(4, 8, 4, 8); setTextColor(Color.DKGRAY)
                         setOnClickListener {
                             val msg = "【${item.category}】\n\n${item.description}"
-                            AlertDialog.Builder(this@SettingsActivity, R.style.RoundedDialog).setTitle(item.title)
+                            AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog).setTitle(item.title)
                                 .setMessage(msg)
                                 .setPositiveButton("📋 复制") { _, _ ->
                                     (getSystemService(android.content.ClipboardManager::class.java))?.setPrimaryClip(android.content.ClipData.newPlainText("ecg", "${item.title}\n${item.description}"))
@@ -2052,7 +1988,7 @@ class SettingsActivity : BaseActivity() {
             override fun onTextChanged(s: CharSequence?, st: Int, b: Int, c: Int) {}
         })
 
-        val dlg = AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("心电图速查").setView(root)
+        val dlg = AlertDialog.Builder(this, R.style.GlassDialog).setTitle("心电图速查").setView(root)
             .setNegativeButton("关闭", null).create()
         dlg.show()
         dlg.window?.setLayout((resources.displayMetrics.widthPixels * 0.95).toInt(), (resources.displayMetrics.heightPixels * 0.75).toInt())
@@ -2062,14 +1998,14 @@ class SettingsActivity : BaseActivity() {
     private fun showPatientManager() {
         val pts = com.mynote.android.util.PatientManager.getAll()
         if (pts.isEmpty()) {
-            AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("患者管理")
+            AlertDialog.Builder(this, R.style.GlassDialog).setTitle("患者管理")
                 .setMessage("暂无患者记录\n\n点击\"添加患者\"开始管理您的患者及随访提醒")
                 .setPositiveButton("+ 添加患者") { _, _ -> showPatientEdit(null) }
                 .setNegativeButton("关闭", null).show()
             return
         }
         val list = pts.map { "${it.name} ${it.gender} ${it.age}岁  ${it.diagnosis}  ${if (it.followUpDate.isNotBlank()) "📅${it.followUpDate}" else ""}" }
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("患者管理 (${pts.size}人)")
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("患者管理 (${pts.size}人)")
             .setItems(list.toTypedArray()) { _, i -> showPatientDetail(pts[i]) }
             .setPositiveButton("+ 添加") { _, _ -> showPatientEdit(null) }
             .setNegativeButton("关闭", null).show()
@@ -2077,7 +2013,7 @@ class SettingsActivity : BaseActivity() {
 
     private fun showPatientDetail(p: com.mynote.android.util.PatientManager.Patient) {
         val info = "${p.name}  ${p.gender}  ${p.age}岁\n诊断: ${p.diagnosis}\n电话: ${p.phone}\n随访: ${if (p.followUpDate.isNotBlank()) p.followUpDate else "未设置"}\n备注: ${p.notes.ifBlank { "无" }}"
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("${p.name}")
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("${p.name}")
             .setMessage(info)
             .setPositiveButton("编辑") { _, _ -> showPatientEdit(p) }
             .setNeutralButton("删除") { _, _ ->
@@ -2096,7 +2032,7 @@ class SettingsActivity : BaseActivity() {
         val etFollow = EditText(this).apply { hint = "随访日期 yyyy-MM-dd"; setSingleLine(true); if (existing != null) setText(existing.followUpDate) }
         val etNotes = EditText(this).apply { hint = "备注"; if (existing != null) setText(existing.notes) }
         for (et in listOf(etName, etAge, etGender, etDiag, etPhone, etFollow, etNotes)) { root.addView(et) }
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(if (existing == null) "添加患者" else "编辑患者").setView(root)
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle(if (existing == null) "添加患者" else "编辑患者").setView(root)
             .setPositiveButton("保存") { _, _ ->
                 val p = com.mynote.android.util.PatientManager.Patient(
                     id = existing?.id ?: java.util.UUID.randomUUID().toString().take(8),
@@ -2112,7 +2048,7 @@ class SettingsActivity : BaseActivity() {
 
     // ===== 临床指南PDF库 =====
     private fun showGuidelineLibrary() {
-        AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("指南速查")
+        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("指南速查")
             .setItems(arrayOf("📄 在线指南PDF (100+篇国内外指南)", "🩺 疾病指南参考 (960种疾病·2024-2026)")) { _, mode ->
                 if (mode == 0) showGuidelinePdfList() else showGuideLookup()
             }.setNegativeButton("关闭", null).show()
@@ -2128,10 +2064,10 @@ class SettingsActivity : BaseActivity() {
         root.addView(tv)
 
         fun showList(items: List<com.mynote.android.util.GuidelineLibrary.Guideline>) {
-            AlertDialog.Builder(this, R.style.RoundedDialog).setTitle("在线指南PDF").setView(root)
+            AlertDialog.Builder(this, R.style.GlassDialog).setTitle("在线指南PDF").setView(root)
                 .setItems(items.map { "[${it.dept}] ${it.title} (${it.year})" }.toTypedArray()) { _, i ->
                     val g = items[i]
-                    AlertDialog.Builder(this, R.style.RoundedDialog).setTitle(g.title)
+                    AlertDialog.Builder(this, R.style.GlassDialog).setTitle(g.title)
                         .setMessage("来源: ${g.source}\n科室: ${g.dept}\n年份: ${g.year}\n\n点击\"查看\"在浏览器中打开PDF")
                         .setPositiveButton("🔍 搜索最新版") { _, _ ->
                             try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(g.url))) }
@@ -2170,7 +2106,7 @@ class SettingsActivity : BaseActivity() {
                     if (remoteVersion != prefs.kbVersion) {
                         prefs.kbVersion = remoteVersion
                         withContext(Dispatchers.Main) {
-                            AlertDialog.Builder(this@SettingsActivity, R.style.RoundedDialog)
+                            AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog)
                                 .setTitle("知识库已更新")
                                 .setMessage("新版本: v$remoteVersion\n$updateDesc\n\n重启 App 生效")
                                 .setPositiveButton("确定", null).show()
@@ -2226,7 +2162,7 @@ class SettingsActivity : BaseActivity() {
     }
 
     private fun pickZipForRestore() {
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("从 ZIP 恢复")
             .setMessage("将覆盖当前所有数据。建议先导出备份。")
             .setPositiveButton("选择文件") { _, _ -> zipPicker.launch("application/zip") }
@@ -2255,7 +2191,7 @@ class SettingsActivity : BaseActivity() {
                 File(tmp, "notes").let { if (it.exists()) { File(filesDir, "notes").deleteRecursively(); it.copyRecursively(File(filesDir, "notes"), overwrite = true) } }
                 tmp.deleteRecursively()
                 withContext(Dispatchers.Main) {
-                    AlertDialog.Builder(this@SettingsActivity, R.style.RoundedDialog)
+                    AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog)
                         .setTitle("恢复完成").setMessage("数据已恢复，重启 App 生效。")
                         .setPositiveButton("退出") { _, _ -> finishAffinity() }.show()
                 }
@@ -2284,7 +2220,7 @@ class SettingsActivity : BaseActivity() {
                     is BackupManager.BackupResult.Error ->
                         Toast.makeText(this@SettingsActivity, "备份失败: ${result.message}", Toast.LENGTH_SHORT).show()
                 }
-                refreshBackupInfo()
+                refreshUI()
             } catch (e: Exception) {
                 runOnUiThread { Toast.makeText(this@SettingsActivity, "备份失败: ${e.message}", Toast.LENGTH_SHORT).show() }
             }
@@ -2298,7 +2234,7 @@ class SettingsActivity : BaseActivity() {
         val displayName = getFileName(uri).lowercase()
         if (displayName.endsWith(".zip")) {
             pendingRestoreUri = uri
-            AlertDialog.Builder(this, R.style.RoundedDialog)
+            AlertDialog.Builder(this, R.style.GlassDialog)
                 .setTitle("恢复确认")
                 .setMessage("将用备份文件替换当前数据库，应用会自动重启。\n\n当前数据将被覆盖，确定继续？")
                 .setPositiveButton("确定恢复") { _, _ -> pendingRestoreUri?.let { doRestoreDatabase(it) } }
@@ -2306,7 +2242,7 @@ class SettingsActivity : BaseActivity() {
                 .show()
         } else {
             pendingRestoreUri = uri
-            AlertDialog.Builder(this, R.style.RoundedDialog)
+            AlertDialog.Builder(this, R.style.GlassDialog)
                 .setTitle("恢复模式")
                 .setMessage("请选择恢复方式：")
                 .setPositiveButton("合并恢复") { _, _ -> pendingRestoreUri?.let { doRestoreJson(it, false) } }
@@ -2329,7 +2265,7 @@ class SettingsActivity : BaseActivity() {
                             Toast.makeText(this@SettingsActivity,
                                 "恢复成功！${result.noteCount}篇笔记, ${result.itemCount}个内容项, ${result.catCount}个分类",
                                 Toast.LENGTH_LONG).show()
-                            refreshBackupInfo()
+                            refreshUI()
                         }
                     }
                     is BackupManager.BackupResult.Error ->
@@ -2380,17 +2316,17 @@ class SettingsActivity : BaseActivity() {
             "$type $date  $size"
         }.toTypedArray()
 
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("备份文件 (${files.size}个)")
             .setItems(items) { _, which ->
                 val file = files[which]
-                AlertDialog.Builder(this, R.style.RoundedDialog)
+                AlertDialog.Builder(this, R.style.GlassDialog)
                     .setTitle(file.name)
                     .setMessage("类型: ${if (file.isDbBackup) "数据库备份" else "JSON备份"}\n大小: ${formatFileSize(file.size)}\n时间: ${SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date(file.lastModified))}")
                     .setPositiveButton("删除") { _, _ ->
                         BackupManager.deleteBackupFile(this, file.name)
                         Toast.makeText(this, "已删除", Toast.LENGTH_SHORT).show()
-                        refreshBackupInfo()
+                        refreshUI()
                     }
                     .setNegativeButton("关闭", null)
                     .show()
@@ -2402,7 +2338,7 @@ class SettingsActivity : BaseActivity() {
     private fun updateLastBackupTime() {
         val now = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date())
         prefs.lastBackupTime = now
-        tvLastBackup.text = now
+        refreshUI()
     }
 
     private fun getFileName(uri: Uri): String {
@@ -2435,7 +2371,7 @@ class SettingsActivity : BaseActivity() {
             if (label == current) "$label ✓" else label
         }.toTypedArray()
 
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("切换图标 ($current)")
             .setItems(items) { _, which ->
                 for ((alias, _) in iconAliases) {
@@ -2461,11 +2397,6 @@ class SettingsActivity : BaseActivity() {
     }
 
     // ===== 崩溃日志 =====
-    private fun refreshCrashCount() {
-        val count = CrashHandler.listLogs().size
-        tvCrashCount.text = "${count}条"
-    }
-
     private fun exportCrashLogs() {
         val logs = CrashHandler.listLogs()
         if (logs.isEmpty()) {
@@ -2511,7 +2442,7 @@ class SettingsActivity : BaseActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val size = dirSize(filesDir)
             withContext(Dispatchers.Main) {
-                tvStorageSize.text = formatSize(size)
+                settingsState.value = settingsState.value.copy(storageSizeLabel = formatSize(size))
             }
         }
     }
@@ -2528,7 +2459,7 @@ class SettingsActivity : BaseActivity() {
 
             val msg = "笔记数量: ${noteCount} 条\n回收站: ${trashCount} 条\n\n笔记数据: ${formatSize(notesSize)}\n崩溃日志: ${formatSize(crashSize)}\n总计: ${formatSize(total)}"
             withContext(Dispatchers.Main) {
-                AlertDialog.Builder(this@SettingsActivity, R.style.RoundedDialog)
+                AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog)
                     .setTitle("存储与统计")
                     .setMessage(msg)
                     .setPositiveButton("笔记统计") { _, _ -> showNoteStats() }
@@ -2559,7 +2490,7 @@ class SettingsActivity : BaseActivity() {
                 append("🔥 活跃天数: ${activeDays} 天\n")
             }
             withContext(Dispatchers.Main) {
-                AlertDialog.Builder(this@SettingsActivity, R.style.RoundedDialog)
+                AlertDialog.Builder(this@SettingsActivity, R.style.GlassDialog)
                     .setTitle("笔记统计")
                     .setMessage(msg)
                     .setPositiveButton("好的", null)
@@ -2582,7 +2513,7 @@ class SettingsActivity : BaseActivity() {
         container.addView(etApiKey)
         container.addView(etSecret)
 
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("讯飞语音识别配置")
             .setView(container)
             .setPositiveButton("保存") { _, _ ->
@@ -2616,7 +2547,7 @@ class SettingsActivity : BaseActivity() {
         container.addView(etAppId)
         container.addView(etApiKey)
 
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("天翼AI 识别配置")
             .setView(container)
             .setPositiveButton("保存") { _, _ ->
@@ -2649,7 +2580,7 @@ class SettingsActivity : BaseActivity() {
         container.addView(etApiKey)
         container.addView(etSecret)
 
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("阿里云 Qwen 识别")
             .setView(container)
             .setPositiveButton("保存") { _, _ ->
@@ -2675,7 +2606,7 @@ class SettingsActivity : BaseActivity() {
         }
         container.addView(etApiKey)
 
-        AlertDialog.Builder(this, R.style.RoundedDialog)
+        AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("DeepSeek AI 病历生成")
             .setView(container)
             .setPositiveButton("保存") { _, _ ->
