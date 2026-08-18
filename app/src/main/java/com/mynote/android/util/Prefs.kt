@@ -142,6 +142,11 @@ class Prefs(context: Context) {
         get() = sp.getString(KEY_DEEPSEEK_API_KEY, "") ?: ""
         set(value) = sp.edit().putString(KEY_DEEPSEEK_API_KEY, value).apply()
 
+    // ===== 百川 Baichuan-M3-Plus 医疗大模型（AI 辅助分析，可选；缺省走 qwen-max 兜底） =====
+    var baichuanApiKey: String
+        get() = sp.getString(KEY_BAICHUAN_API_KEY, "") ?: ""
+        set(value) = sp.edit().putString(KEY_BAICHUAN_API_KEY, value).apply()
+
     // ===== WebDAV 云备份 =====
     var webdavUrl: String
         get() = sp.getString(KEY_WEBDAV_URL, "") ?: ""
@@ -256,6 +261,7 @@ class Prefs(context: Context) {
         private const val KEY_QWEN_API_KEY = "qwen_api_key"
         private const val KEY_QWEN_API_SECRET = "qwen_api_secret"
         private const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"
+        private const val KEY_BAICHUAN_API_KEY = "baichuan_api_key"
 
         private const val KEY_WEBDAV_URL = "webdav_url"
         private const val KEY_WEBDAV_USER = "webdav_user"

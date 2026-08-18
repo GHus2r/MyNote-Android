@@ -156,6 +156,7 @@ class SettingsActivity : BaseActivity() {
                 onTianyiConfigClick = { showTianyiConfigDialog() },
                 onQwenConfigClick = { showQwenConfigDialog() },
                 onDeepseekConfigClick = { showDeepseekConfigDialog() },
+                onBaichuanConfigClick = { showBaichuanConfigDialog() },
                 onCrashLogsClick = { exportCrashLogs() }
             )
         }
@@ -2611,6 +2612,31 @@ class SettingsActivity : BaseActivity() {
             .setView(container)
             .setPositiveButton("保存") { _, _ ->
                 p.deepseekApiKey = etApiKey.text.toString().trim()
+                Toast.makeText(this, "已保存", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("取消", null)
+            .show()
+        showKeyboard(etApiKey)
+    }
+
+    /** 百川 Baichuan-M3-Plus 医疗大模型 API Key（AI 辅助分析，可选；留空则 Qwen 兜底） */
+    private fun showBaichuanConfigDialog() {
+        val p = prefs
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL; setPadding(32, 16, 32, 0)
+        }
+        val etApiKey = EditText(this).apply {
+            hint = "sk-xxx (百川 API Key，留空则用 Qwen 兜底)"
+            setText(p.baichuanApiKey)
+            inputType = InputType.TYPE_CLASS_TEXT
+        }
+        container.addView(etApiKey)
+
+        AlertDialog.Builder(this, R.style.GlassDialog)
+            .setTitle("百川 M3-Plus 医疗大模型")
+            .setView(container)
+            .setPositiveButton("保存") { _, _ ->
+                p.baichuanApiKey = etApiKey.text.toString().trim()
                 Toast.makeText(this, "已保存", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("取消", null)

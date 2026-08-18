@@ -142,6 +142,18 @@
             android:exported="false"
             android:theme="@style/Theme.MyNote.NoActionBar" />
 
+        <!-- AI 临床辅助分析（多源融合推理） -->
+        <activity
+            android:name=".ui.patient.ClinicalAnalysisActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
+        <!-- 图片裁剪（影像报告框选识别区域） -->
+        <activity
+            android:name=".ui.image.ImageCropActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
         <!-- PDF 查看器 -->
         <activity
             android:name=".ui.pdf.PdfViewerActivity"

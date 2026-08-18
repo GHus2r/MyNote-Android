@@ -3,6 +3,7 @@
 *.jks
 build/
 .gradle/
+.kotlin/
 *.iml
 .idea/
 local.properties

@@ -171,7 +171,7 @@ class PatientDetailActivity : AppCompatActivity() {
     }
 
     private fun showFabMenu() {
-        val items = arrayOf("AI 生成病历", "手动录入病历", "识别化验单", "导出病历数据", "打印病历", "体征趋势", "随访设置", "用药日历", "清空所有病历", "删除患者")
+        val items = arrayOf("AI 生成病历", "手动录入病历", "识别化验单", "导出病历数据", "打印病历", "体征趋势", "随访设置", "用药日历", "清空所有病历", "删除患者", "AI 辅助分析")
         AlertDialog.Builder(this, R.style.GlassDialog)
             .setItems(items) { _, which ->
                 when (which) {
@@ -206,6 +206,7 @@ class PatientDetailActivity : AppCompatActivity() {
                                 lifecycleScope.launch { db.patientDao().delete(patient); finish() }
                             }.setNegativeButton("取消", null).show()
                     }
+                    10 -> startActivity(Intent(this, ClinicalAnalysisActivity::class.java).putExtra("patient_id", patientId))
                 }
             }.show()
     }
@@ -835,15 +836,22 @@ class PatientDetailActivity : AppCompatActivity() {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; setPadding(40, 16, 40, 0)
         }
-        val etHistory = EditText(this).apply { hint = "现病史（可选）"; inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE; minLines = 3 }
-        val etExam = EditText(this).apply { hint = "查体（可选）"; inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE; minLines = 3 }
-        val etLab = EditText(this).apply { hint = "检验/检查结果（可选）"; inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE; minLines = 3 }
-        val etOrders = EditText(this).apply { hint = "住院医嘱（可选）"; inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE; minLines = 3 }
+        val etHistory = EditText(this).apply { hint = "现病史（可选）"; inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE; minLines = 2; maxLines = 4; setHorizontallyScrolling(false) }
+        val etExam = EditText(this).apply { hint = "查体（可选）"; inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE; minLines = 2; maxLines = 4; setHorizontallyScrolling(false) }
+        val etLab = EditText(this).apply { hint = "检验/检查结果（可选）"; inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE; minLines = 2; maxLines = 4; setHorizontallyScrolling(false) }
+        val etOrders = EditText(this).apply { hint = "住院医嘱（可选）"; inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE; minLines = 2; maxLines = 4; setHorizontallyScrolling(false) }
         root.addView(etHistory); root.addView(etExam); root.addView(etLab); root.addView(etOrders)
+
+        // 显式 NestedScrollView 包 root（AlertDialog 不会重复包），滚动条可见，超高可滑
+        val scroll = androidx.core.widget.NestedScrollView(this).apply {
+            isFillViewport = true
+            isVerticalScrollBarEnabled = true
+            addView(root)
+        }
 
         AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("补充临床信息（可选）")
-            .setView(root)
+            .setView(scroll)
             .setPositiveButton("开始生成") { _, _ ->
                 val base = DeepSeekClient.GenParams(
                     patientName = patient.name, age = patient.age, gender = patient.gender,
@@ -867,7 +875,14 @@ class PatientDetailActivity : AppCompatActivity() {
                 }
             }
             .setNegativeButton("取消", null)
-            .show()
+            .create().apply {
+                // 初始不弹键盘（能看到全部输入框）；键盘弹出时 resize 窗口，避免遮挡下方查体/检验/医嘱框
+                window?.setSoftInputMode(
+                    android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
+                        android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
+                )
+                show()
+            }
     }
 
     private var streamDialog: AlertDialog? = null

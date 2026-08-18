@@ -85,6 +85,7 @@ fun SettingsScreen(
     onTianyiConfigClick: () -> Unit,
     onQwenConfigClick: () -> Unit,
     onDeepseekConfigClick: () -> Unit,
+    onBaichuanConfigClick: () -> Unit,
     onCrashLogsClick: () -> Unit
 ) {
     // 顶栏延伸到状态栏下方（与 View 层 LinearLayout 的 fitsSystemWindows 对齐）
@@ -200,6 +201,7 @@ fun SettingsScreen(
             item(key = "tianyi_config") { ClickItem("天翼AI 识别配置", onClick = onTianyiConfigClick, backdrop = backdrop) }
             item(key = "qwen_config") { ClickItem("阿里云 Qwen 识别", onClick = onQwenConfigClick, backdrop = backdrop) }
             item(key = "deepseek_config") { ClickItem("DeepSeek AI 病历生成", onClick = onDeepseekConfigClick, backdrop = backdrop) }
+            item(key = "baichuan_config") { ClickItem("百川 M3-Plus 医疗大模型", onClick = onBaichuanConfigClick, backdrop = backdrop) }
             item(key = "crash_logs") { ValueItem("导出崩溃日志", value = state.crashCountLabel, onClick = onCrashLogsClick, backdrop = backdrop) }
         }
 
