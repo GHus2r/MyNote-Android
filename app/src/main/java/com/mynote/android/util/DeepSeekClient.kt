@@ -80,35 +80,38 @@ object DeepSeekClient {
                         .build()
                 ).execute()
 
-                if (!resp.isSuccessful) {
-                    callback.onError(Exception("HTTP ${resp.code}: ${resp.body?.string()?.take(200)}"))
-                    return@Thread
-                }
-
-                val sb = StringBuilder()
-                var done = false
-                resp.body?.charStream()?.buffered()?.forEachLine { line ->
-                    if (line.startsWith("data: ")) {
-                        val data = line.removePrefix("data: ")
-                        if (data == "[DONE]") {
-                            callback.onDone(sb.toString().trim())
-                            done = true
-                            return@forEachLine
-                        }
-                        try {
-                            val content = JSONObject(data)
-                                .getJSONArray("choices")
-                                .getJSONObject(0)
-                                .getJSONObject("delta")
-                                .optString("content", "")
-                            if (content.isNotEmpty()) {
-                                sb.append(content)
-                                callback.onToken(content)
-                            }
-                        } catch (_: Exception) { /* 跳过非 content 的 delta 行 */ }
+                // 用 use 确保 Response 及底层连接被释放
+                resp.use { r ->
+                    if (!r.isSuccessful) {
+                        callback.onError(Exception("HTTP ${r.code}: ${r.body?.string()?.take(200)}"))
+                        return@use
                     }
+
+                    val sb = StringBuilder()
+                    var done = false
+                    r.body?.charStream()?.buffered()?.forEachLine { line ->
+                        if (line.startsWith("data: ")) {
+                            val data = line.removePrefix("data: ")
+                            if (data == "[DONE]") {
+                                callback.onDone(sb.toString().trim())
+                                done = true
+                                return@forEachLine
+                            }
+                            try {
+                                val content = JSONObject(data)
+                                    .getJSONArray("choices")
+                                    .getJSONObject(0)
+                                    .getJSONObject("delta")
+                                    .optString("content", "")
+                                if (content.isNotEmpty()) {
+                                    sb.append(content)
+                                    callback.onToken(content)
+                                }
+                            } catch (_: Exception) { /* 跳过非 content 的 delta 行 */ }
+                        }
+                    }
+                    if (!done) callback.onDone(sb.toString().trim())
                 }
-                if (!done) callback.onDone(sb.toString().trim())
             } catch (e: Exception) {
                 callback.onError(e)
             }

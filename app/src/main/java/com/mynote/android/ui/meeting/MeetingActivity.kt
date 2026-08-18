@@ -117,6 +117,7 @@ class MeetingActivity : AppCompatActivity() {
     private var dotPulse: Job? = null
     private var mediaPlayer: MediaPlayer? = null
     private val handler = Handler(Looper.getMainLooper())
+    private var playbackRunnable: Runnable? = null
 
     // ── 结果 ──
     private var finalDialogue = ""
@@ -1006,7 +1007,9 @@ class MeetingActivity : AppCompatActivity() {
                 if (audioFile?.exists() == true) {
                     val d = File(filesDir, "notes/" + noteId); d.mkdirs()
                     val vf = File(d, "meeting.m4a")
-                    audioFile!!.copyTo(vf, overwrite = true)
+                    withContext(Dispatchers.IO) {
+                        audioFile!!.copyTo(vf, overwrite = true)
+                    }
                     voiceFilePath = vf.absolutePath
                 }
                 if (voiceFilePath != null) {
@@ -1058,7 +1061,9 @@ class MeetingActivity : AppCompatActivity() {
             try {
                 val html = buildExportHtml()
                 val exportFile = File(cacheDir, "会议纪要_${meetingTitle}_${now("yyyyMMdd_HHmm")}.docx")
-                DocxWriter.write(html, exportFile)
+                withContext(Dispatchers.IO) {
+                    DocxWriter.write(html, exportFile)
+                }
 
                 val uri = FileProvider.getUriForFile(this@MeetingActivity, "${packageName}.fileprovider", exportFile)
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
@@ -1219,30 +1224,34 @@ class MeetingActivity : AppCompatActivity() {
     private fun startPlayback() {
         try {
             mediaPlayer?.release()
+            // 移除旧的进度轮询，避免多次播放叠加空转
+            playbackRunnable?.let { handler.removeCallbacks(it) }
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(audioFile!!.absolutePath); prepare(); start()
                 btnPlay?.text = "||"; btnPlay?.background = roundRect(C_ORANGE, 20f)
                 setOnCompletionListener {
                     btnPlay?.text = "▶"; btnPlay?.background = roundRect(C_GREEN, 20f)
                     seekBar?.progress = seekBar?.max ?: 0
+                    playbackRunnable?.let { handler.removeCallbacks(it) }
                 }
             }
-            handler.post(object : Runnable {
+            playbackRunnable = object : Runnable {
                 override fun run() {
-                    mediaPlayer?.let {
-                        if (it.isPlaying) {
-                            seekBar?.progress = it.currentPosition / 1000
-                            tvVoiceTime?.text = formatMs(it.currentPosition * 1000L)
-                        }
+                    val mp = mediaPlayer
+                    if (mp != null && mp.isPlaying) {
+                        seekBar?.progress = mp.currentPosition / 1000
+                        tvVoiceTime?.text = formatMs(mp.currentPosition * 1000L)
+                        handler.postDelayed(this, 250)
                     }
-                    handler.postDelayed(this, 250)
                 }
-            })
+            }
+            playbackRunnable?.let { handler.post(it) }
         } catch (e: Exception) { toast("播放失败: " + e.message) }
     }
 
     private fun pausePlayback() {
         mediaPlayer?.pause()
+        playbackRunnable?.let { handler.removeCallbacks(it) }
         btnPlay?.text = "▶"; btnPlay?.background = roundRect(C_GREEN, 20f)
     }
 

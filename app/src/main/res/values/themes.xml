@@ -44,13 +44,6 @@
         <item name="android:focusable">true</item>
     </style>
 
-    <!-- 透明圆角对话框 -->
-    <style name="RoundedDialog" parent="Theme.Material3.DayNight.Dialog">
-        <item name="android:windowBackground">@drawable/dialog_rounded_bg</item>
-        <item name="android:backgroundDimEnabled">false</item>
-        <item name="android:windowIsTranslucent">true</item>
-    </style>
-
     <!-- 玻璃对话框：API 31+ 系统级 windowBlurBehind 真模糊对话框后面的内容；
          低版本回退为高不透明度磨砂底（见 drawable/dialog_glass_bg.xml）。
          values-v31/themes.xml 覆盖追加 blur 属性。 -->

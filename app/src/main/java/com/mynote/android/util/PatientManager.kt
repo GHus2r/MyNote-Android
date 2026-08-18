@@ -21,7 +21,8 @@ object PatientManager {
 
     private var ctx: Context? = null
     fun init(context: Context) { ctx = context.applicationContext }
-    private fun sp() = ctx!!.getSharedPreferences("MyNotePrefs", Context.MODE_PRIVATE)
+    private fun sp() = requireNotNull(ctx) { "PatientManager 未初始化，请先调用 init()" }
+        .getSharedPreferences("MyNotePrefs", Context.MODE_PRIVATE)
 
     private val gson = Gson()
     private val type = com.google.gson.reflect.TypeToken.getParameterized(MutableList::class.java, Patient::class.java).type

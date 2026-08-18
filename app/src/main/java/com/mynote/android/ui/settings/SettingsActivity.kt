@@ -2130,9 +2130,9 @@ class SettingsActivity : BaseActivity() {
             try {
                 val ts = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
                 val exportDir = File(cacheDir, "export_$ts").also { it.mkdirs() }
-                val dbPath = getDatabasePath("mynote_db")
-                if (dbPath.exists()) dbPath.copyTo(File(exportDir, "mynote_db"), overwrite = true)
-                listOf("mynote_db-wal", "mynote_db-shm").forEach {
+                val dbPath = getDatabasePath("mynote.db")
+                if (dbPath.exists()) dbPath.copyTo(File(exportDir, "mynote.db"), overwrite = true)
+                listOf("mynote.db-wal", "mynote.db-shm").forEach {
                     val f = getDatabasePath(it); if (f.exists()) f.copyTo(File(exportDir, it), overwrite = true)
                 }
                 val notesDir = File(filesDir, "notes")
@@ -2183,9 +2183,9 @@ class SettingsActivity : BaseActivity() {
                         }
                     }
                 }
-                val dbDir = getDatabasePath("mynote_db").parentFile!!
-                File(tmp, "mynote_db").let { if (it.exists()) it.copyTo(File(dbDir, "mynote_db"), overwrite = true) }
-                listOf("mynote_db-wal", "mynote_db-shm").forEach {
+                val dbDir = getDatabasePath("mynote.db").parentFile!!
+                File(tmp, "mynote.db").let { if (it.exists()) it.copyTo(File(dbDir, "mynote.db"), overwrite = true) }
+                listOf("mynote.db-wal", "mynote.db-shm").forEach {
                     File(tmp, it).let { src -> if (src.exists()) src.copyTo(File(dbDir, it), overwrite = true) }
                 }
                 File(tmp, "notes").let { if (it.exists()) { File(filesDir, "notes").deleteRecursively(); it.copyRecursively(File(filesDir, "notes"), overwrite = true) } }

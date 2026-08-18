@@ -212,6 +212,11 @@ class QuickRecordService : Service(), SensorEventListener {
                 vibrator.vibrate(android.os.VibrationEffect.createOneShot(80, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
 
             } catch (e: Exception) {
+                // prepare/start 失败时释放已获取的唤醒锁和录音器，避免电池耗尽/资源泄漏
+                try { recorder?.release() } catch (_: Exception) {}
+                recorder = null
+                try { wakeLock?.release() } catch (_: Exception) {}
+                wakeLock = null
             }
         }
     }

@@ -287,6 +287,13 @@ object BackupManager {
         return try {
             val dbDir = context.getDatabasePath(DB_NAME).parentFile ?: return BackupResult.Error("找不到数据库目录")
 
+            // 备份前 checkpoint，把 WAL 增量刷回主库，避免直接复制活库得到不一致的 .db
+            try {
+                AppDatabase.get(context.applicationContext)
+                    .openHelper.writableDatabase
+                    .query("PRAGMA wal_checkpoint(TRUNCATE)").use { it.moveToFirst() }
+            } catch (_: Exception) {}
+
             context.contentResolver.openOutputStream(targetUri)?.use { os ->
                 ZipOutputStream(os).use { zip ->
                     for (suffix in listOf("", "-wal", "-shm")) {

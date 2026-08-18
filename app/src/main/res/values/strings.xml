@@ -1,28 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MyNote</string>
-    <string name="app_description">随心记录</string>
-
-    <!-- 锁屏 -->
-    <string name="lock_fingerprint">指纹解锁</string>
-    <string name="lock_password">密码解锁</string>
-    <string name="lock_input_password">请输入密码</string>
-    <string name="lock_unlock">解锁</string>
-
-    <!-- 主页 -->
-    <string name="main_new_note">新建笔记</string>
-    <string name="main_settings">设置</string>
-
-    <!-- 编辑 -->
-    <string name="edit_save">保存</string>
-
-    <!-- 设置 -->
-    <string name="settings_password">密码保护</string>
-    <string name="settings_fingerprint">指纹解锁</string>
-    <string name="settings_anti_uninstall">防卸载保护</string>
-    <string name="settings_lock_time">自动锁定</string>
-    <string name="settings_local_backup">本地备份</string>
-    <string name="settings_cloud_backup">云端备份</string>
 
     <!-- 小部件 -->
     <string name="widget_description">快速查看最新笔记并新建笔记</string>

@@ -15,10 +15,6 @@
     <color name="divider">#2C2C2C</color>
 
     <color name="danger">#EF5350</color>
-    <color name="warning">#FFA726</color>
-    <color name="success">#66BB6A</color>
 
     <color name="settings_topbar_text">#FFFFFF</color>
-
-    <color name="settings_topbar_divider">#7E57C2</color>
 </resources>

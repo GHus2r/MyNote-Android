@@ -1600,8 +1600,13 @@ function setPageTemplate(style){
                     """.trimIndent()
                     var summary = ""
                     try {
-                        webView.evaluateJavascript(jsCode) { summary = it?.trim('"')?.take(80) ?: "" }
-                        delay(100) // 等待回调
+                        // evaluateJavascript 必须主线程，否则抛异常被吞、时间戳永远采不到
+                        summary = withContext(Dispatchers.Main) {
+                            var s = ""
+                            webView.evaluateJavascript(jsCode) { s = it?.trim('"')?.take(80) ?: "" }
+                            delay(100) // 等待回调
+                            s
+                        }
                     } catch (_: Exception) {}
                     if (summary.isNotBlank()) {
                         timestampList.add(elapsed to summary.replace("\\n", " "))
@@ -1733,7 +1738,10 @@ function setPageTemplate(style){
         ioScope.cancel()
         handler.removeCallbacksAndMessages(null)
         player?.release(); player = null
-        recorder?.release(); recorder = null
+        // 正在录音时需先 stop 再 release，否则 MediaRecorder 抛 IllegalStateException
+        try { recorder?.stop() } catch (_: Exception) {}
+        try { recorder?.release() } catch (_: Exception) {}
+        recorder = null
         playingPath = null
         webView.destroy()
     }
@@ -1818,26 +1826,27 @@ function setPageTemplate(style){
                             val errBody = resp.body?.string() ?: ""
                             throw Exception("HTTP ${resp.code}: ${errBody.take(200)}")
                         }
-                        // SSE 流式读取
-                        val reader = java.io.BufferedReader(java.io.InputStreamReader(resp.body?.byteStream(), "UTF-8"))
+                        // SSE 流式读取（use 确保 reader 和 Response 关闭，异常也不泄漏）
                         val buffer = StringBuilder()
-                        var line: String?
-                        // streaming - no need to cancel animation
                         handler.post { tvStatus.text = "🧠 正在生成..." }
-                        while (reader.readLine().also { line = it } != null) {
-                            val l = line ?: continue
-                            if (!l.startsWith("data: ")) continue
-                            val data = l.removePrefix("data: ")
-                            if (data == "[DONE]") break
-                            try {
-                                val chunk = com.google.gson.JsonParser.parseString(data).asJsonObject
-                                    ?.getAsJsonArray("choices")?.get(0)?.asJsonObject
-                                    ?.getAsJsonObject("delta")?.get("content")?.asString ?: continue
-                                buffer.append(chunk)
-                                handler.post { tvStatus.text = "📝 ${buffer.toString().takeLast(60).replace("\n", " ")}" }
-                            } catch(_: Exception) { continue }
+                        resp.use {
+                            java.io.BufferedReader(java.io.InputStreamReader(it.body?.byteStream(), "UTF-8")).use { reader ->
+                                var line: String?
+                                while (reader.readLine().also { line = it } != null) {
+                                    val l = line ?: continue
+                                    if (!l.startsWith("data: ")) continue
+                                    val data = l.removePrefix("data: ")
+                                    if (data == "[DONE]") break
+                                    try {
+                                        val chunk = com.google.gson.JsonParser.parseString(data).asJsonObject
+                                            ?.getAsJsonArray("choices")?.get(0)?.asJsonObject
+                                            ?.getAsJsonObject("delta")?.get("content")?.asString ?: continue
+                                        buffer.append(chunk)
+                                        handler.post { tvStatus.text = "📝 ${buffer.toString().takeLast(60).replace("\n", " ")}" }
+                                    } catch(_: Exception) { continue }
+                                }
+                            }
                         }
-                        reader.close()
                         val reply = buffer.toString()
                         handler.post {
                             tvStatus.text = "✅ 生成完成！"

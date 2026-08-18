@@ -284,52 +284,54 @@ object IatHelper {
                 break
             }
         }
-        if (trackIndex < 0) return ByteArray(0)
+        if (trackIndex < 0) { extractor.release(); return ByteArray(0) }
         extractor.selectTrack(trackIndex)
 
         val mime = extractor.getTrackFormat(trackIndex).getString(MediaFormat.KEY_MIME) ?: "audio/mp4a-latm"
         val codec = MediaCodec.createDecoderByType(mime)
-        codec.configure(extractor.getTrackFormat(trackIndex), null, null, 0)
-        codec.start()
-
         val outBuffers = mutableListOf<ShortArray>()
         var totalSamples = 0
-        var done = false
-        val bufInfo = MediaCodec.BufferInfo()
+        try {
+            codec.configure(extractor.getTrackFormat(trackIndex), null, null, 0)
+            codec.start()
 
-        while (!done) {
-            val inIndex = codec.dequeueInputBuffer(10_000)
-            if (inIndex >= 0) {
-                val inputBuf = codec.getInputBuffer(inIndex)!!
-                val sampleSize = extractor.readSampleData(inputBuf, 0)
-                if (sampleSize < 0) {
-                    codec.queueInputBuffer(inIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                } else {
-                    codec.queueInputBuffer(inIndex, 0, sampleSize, extractor.sampleTime, 0)
-                    extractor.advance()
-                }
-            }
+            var done = false
+            val bufInfo = MediaCodec.BufferInfo()
 
-            val outIndex = codec.dequeueOutputBuffer(bufInfo, 10_000)
-            when {
-                outIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> continue
-                outIndex == MediaCodec.INFO_TRY_AGAIN_LATER -> continue
-                outIndex >= 0 -> {
-                    val outBuf = codec.getOutputBuffer(outIndex)!!
-                    val shortArr = ShortArray(bufInfo.size / 2)
-                    outBuf.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(shortArr)
-                    outBuf.clear()
-                    outBuffers.add(shortArr)
-                    totalSamples += shortArr.size
-                    codec.releaseOutputBuffer(outIndex, false)
+            while (!done) {
+                val inIndex = codec.dequeueInputBuffer(10_000)
+                if (inIndex >= 0) {
+                    val inputBuf = codec.getInputBuffer(inIndex)!!
+                    val sampleSize = extractor.readSampleData(inputBuf, 0)
+                    if (sampleSize < 0) {
+                        codec.queueInputBuffer(inIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                    } else {
+                        codec.queueInputBuffer(inIndex, 0, sampleSize, extractor.sampleTime, 0)
+                        extractor.advance()
+                    }
                 }
+
+                val outIndex = codec.dequeueOutputBuffer(bufInfo, 10_000)
+                when {
+                    outIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> continue
+                    outIndex == MediaCodec.INFO_TRY_AGAIN_LATER -> continue
+                    outIndex >= 0 -> {
+                        val outBuf = codec.getOutputBuffer(outIndex)!!
+                        val shortArr = ShortArray(bufInfo.size / 2)
+                        outBuf.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(shortArr)
+                        outBuf.clear()
+                        outBuffers.add(shortArr)
+                        totalSamples += shortArr.size
+                        codec.releaseOutputBuffer(outIndex, false)
+                    }
+                }
+                if (bufInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) done = true
             }
-            if (bufInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) done = true
+        } finally {
+            try { codec.stop() } catch (_: Exception) {}
+            try { codec.release() } catch (_: Exception) {}
+            try { extractor.release() } catch (_: Exception) {}
         }
-
-        codec.stop()
-        codec.release()
-        extractor.release()
 
         val allSamples = ShortArray(totalSamples)
         var pos = 0

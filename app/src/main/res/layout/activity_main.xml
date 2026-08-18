@@ -33,16 +33,6 @@
                 android:layout_height="match_parent"
                 android:visibility="gone" />
 
-            <!-- 子主题列表（旧 RecyclerView，保留备用） -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_sub_categories"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="8dp"
-                android:paddingTop="48dp"
-                android:clipToPadding="false"
-                android:visibility="gone" />
-
             <!-- 笔记列表 -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_notes"

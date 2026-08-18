@@ -35,7 +35,6 @@ import com.mynote.android.data.entity.SubCategory
 import com.mynote.android.ui.base.BaseActivity
 import com.mynote.android.ui.edit.EditActivity
 import com.mynote.android.ui.main.adapter.NoteItemAdapter
-import com.mynote.android.ui.main.adapter.SubCategoryAdapter
 import com.mynote.android.ui.main.dialog.CategoryEditDialog
 import com.mynote.android.ui.main.dialog.DeletePasswordDialog
 import com.mynote.android.ui.main.dialog.MoveSubDialog
@@ -76,7 +75,6 @@ class MainActivity : BaseActivity() {
     private lateinit var btnSettings: TextView
     private var sortMode = 0 // 0=置顶优先, 1=最近更新, 2=按标题
     private val sortLabels = arrayOf("置顶↑", "时间↓", "标题")
-    private lateinit var rvSubCategories: RecyclerView
     private lateinit var rvNotes: RecyclerView
     private lateinit var tvEmpty: TextView
     private lateinit var fabCreate: FloatingActionButton
@@ -102,7 +100,6 @@ class MainActivity : BaseActivity() {
     private var lastSearch = ""
 
     // ===== Adapters =====
-    private lateinit var subAdapter: SubCategoryAdapter
     private lateinit var noteAdapter: NoteItemAdapter
 
     // ===== 大主题网格 Compose 状态 =====
@@ -195,7 +192,6 @@ class MainActivity : BaseActivity() {
         btnSort = findViewById(R.id.btn_sort)
         btnExport.setOnClickListener { exportCurrent() }
         btnSort.setOnClickListener { cycleSortMode() }
-        rvSubCategories = findViewById(R.id.rv_sub_categories)
         rvNotes = findViewById(R.id.rv_notes)
         tvEmpty = findViewById(R.id.tv_empty)
         fabCreate = findViewById(R.id.fab_create)
@@ -249,17 +245,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun initAdapters() {
-        // 大主题网格已迁移到 Compose（parentGridCompose + ParentGridScreen），不再用 RecyclerView/adapter
-
-        // Sub Category Adapter
-        rvSubCategories.layoutManager = LinearLayoutManager(this)
-        subAdapter = SubCategoryAdapter(
-            onItemClick = { selectSub(it) },
-            onEditClick = { showEditSubDialog(it) },
-            onDeleteClick = { deleteSub(it) },
-            onAddClick = { showAddSubDialog() }
-        )
-        rvSubCategories.adapter = subAdapter
+        // 大主题网格 + 子主题列表均已迁移到 Compose（ParentGridScreen / SubCategoryScreen），不再用 RecyclerView/adapter
 
         // Note Adapter
         rvNotes.layoutManager = LinearLayoutManager(this)
@@ -327,7 +313,6 @@ class MainActivity : BaseActivity() {
             isSearching -> {
                 setGridVisible(false)
                 subCategoryCompose.visibility = View.GONE
-                rvSubCategories.visibility = View.GONE
                 rvNotes.visibility = View.VISIBLE
                 topbarGlass.visibility = View.VISIBLE
                 fabCreate.visibility = View.GONE
@@ -342,7 +327,6 @@ class MainActivity : BaseActivity() {
                 // 笔记列表层
                 setGridVisible(false)
                 subCategoryCompose.visibility = View.GONE
-                rvSubCategories.visibility = View.GONE
                 rvNotes.visibility = View.VISIBLE
                 topbarGlass.visibility = View.VISIBLE
                 fabCreate.visibility = View.VISIBLE
@@ -358,7 +342,6 @@ class MainActivity : BaseActivity() {
             currentParentId != null -> {
                 // 子主题层（Compose 真玻璃）
                 setGridVisible(false)
-                rvSubCategories.visibility = View.GONE
                 rvNotes.visibility = View.GONE
                 subCategoryCompose.visibility = View.VISIBLE
                 topbarGlass.visibility = View.GONE
@@ -380,7 +363,6 @@ class MainActivity : BaseActivity() {
                 // 大主题网格层
                 setGridVisible(true)
                 subCategoryCompose.visibility = View.GONE
-                rvSubCategories.visibility = View.GONE
                 rvNotes.visibility = View.GONE
                 topbarGlass.visibility = View.GONE
                 fabCreate.visibility = View.GONE
@@ -1322,7 +1304,6 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
             noteAdapter.searchQuery = ""
             noteAdapter.submitList(sortNotes(notes))
             setGridVisible(false)
-            rvSubCategories.visibility = View.GONE
             rvNotes.visibility = View.VISIBLE
             tvEmpty.visibility = if (notes.isEmpty()) View.VISIBLE else View.GONE
             tvTitle.text = "标签: $tag"
