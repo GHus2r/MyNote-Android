@@ -12,9 +12,14 @@ import org.json.JSONObject
 
 /**
  * AI 临床辅助分析 — 融合推理客户端
- * 模型路由：百川 Baichuan-M3-Plus 优先（证据锚定 95%），未配置或失败则降级 qwen-max
+ * 引擎选择：
+ *  - ENGINE_M3PLUS（默认）：百川 Baichuan-M3-Plus 医疗循证（证据锚定 95%），未配置/失败降级 qwen-max
+ *  - ENGINE_DEEPSEEK：DeepSeek-R1 通用推理，未配置/失败回退 M3-Plus
  */
 object ClinicalReasoningClient {
+
+    const val ENGINE_M3PLUS = "m3plus"       // 百川 M3-Plus（医疗循证，推荐）
+    const val ENGINE_DEEPSEEK = "deepseek"   // DeepSeek-R1（通用推理）
 
     private const val BAICHUAN_ENDPOINT = "https://api.baichuan-ai.com/v1/chat/completions"
     private const val BAICHUAN_MODEL = "Baichuan-M3-Plus"
@@ -22,16 +27,19 @@ object ClinicalReasoningClient {
     private const val QWEN_ENDPOINT = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
     private const val QWEN_MODEL = "qwen-max"
 
+    private const val DEEPSEEK_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
+    private const val DEEPSEEK_MODEL = "deepseek-reasoner"
+
     private val client: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-        .readTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
-        .callTimeout(150, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(180, java.util.concurrent.TimeUnit.SECONDS)
+        .callTimeout(200, java.util.concurrent.TimeUnit.SECONDS)
         .build()
 
     private data class Route(val endpoint: String, val model: String, val apiKey: String)
 
-    /** 解析可用路由：百川优先，qwen 兜底 */
-    private fun resolveRoute(p: Prefs): Route? {
+    /** M3-Plus 优先，qwen 兜底 */
+    private fun resolveM3Route(p: Prefs): Route? {
         val bc = p.baichuanApiKey
         if (bc.isNotEmpty()) return Route(BAICHUAN_ENDPOINT, BAICHUAN_MODEL, bc)
         val qw = p.qwenApiKey
@@ -39,12 +47,37 @@ object ClinicalReasoningClient {
         return null
     }
 
-    /** 融合推理，返回模型输出的原始文本（JSON） */
-    suspend fun analyze(context: Context, prompt: String): Result<String> = withContext(Dispatchers.IO) {
-        val p = Prefs(context)
-        val primary = resolveRoute(p)
-            ?: return@withContext Result.failure(Exception("未配置 AI API Key（请在设置页填入百川或 Qwen Key）"))
-        try {
+    /** DeepSeek-R1 */
+    private fun resolveDeepRoute(p: Prefs): Route? {
+        val ds = p.deepseekApiKey
+        if (ds.isNotEmpty()) return Route(DEEPSEEK_ENDPOINT, DEEPSEEK_MODEL, ds)
+        return null
+    }
+
+    /** 融合推理，返回模型输出的原始文本（JSON）。engine 见 ENGINE_* 常量 */
+    suspend fun analyze(context: Context, prompt: String, engine: String = ENGINE_M3PLUS): Result<String> =
+        withContext(Dispatchers.IO) {
+            val p = Prefs(context)
+            if (engine == ENGINE_DEEPSEEK) {
+                val ds = resolveDeepRoute(p)
+                if (ds != null) {
+                    try {
+                        return@withContext Result.success(call(ds, prompt))
+                    } catch (e: Exception) {
+                        // DeepSeek 失败，回退 M3-Plus
+                        return@withContext analyzeM3(p, prompt)
+                    }
+                }
+                // 未配置 DeepSeek Key，回退 M3-Plus
+                return@withContext analyzeM3(p, prompt)
+            }
+            return@withContext analyzeM3(p, prompt)
+        }
+
+    private fun analyzeM3(p: Prefs, prompt: String): Result<String> {
+        val primary = resolveM3Route(p)
+            ?: return Result.failure(Exception("未配置 AI API Key（请在设置页填入百川或 Qwen Key）"))
+        return try {
             Result.success(call(primary, prompt))
         } catch (e: Exception) {
             // 主路由是百川且失败时，降级 qwen-max 重试一次
@@ -65,6 +98,10 @@ object ClinicalReasoningClient {
             put("model", route.model)
             put("temperature", 0.2)
             put("max_tokens", 8192)
+            // 强制 JSON 输出（deepseek-reasoner 不支持 response_format，其余模型均支持）
+            if (route.model != DEEPSEEK_MODEL) {
+                put("response_format", JSONObject().apply { put("type", "json_object") })
+            }
             put("messages", JSONArray().apply {
                 put(JSONObject().apply {
                     put("role", "user")

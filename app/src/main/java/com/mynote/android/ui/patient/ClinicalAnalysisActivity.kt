@@ -35,12 +35,16 @@ import com.mynote.android.ui.image.ImageCropActivity
 import com.mynote.android.util.ClinicalAnalysisResult
 import com.mynote.android.util.ClinicalCaseBuilder
 import com.mynote.android.util.ClinicalReasoningClient
+import com.mynote.android.util.LabReportOcr
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * AI 临床辅助分析 — 多源融合推理结果展示页
@@ -71,6 +75,10 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
     private lateinit var takePictureLauncher: ActivityResultLauncher<Uri>
     private var photoUri: Uri? = null
     private var lastResult: ClinicalAnalysisResult? = null
+    private var currentEngine = ClinicalReasoningClient.ENGINE_M3PLUS  // 推理引擎
+    private var extraLabText = ""                             // 化验单 OCR 追加的化验数据
+    private var evidencePool = ""                             // 证据来源校验池（本次输入的全部文本）
+    private lateinit var labPicker: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,6 +94,9 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
         takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             val uri = photoUri
             if (success && uri != null) startCrop(uri)
+        }
+        labPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            if (uri != null) importLabReport(uri)
         }
         setContentView(buildContentView())
         loadPatient()
@@ -115,8 +126,26 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
             setTextColor(TEXT_PRIMARY)
             setPadding(8, 0, 0, 0)
         }
+        val btnEngine = Button(this).apply {
+            text = "引擎"
+            textSize = 12f
+            setTextColor(TEXT_SECONDARY)
+            setBackgroundColor(CARD_BG)
+            setPadding(dp(12), dp(4), dp(12), dp(4))
+            setOnClickListener { showEngineDialog(this) }
+        }
+        val btnHistory = Button(this).apply {
+            text = "历史"
+            textSize = 12f
+            setTextColor(TEXT_SECONDARY)
+            setBackgroundColor(CARD_BG)
+            setPadding(dp(12), dp(4), dp(12), dp(4))
+            setOnClickListener { showHistory() }
+        }
         topbar.addView(btnBack, LinearLayout.LayoutParams(dp(48), dp(48)))
         topbar.addView(tvTitle, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        topbar.addView(btnEngine)
+        topbar.addView(btnHistory)
 
         // 免责声明
         val tvDisclaimer = TextView(this).apply {
@@ -181,6 +210,15 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
             gravity = Gravity.TOP
         }
 
+        val btnImportLab = Button(this).apply {
+            text = "📋 导入化验单照片"
+            textSize = 12f
+            setTextColor(ACCENT)
+            setBackgroundColor(0xFFE8F5E9.toInt())
+            setPadding(dp(16), dp(6), dp(16), dp(6))
+            setOnClickListener { labPicker.launch("image/*") }
+        }
+
         val btnAnalyze = Button(this).apply {
             text = "开始分析"
             setTextColor(Color.WHITE)
@@ -203,6 +241,7 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
         content.addView(patientCard)
         content.addView(tvLabelRow)
         content.addView(etImaging)
+        content.addView(btnImportLab, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
         content.addView(btnAnalyze, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(12) })
         content.addView(btnSave, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
         content.addView(resultContainer)
@@ -350,11 +389,18 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
             }
 
             localCritical = ClinicalCaseBuilder.detectCriticalValues(vital)
+            // 构建证据来源校验池（本次输入的全部文本：病历 + 影像报告 + 化验单）
+            val recordText = records.joinToString("\n") { it.content }
+            evidencePool = buildString {
+                append(recordText)
+                if (imaging.isNotBlank()) append("\n").append(imaging)
+                if (extraLabText.isNotBlank()) append("\n").append(extraLabText)
+            }
             val prompt = ClinicalCaseBuilder.buildPrompt(
-                ClinicalCaseBuilder.CaseData(p, records, vital, imaging)
+                ClinicalCaseBuilder.CaseData(p, records, vital, imaging, extraLabText)
             )
 
-            val resp = ClinicalReasoningClient.analyze(this@ClinicalAnalysisActivity, prompt)
+            val resp = ClinicalReasoningClient.analyze(this@ClinicalAnalysisActivity, prompt, currentEngine)
             resp.fold(
                 onSuccess = { raw ->
                     val parsed = ClinicalAnalysisResult.parse(raw)
@@ -436,6 +482,39 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
                 setPadding(4, 4, 4, 4)
             })
         }
+
+        // 多轮追问：补充信息后继续分析
+        resultContainer.addView(Button(this).apply {
+            text = "补充信息继续分析"
+            textSize = 13f
+            setTextColor(ACCENT)
+            setBackgroundColor(0xFFE8F5E9.toInt())
+            setOnClickListener { showSupplementDialog() }
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(16) })
+    }
+
+    /** 多轮追问：补充信息后追加到输入并重新分析 */
+    private fun showSupplementDialog() {
+        val input = EditText(this).apply {
+            hint = "补充信息（如：补充查体、追问病史结果等）"
+            minLines = 3
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            setHorizontallyScrolling(false)
+            setPadding(16, 12, 16, 12)
+        }
+        AlertDialog.Builder(this, R.style.GlassDialog)
+            .setTitle("补充信息")
+            .setView(input)
+            .setPositiveButton("继续分析") { _, _ ->
+                val s = input.text.toString().trim()
+                if (s.isNotEmpty()) {
+                    val cur = etImaging.text.toString().trim()
+                    etImaging.setText(if (cur.isEmpty()) "补充信息：$s" else "$cur\n补充信息：$s")
+                    doAnalyze()
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun sectionTitle(title: String, color: Int): TextView = TextView(this).apply {
@@ -514,6 +593,7 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
             setTextColor(color)
         })
         for (e in list) {
+            val verified = verifyEvidence(e)
             block.addView(TextView(this).apply {
                 text = buildString {
                     val tag = e.type.ifBlank { "证据" }
@@ -522,13 +602,24 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
                     if (e.value.isNotBlank()) append(" ${e.value}")
                     if (e.reference.isNotBlank()) append(" (参考 ${e.reference})")
                     if (e.note.isNotBlank()) append(" ${e.note}")
+                    if (!verified) append("  ⚠ AI循证补充")
                 }
                 textSize = 13f
-                setTextColor(TEXT_PRIMARY)
+                setTextColor(if (verified) TEXT_PRIMARY else AMBER)
                 setPadding(8, 2, 0, 2)
             })
         }
         return block
+    }
+
+    /** 来源校验：证据的项目名/值是否出现在本次输入文本中，不在则标记 AI 循证补充 */
+    private fun verifyEvidence(e: ClinicalAnalysisResult.Evidence): Boolean {
+        val pool = evidencePool
+        if (pool.isBlank()) return true  // 无证据池时不校验，避免误标
+        val item = e.item.trim()
+        val value = e.value.trim()
+        return (item.isNotBlank() && pool.contains(item)) ||
+            (value.isNotBlank() && pool.contains(value))
     }
 
     private fun recommendationRow(r: ClinicalAnalysisResult.Recommendation): View {
@@ -629,6 +720,98 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
         if (r.pendingInfo.isNotEmpty()) {
             append("\n待补充：\n")
             r.pendingInfo.forEach { append("· $it\n") }
+        }
+    }
+
+    /** 选择推理引擎：M3-Plus（医疗循证） / DeepSeek-R1（通用推理） */
+    private fun showEngineDialog(btn: Button) {
+        val labels = arrayOf(
+            "百川 M3-Plus（医疗循证·推荐）",
+            "DeepSeek-R1（通用推理）"
+        )
+        val engines = arrayOf(
+            ClinicalReasoningClient.ENGINE_M3PLUS,
+            ClinicalReasoningClient.ENGINE_DEEPSEEK
+        )
+        AlertDialog.Builder(this, R.style.GlassDialog)
+            .setTitle("选择推理引擎")
+            .setItems(labels) { _, which ->
+                currentEngine = engines[which]
+                updateEngineButton(btn)
+                Toast.makeText(this, "已切换：${labels[which]}", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun updateEngineButton(btn: Button) {
+        val isM3 = currentEngine == ClinicalReasoningClient.ENGINE_M3PLUS
+        btn.text = if (isM3) "引擎:M3" else "引擎:R1"
+        btn.setTextColor(if (isM3) TEXT_SECONDARY else Color.WHITE)
+        btn.setBackgroundColor(if (isM3) CARD_BG else ACCENT)
+    }
+
+    /** 分析历史列表（该患者的 AI辅助分析 记录） */
+    private fun showHistory() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val records = db.medicalRecordDao().getByPatientSync(patientId)
+                .filter { it.type == "AI辅助分析" }
+            withContext(Dispatchers.Main) {
+                if (records.isEmpty()) {
+                    Toast.makeText(this@ClinicalAnalysisActivity, "暂无分析历史", Toast.LENGTH_SHORT).show()
+                    return@withContext
+                }
+                val items = records.map { r ->
+                    val firstLine = r.content.lineSequence().firstOrNull { it.isNotBlank() } ?: "分析"
+                    val date = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(r.createdAt))
+                    "$date  $firstLine"
+                }.toTypedArray()
+                AlertDialog.Builder(this@ClinicalAnalysisActivity, R.style.GlassDialog)
+                    .setTitle("分析历史（${records.size} 次）")
+                    .setItems(items) { _, which -> showHistoryDetail(records[which]) }
+                    .setNegativeButton("取消", null)
+                    .show()
+            }
+        }
+    }
+
+    private fun showHistoryDetail(record: MedicalRecord) {
+        val scroll = ScrollView(this)
+        val tv = TextView(this).apply {
+            text = record.content
+            textSize = 13f
+            setTextColor(TEXT_PRIMARY)
+            setPadding(16, 12, 16, 12)
+        }
+        scroll.addView(tv)
+        AlertDialog.Builder(this, R.style.GlassDialog)
+            .setTitle("AI 辅助分析")
+            .setView(scroll)
+            .setPositiveButton("关闭", null)
+            .show()
+    }
+
+    /** 化验单照片识别 → 追加到 extraLabText（复用 LabReportOcr 管线） */
+    private fun importLabReport(uri: Uri) {
+        Toast.makeText(this, "识别化验单中…", Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            val bitmap = try {
+                contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) }
+            } catch (e: Exception) { null }
+            if (bitmap == null) {
+                Toast.makeText(this@ClinicalAnalysisActivity, "图片加载失败", Toast.LENGTH_LONG).show()
+                return@launch
+            }
+            val results = try { LabReportOcr.recognize(bitmap) } catch (e: Exception) { emptyList() }
+            bitmap.recycle()
+            val formatted = LabReportOcr.formatResults(results)
+            val text = formatted.ifBlank { LabReportOcr.getLastRawText() }
+            if (text.isBlank()) {
+                Toast.makeText(this@ClinicalAnalysisActivity, "未识别到化验数据，请手动输入", Toast.LENGTH_LONG).show()
+            } else {
+                extraLabText = text
+                Toast.makeText(this@ClinicalAnalysisActivity, "化验单已导入（${results.size} 项），重新导入会覆盖", Toast.LENGTH_LONG).show()
+            }
         }
     }
 

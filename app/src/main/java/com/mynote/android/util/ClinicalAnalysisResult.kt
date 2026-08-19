@@ -44,7 +44,8 @@ data class ClinicalAnalysisResult(
     companion object {
         /** 解析模型返回文本，容错：剥 markdown、截取 JSON 段、解析失败回退原文 */
         fun parse(raw: String): ClinicalAnalysisResult {
-            val json = extractJson(raw) ?: return ClinicalAnalysisResult(rawText = raw)
+            val cleaned = cleanRef(raw)
+            val json = extractJson(cleaned) ?: return ClinicalAnalysisResult(rawText = cleaned)
             return try {
                 val obj = JSONObject(json)
                 ClinicalAnalysisResult(
@@ -60,12 +61,16 @@ data class ClinicalAnalysisResult(
                     pendingInfo = parseStrings(
                         obj.optJSONArray("待补充") ?: obj.optJSONArray("pending_info")
                     ),
-                    rawText = raw
+                    rawText = cleaned
                 )
             } catch (_: Exception) {
-                ClinicalAnalysisResult(rawText = raw)
+                ClinicalAnalysisResult(rawText = cleaned)
             }
         }
+
+        /** 清理模型循证引用标记（如 ^[2]^、^[1,3]^），避免混入结果展示与保存的病历文本 */
+        private fun cleanRef(s: String): String =
+            s.replace(Regex("\\^\\[[^\\]]*\\]\\^"), "").trim()
 
         private fun extractJson(s: String): String? {
             var t = s.trim()

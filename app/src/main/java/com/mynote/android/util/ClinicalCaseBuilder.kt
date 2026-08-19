@@ -14,7 +14,8 @@ object ClinicalCaseBuilder {
         val patient: Patient,
         val records: List<MedicalRecord>,
         val vital: VitalSigns?,
-        val imagingReport: String
+        val imagingReport: String,
+        val extraLabText: String = ""   // 化验单 OCR 追加的化验数据（可选）
     )
 
     /** 组装融合推理 prompt。不含姓名/床号等可识别信息，已去标识化 */
@@ -39,7 +40,10 @@ object ClinicalCaseBuilder {
 
         append("=== 化验结果 ===\n")
         val vitalText = buildVitalText(data.vital)
-        if (vitalText.isBlank()) append("（暂无）\n") else append(vitalText)
+        val labText = listOf(vitalText, data.extraLabText.trim())
+            .filter { it.isNotBlank() }
+            .joinToString("\n")
+        if (labText.isBlank()) append("（暂无）\n") else append(labText)
         append("\n")
 
         append("=== 影像报告 ===\n")
@@ -55,6 +59,14 @@ object ClinicalCaseBuilder {
         append("6. 若信息不足无法判断，明确说明，不得强行下结论\n")
         append("7. 严禁用医学知识库、循证检索或医学常识内容冒充输入数据的证据；主诉与入院诊断仅作为线索，不属于病史证据。若【病史信息】【化验结果】【影像报告】均为「（暂无）」或无法从输入中找到证据，则诊断的「支持证据」留空，并在「待补充」中说明证据不足\n")
         append("8. 证据的「类型」必须标注真实来源：现病史/查体/检验/医嘱/影像（不要统一写成「病史」）；主诉、入院诊断与病历正文矛盾时，一律以病历正文（现病史/查体/检验/医嘱）为准，并在「待补充」中说明该矛盾\n\n")
+
+        // 科室鉴别诊断思路注入（复用病历模板的「首次病程-拟诊讨论」）
+        val deptHint = buildDeptHint(p.department)
+        if (deptHint.isNotBlank()) {
+            append("=== 科室鉴别诊断思路（结合专科重点展开鉴别） ===\n")
+            append(deptHint)
+            append("\n\n")
+        }
 
         append("=== 输出格式 ===\n")
         append("严格输出 JSON，不要任何解释，不要 markdown 代码块：\n")
@@ -120,6 +132,21 @@ object ClinicalCaseBuilder {
 
     private fun truncate(s: String, max: Int): String =
         if (s.length <= max) s else s.substring(0, max) + "…"
+
+    /** 从科室病历模板提取「首次病程-拟诊讨论」段落，作为鉴别诊断思路注入 */
+    private fun buildDeptHint(dept: String): String {
+        val full = DeptRecordTemplate.getSpecialty(dept) ?: return ""
+        val marker = "首次病程-拟诊讨论】"
+        val idx = full.indexOf(marker)
+        if (idx < 0) return ""
+        // 段落标题起点（"【" 位置）
+        val start = full.lastIndexOf("【", idx)
+        if (start < 0) return ""
+        // 段落结束：下一个段落标题的 "【"
+        val next = full.indexOf("\n【", idx)
+        val end = if (next > idx) next else full.length
+        return full.substring(start, end).trim()
+    }
 
     /** 本地危急值规则兜底（不依赖模型，防止漏报；成人参考阈值） */
     fun detectCriticalValues(v: VitalSigns?): List<ClinicalAnalysisResult.CriticalAlert> {
