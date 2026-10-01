@@ -236,9 +236,15 @@ class EditActivity : AppCompatActivity() {
                 runOnUiThread {
                     js("""var el=document.querySelector('.voice-msg[data-path="${esc(path)}"]');if(el){var b=el.querySelector('.voice-transcribe-btn');if(b)b.textContent='识别中...';var c=el.querySelector('.voice-copy-btn');if(c)c.style.display='none'}""")
                 }
+                // 分片进度：长音频时按钮显示 "识别中(n/m)..."
+                val onSeg: (Int, Int) -> Unit = { d, t ->
+                    runOnUiThread {
+                        js("""var el=document.querySelector('.voice-msg[data-path="${esc(path)}"]');if(el){var b=el.querySelector('.voice-transcribe-btn');if(b)b.textContent='识别中($d/$t)...'}""")
+                    }
+                }
 
-                // 讯飞（中英）始终调用
-                val iatJob = ioScope.async { IatHelper.transcribe(this@EditActivity, file) }
+                // 讯飞（中英）始终调用（长音频自动分片）
+                val iatJob = ioScope.async { IatHelper.transcribe(this@EditActivity, file, onSeg) }
                 // 天翼（方言）仅在凭证已配置时调用
                 val p = com.mynote.android.util.Prefs(this@EditActivity)
                 val tianyiOk = p.tianyiAppId.isNotEmpty() && p.tianyiApiKey.isNotEmpty()
@@ -1161,10 +1167,12 @@ ${d.treatment.split("、").joinToString("\n") { "　○ ${it.trim()}" }}
             val items = dao.getContentItems(noteId!!)
             val html = items.firstOrNull { it.type == "html" }?.content
                 ?: buildHtmlFromItems(items)
-            htmlContent = html
+            // 修复残留：转写中途退出会把 "识别中..." 按钮文本存进 HTML，载入时复位为可点击的 "转文字"
+            val fixedHtml = html.replace(">识别中...</span>", ">转文字</span>")
+            htmlContent = fixedHtml
             runOnUiThread {
                 note?.let { etTitle.setText(it.title) }
-                webView.loadDataWithBaseURL("file://${baseDir.absolutePath}/", editorHtml(html), "text/html; charset=UTF-8", "UTF-8", null)
+                webView.loadDataWithBaseURL("file://${baseDir.absolutePath}/", editorHtml(fixedHtml), "text/html; charset=UTF-8", "UTF-8", null)
                 updateWordCount()
             }
         }
@@ -1355,6 +1363,7 @@ ed.addEventListener('click',function(e){
     // 转文字按钮（必须在 general media click 之前检查）
     if(el.classList.contains('voice-transcribe-btn')){
         e.preventDefault();e.stopPropagation();
+        if(el.textContent.indexOf('识别中')===0)return;  // 防重入：转写进行中忽略点击
         var msg=el.closest('.voice-msg');
         if(!msg)return;
         var t=msg.querySelector('.voice-transcript');

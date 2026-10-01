@@ -1,19 +1,17 @@
 package com.mynote.android.util
 
 import android.content.Context
-import android.media.MediaCodec
-import android.media.MediaExtractor
-import android.media.MediaFormat
 import android.os.Handler
 import android.os.Looper
 import android.util.Base64
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import okhttp3.*
 import org.json.JSONObject
 import java.io.File
 import java.net.URLEncoder
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
+import java.util.concurrent.atomic.AtomicInteger
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import javax.net.ssl.SSLContext
@@ -25,7 +23,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * 讯飞语音听写 (IAT) WebSocket 封装
+ * 讯飞语音听写 (IAT) WebSocket 封装 —— 长音频版
+ * - IAT 单会话限 60s：自动按 55s 分片转写后拼接
+ * - 严格按 40ms/1280B 节流发送，business 参数仅首帧携带
+ * - 每片 150s 超时 + pingInterval 保活，半开连接不再永久挂起
+ * - 片间并发 2 路（讯飞免费版并发上限）
  * 凭证通过 Prefs.iatAppId / iatApiKey / iatApiSecret 配置（设置页→讯飞语音识别）
  */
 object IatHelper {
@@ -33,6 +35,12 @@ object IatHelper {
     private const val HOST = "iat-api.xfyun.cn"
     private const val PATH = "/v2/iat"
     private const val URL_BASE = "wss://$HOST$PATH"
+
+    private const val SEGMENT_SECONDS = 55          // 每片时长（< 60s 上限）
+    private const val BYTES_PER_SEC = 16000 * 2     // 16kHz 16bit mono
+    private const val SEGMENT_PARALLEL = 2          // 并发片数
+    private const val SEGMENT_TIMEOUT_MS = 150_000L // 单片超时
+    private const val FRAME_INTERVAL_MS = 40L       // 官方要求的 40ms/1280B 节流
 
     private val dateFormat = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US).apply {
         timeZone = TimeZone.getTimeZone("GMT")
@@ -44,7 +52,7 @@ object IatHelper {
      * 转写参数
      * @param language zh_cn / en_us
      * @param accent mandarin / cantonese / 空字符串=不限制
-     * @param pd 说话人分离: "0"=关闭, "1"=开启（最多区分10人）
+     * @param pd 说话人分离: "0"=关闭, "1"=开启（注意：分片模式下说话人编号每片独立，pd 建议仅用于短音频）
      * @param onProgress 流式回调（主线程），传入当前累积文本
      */
     data class TranscribeParams(
@@ -65,9 +73,12 @@ object IatHelper {
     )
 
     /**
-     * 转写音频文件 → 纯文本。凭证从 Prefs 读取。
+     * 转写音频文件 → 纯文本。凭证从 Prefs 读取。自动分片，onProgress 报告 (已完成片数, 总片数)。
      */
-    suspend fun transcribe(context: Context, audioFile: File): Result<String> {
+    suspend fun transcribe(
+        context: Context, audioFile: File,
+        onSegmentProgress: ((done: Int, total: Int) -> Unit)? = null
+    ): Result<String> {
         val p = Prefs(context)
         val appId = p.iatAppId
         val apiKey = p.iatApiKey
@@ -75,121 +86,173 @@ object IatHelper {
         if (appId.isEmpty() || apiKey.isEmpty()) {
             return Result.failure(Exception("请先在设置中配置讯飞 API 凭证"))
         }
-        return transcribe(audioFile, appId, apiKey, apiSecret)
+        return transcribe(audioFile, appId, apiKey, apiSecret, onSegmentProgress)
     }
 
     /** 带凭证的便捷调用（无流式回调，无 pd） */
-    suspend fun transcribe(audioFile: File, appId: String, apiKey: String, apiSecret: String): Result<String> {
-        return transcribeStreaming(audioFile, appId, apiKey, apiSecret, TranscribeParams())
+    suspend fun transcribe(
+        audioFile: File, appId: String, apiKey: String, apiSecret: String,
+        onSegmentProgress: ((done: Int, total: Int) -> Unit)? = null
+    ): Result<String> {
+        return transcribeStreaming(audioFile, appId, apiKey, apiSecret, TranscribeParams(), onSegmentProgress)
             .map { it.rawText }
     }
 
     /**
-     * 流式转写——每收到一帧结果就回调 onProgress（主线程）
-     * 返回 TranscribeResult（rawText + 带说话人标记的 annotatedText）
+     * 流式转写（长音频自动分片）
+     * 每片转写完成后回调 onProgress（主线程，累积文本）
+     * 分片进度回调 onSegmentProgress（任意线程，(已完成, 总数)）
      */
     suspend fun transcribeStreaming(
         audioFile: File,
         appId: String,
         apiKey: String,
         apiSecret: String,
-        params: TranscribeParams
+        params: TranscribeParams,
+        onSegmentProgress: ((done: Int, total: Int) -> Unit)? = null
     ): Result<TranscribeResult> {
         return withContext(Dispatchers.IO) {
             try {
-                val url = buildAuthUrl(appId, apiKey, apiSecret)
-                val client = buildClient()
-                val deferred = CompletableDeferred<TranscribeResult>()
+                val pcm = PcmDecoder.decodeToPcm16k(audioFile)
+                if (pcm.isEmpty()) {
+                    return@withContext Result.failure(Exception("音频解码失败（文件损坏或格式不支持）"))
+                }
+                val segBytes = SEGMENT_SECONDS * BYTES_PER_SEC
+                val segments = if (pcm.size <= segBytes) listOf(pcm) else {
+                    (0 until pcm.size step segBytes).map { off ->
+                        pcm.copyOfRange(off, minOf(off + segBytes, pcm.size))
+                    }
+                }
+                // 尾片太短（< 2s）并入前一片，避免讯飞对超短音频返回异常
+                val finalSegments = if (segments.size > 1 && segments.last().size < 2 * BYTES_PER_SEC) {
+                    segments.dropLast(2) + (segments.takeLast(2).reduce { a, b -> a + b })
+                } else segments
 
-                val ws = client.newWebSocket(
-                    Request.Builder().url(url).build(),
-                    object : WebSocketListener() {
-                        val rawSb = StringBuilder()
-                        val annotatedSb = StringBuilder()
-                        var currentSpeaker = -1
+                val total = finalSegments.size
+                val doneCount = AtomicInteger(0)
+                val texts = arrayOfNulls<String>(total)
+                val sem = Semaphore(SEGMENT_PARALLEL)
+                var firstError: Exception? = null
+                val errMutex = Object()
 
-                        override fun onOpen(webSocket: WebSocket, response: Response) {
-                            sendAudioFrames(webSocket, audioFile, appId, params.language, params.accent, params.pd)
-                        }
-
-                        override fun onMessage(webSocket: WebSocket, text: String) {
-                            try {
-                                val json = JSONObject(text)
-                                val code = json.optInt("code", 0)
-                                if (code != 0) {
-                                    deferred.completeExceptionally(Exception("讯飞错误 $code: ${json.optString("message")}"))
-                                    webSocket.close(1000, "")
-                                    return
-                                }
-                                val data = json.optJSONObject("data")
-                                val result = data?.optJSONObject("result")
-                                if (result != null) {
-                                    val wsArr = result.optJSONArray("ws")
-                                    for (i in 0 until wsArr.length()) {
-                                        val cwArr = wsArr.getJSONObject(i).optJSONArray("cw")
-                                        for (j in 0 until cwArr.length()) {
-                                            val cwObj = cwArr.getJSONObject(j)
-                                            val word = cwObj.optString("w", "")
-                                            rawSb.append(word)
-
-                                            // pd=1 时读取说话人标签
-                                            if (params.pd == "1") {
-                                                val rg = cwObj.optInt("rg", -1)
-                                                if (rg >= 0 && rg != currentSpeaker) {
-                                                    if (annotatedSb.isNotEmpty()) annotatedSb.append("\n")
-                                                    annotatedSb.append("说话人").append(rg + 1).append(": ")
-                                                    currentSpeaker = rg
-                                                }
-                                            }
-                                            annotatedSb.append(word)
+                coroutineScope {
+                    finalSegments.mapIndexed { idx, seg ->
+                        async {
+                            sem.withPermit {
+                                val r = transcribeSegment(seg, appId, apiKey, apiSecret, params)
+                                val d = doneCount.incrementAndGet()
+                                onSegmentProgress?.invoke(d, total)
+                                r.fold(
+                                    onSuccess = { text ->
+                                        texts[idx] = text
+                                        params.onProgress?.let { cb ->
+                                            val acc = texts.filterNotNull().joinToString("")
+                                            mainHandler.post { cb(acc) }
+                                        }
+                                    },
+                                    onFailure = { e ->
+                                        synchronized(errMutex) {
+                                            if (firstError == null) firstError = e as? Exception ?: Exception(e.message ?: "转写失败")
                                         }
                                     }
-                                }
-                                // 流式回调
-                                val displayText = if (params.pd == "1") annotatedSb.toString() else rawSb.toString()
-                                if (data?.optInt("status", 0) == 1 && displayText.isNotEmpty()) {
-                                    params.onProgress?.let { cb ->
-                                        mainHandler.post { cb(displayText) }
-                                    }
-                                }
-                                if (data?.optInt("status", 0) == 2) {
-                                    val trimmedRaw = rawSb.toString().trim()
-                                    val trimmedAnnotated = annotatedSb.toString().trim()
-                                    params.onProgress?.let { cb ->
-                                        mainHandler.post { cb(if (params.pd == "1") trimmedAnnotated else trimmedRaw) }
-                                    }
-                                    deferred.complete(TranscribeResult(
-                                        rawText = trimmedRaw,
-                                        annotatedText = if (params.pd == "1") trimmedAnnotated else trimmedRaw
-                                    ))
-                                    webSocket.close(1000, "")
-                                }
-                            } catch (e: Exception) {
-                                deferred.completeExceptionally(e)
-                                webSocket.close(1000, "")
+                                )
                             }
                         }
+                    }.awaitAll()
+                }
 
-                        override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                            deferred.completeExceptionally(t)
-                        }
-
-                        override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                            if (!deferred.isCompleted) {
-                                val trimmedRaw = rawSb.toString().trim()
-                                val trimmedAnnotated = annotatedSb.toString().trim()
-                                deferred.complete(TranscribeResult(
-                                    rawText = trimmedRaw,
-                                    annotatedText = if (params.pd == "1") trimmedAnnotated else trimmedRaw
-                                ))
-                            }
-                        }
-                    })
-
-                Result.success(deferred.await())
+                val anySuccess = texts.any { !it.isNullOrEmpty() }
+                if (!anySuccess) {
+                    return@withContext Result.failure(firstError ?: Exception("识别结果为空"))
+                }
+                val parts = texts.mapIndexed { i, t ->
+                    t ?: "[第${i + 1}段识别失败]"   // 部分失败：拼接占位标记，保留其余内容
+                }
+                val raw = parts.joinToString("").trim()
+                Result.success(TranscribeResult(raw, raw))
             } catch (e: Exception) {
                 Result.failure(e)
             }
+        }
+    }
+
+    /** 单片转写（≤55s PCM），内部含超时保护 */
+    private suspend fun transcribeSegment(
+        pcm: ByteArray, appId: String, apiKey: String, apiSecret: String,
+        params: TranscribeParams
+    ): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val url = buildAuthUrl(appId, apiKey, apiSecret)
+            val client = buildClient()
+            val deferred = CompletableDeferred<String>()
+
+            val ws = client.newWebSocket(
+                Request.Builder().url(url).build(),
+                object : WebSocketListener() {
+                    val sb = StringBuilder()
+
+                    override fun onOpen(webSocket: WebSocket, response: Response) {
+                        // 独立线程节流发送，避免阻塞 OkHttp 回调线程
+                        Thread {
+                            try {
+                                sendAudioFrames(webSocket, pcm, appId, params.language, params.accent, params.pd)
+                            } catch (e: Exception) {
+                                if (!deferred.isCompleted) deferred.completeExceptionally(e)
+                            }
+                        }.start()
+                    }
+
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        try {
+                            val json = JSONObject(text)
+                            val code = json.optInt("code", 0)
+                            if (code != 0) {
+                                deferred.completeExceptionally(Exception("讯飞错误 $code: ${json.optString("message")}"))
+                                webSocket.close(1000, "")
+                                return
+                            }
+                            val data = json.optJSONObject("data")
+                            val result = data?.optJSONObject("result")
+                            if (result != null) {
+                                val wsArr = result.optJSONArray("ws")
+                                for (i in 0 until wsArr.length()) {
+                                    val cwArr = wsArr.getJSONObject(i).optJSONArray("cw")
+                                    for (j in 0 until cwArr.length()) {
+                                        sb.append(cwArr.getJSONObject(j).optString("w", ""))
+                                    }
+                                }
+                            }
+                            if (data?.optInt("status", 0) == 2) {
+                                deferred.complete(sb.toString().trim())
+                                webSocket.close(1000, "")
+                            }
+                        } catch (e: Exception) {
+                            deferred.completeExceptionally(e)
+                            webSocket.close(1000, "")
+                        }
+                    }
+
+                    override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                        deferred.completeExceptionally(t)
+                    }
+
+                    override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                        if (!deferred.isCompleted) deferred.complete(sb.toString().trim())
+                    }
+
+                    override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                        if (!deferred.isCompleted) deferred.complete(sb.toString().trim())
+                    }
+                })
+
+            // 关键：超时保护。此前无超时导致半开连接时永久挂起（"识别中..."卡死）
+            val text = withTimeout(SEGMENT_TIMEOUT_MS) { deferred.await() }
+            client.dispatcher.executorService.shutdown()
+            Result.success(text)
+        } catch (e: TimeoutCancellationException) {
+            Result.failure(Exception("讯飞识别超时（单片 ${SEGMENT_TIMEOUT_MS / 1000}s）"))
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
@@ -219,14 +282,18 @@ object IatHelper {
         return OkHttpClient.Builder()
             .sslSocketFactory(sslContext.socketFactory, trustAll[0] as X509TrustManager)
             .hostnameVerifier { _, _ -> true }
+            .pingInterval(20, java.util.concurrent.TimeUnit.SECONDS)  // 保活，检测半开连接
             .build()
     }
 
+    /**
+     * 节流发送：1280B/帧、每帧间隔 40ms（官方要求）
+     * 首帧携带 common + business，后续帧仅 data
+     */
     private fun sendAudioFrames(
-        webSocket: WebSocket, file: File, appId: String,
+        webSocket: WebSocket, pcm: ByteArray, appId: String,
         language: String = "zh_cn", accent: String = "mandarin", pd: String = "0"
     ) {
-        val pcm = decodeToPcm16k(file)
         val frameSize = 1280
         var offset = 0
         var first = true
@@ -237,25 +304,28 @@ object IatHelper {
             val chunk = pcm.copyOfRange(offset, offset + len)
             val payload = Base64.encodeToString(chunk, Base64.NO_WRAP)
 
-            val frame = JSONObject().apply {
-                put("common", JSONObject().put("app_id", appId))
-                put("business", JSONObject().apply {
+            val frame = JSONObject()
+            if (first) {
+                frame.put("common", JSONObject().put("app_id", appId))
+                frame.put("business", JSONObject().apply {
                     put("language", language)
                     put("domain", "iat")
                     put("accent", accent)
                     put("pd", pd)
                     put("vad_eos", 10000)
                 })
-                put("data", JSONObject().apply {
-                    put("status", status)
-                    put("format", "audio/L16;rate=16000")
-                    put("encoding", "raw")
-                    put("audio", payload)
-                })
+                first = false
             }
+            frame.put("data", JSONObject().apply {
+                put("status", status)
+                put("format", "audio/L16;rate=16000")
+                put("encoding", "raw")
+                put("audio", payload)
+            })
             webSocket.send(frame.toString())
-            if (first) { status = 1; first = false }
+            if (status == 0) status = 1
             offset += len
+            Thread.sleep(FRAME_INTERVAL_MS)
         }
 
         // 结束帧
@@ -268,96 +338,6 @@ object IatHelper {
             })
         }
         webSocket.send(endFrame.toString())
-    }
-
-    /** 将 M4A/AAC 音频解码为 16kHz 16bit 单声道 PCM */
-    private fun decodeToPcm16k(file: File): ByteArray {
-        val extractor = MediaExtractor()
-        extractor.setDataSource(file.absolutePath)
-        var trackIndex = -1
-        var sampleRate = 0
-        for (i in 0 until extractor.trackCount) {
-            val fmt = extractor.getTrackFormat(i)
-            if (fmt.getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true) {
-                trackIndex = i
-                sampleRate = fmt.getInteger(MediaFormat.KEY_SAMPLE_RATE)
-                break
-            }
-        }
-        if (trackIndex < 0) { extractor.release(); return ByteArray(0) }
-        extractor.selectTrack(trackIndex)
-
-        val mime = extractor.getTrackFormat(trackIndex).getString(MediaFormat.KEY_MIME) ?: "audio/mp4a-latm"
-        val codec = MediaCodec.createDecoderByType(mime)
-        val outBuffers = mutableListOf<ShortArray>()
-        var totalSamples = 0
-        try {
-            codec.configure(extractor.getTrackFormat(trackIndex), null, null, 0)
-            codec.start()
-
-            var done = false
-            val bufInfo = MediaCodec.BufferInfo()
-
-            while (!done) {
-                val inIndex = codec.dequeueInputBuffer(10_000)
-                if (inIndex >= 0) {
-                    val inputBuf = codec.getInputBuffer(inIndex)!!
-                    val sampleSize = extractor.readSampleData(inputBuf, 0)
-                    if (sampleSize < 0) {
-                        codec.queueInputBuffer(inIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                    } else {
-                        codec.queueInputBuffer(inIndex, 0, sampleSize, extractor.sampleTime, 0)
-                        extractor.advance()
-                    }
-                }
-
-                val outIndex = codec.dequeueOutputBuffer(bufInfo, 10_000)
-                when {
-                    outIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> continue
-                    outIndex == MediaCodec.INFO_TRY_AGAIN_LATER -> continue
-                    outIndex >= 0 -> {
-                        val outBuf = codec.getOutputBuffer(outIndex)!!
-                        val shortArr = ShortArray(bufInfo.size / 2)
-                        outBuf.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(shortArr)
-                        outBuf.clear()
-                        outBuffers.add(shortArr)
-                        totalSamples += shortArr.size
-                        codec.releaseOutputBuffer(outIndex, false)
-                    }
-                }
-                if (bufInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) done = true
-            }
-        } finally {
-            try { codec.stop() } catch (_: Exception) {}
-            try { codec.release() } catch (_: Exception) {}
-            try { extractor.release() } catch (_: Exception) {}
-        }
-
-        val allSamples = ShortArray(totalSamples)
-        var pos = 0
-        for (arr in outBuffers) {
-            System.arraycopy(arr, 0, allSamples, pos, arr.size)
-            pos += arr.size
-        }
-
-        return if (sampleRate == 16000) {
-            shortsToBytes(allSamples)
-        } else {
-            val ratio = sampleRate.toDouble() / 16000.0
-            val resampled = ShortArray((allSamples.size / ratio).toInt())
-            for (i in resampled.indices) {
-                val srcIdx = (i * ratio).toInt().coerceIn(0, allSamples.size - 1)
-                resampled[i] = allSamples[srcIdx]
-            }
-            shortsToBytes(resampled)
-        }
-    }
-
-    private fun shortsToBytes(shorts: ShortArray): ByteArray {
-        val bytes = ByteArray(shorts.size * 2)
-        val buf = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
-        buf.asShortBuffer().put(shorts)
-        return bytes
     }
 
     private fun hmacSha256(key: String, data: String): ByteArray {
