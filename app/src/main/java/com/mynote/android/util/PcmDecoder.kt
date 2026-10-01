@@ -3,19 +3,35 @@ package com.mynote.android.util
 import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
- * 音频解码工具：M4A/AAC → 16kHz 16bit 单声道 PCM
- * 供讯飞 IAT / 阿里 Qwen-ASR 长音频切片共用
+ * 音频解码工具：M4A/AAC/AMR 等 → 16kHz 16bit 单声道 PCM
+ *
+ * 关键设计——流式落盘：
+ * 长音频（如 14 分钟）完整 PCM 约 27MB，若在堆内多份复制会 OOM（256MB 堆上限）。
+ * 本类把解码结果直接写入磁盘临时文件，内存峰值仅单个 codec 缓冲区（几十 KB），
+ * 消费方（讯飞/阿里 ASR）按片从磁盘随机读取。
  */
 object PcmDecoder {
 
-    /** 将音频文件解码为 16kHz 16bit 单声道 PCM 字节数组 */
-    fun decodeToPcm16k(file: java.io.File): ByteArray {
+    const val SAMPLE_RATE = 16000
+    const val BYTES_PER_SEC = SAMPLE_RATE * 2   // 16bit mono
+
+    /**
+     * 流式解码音频 → 16k mono PCM 磁盘文件（<原文件名>.pcm，同目录）
+     * 失败抛异常。调用方用完后应 delete()。
+     */
+    fun decodeToPcmFile(audio: File): File {
+        val outFile = File(audio.parentFile, audio.name + ".pcm")
+        if (outFile.exists()) outFile.delete()
+
         val extractor = MediaExtractor()
-        extractor.setDataSource(file.absolutePath)
+        extractor.setDataSource(audio.absolutePath)
         var trackIndex = -1
         var sampleRate = 0
         for (i in 0 until extractor.trackCount) {
@@ -26,23 +42,27 @@ object PcmDecoder {
                 break
             }
         }
-        if (trackIndex < 0) { extractor.release(); return ByteArray(0) }
+        if (trackIndex < 0) { extractor.release(); throw Exception("音频文件无音轨") }
         extractor.selectTrack(trackIndex)
 
         val mime = extractor.getTrackFormat(trackIndex).getString(MediaFormat.KEY_MIME) ?: "audio/mp4a-latm"
         val codec = MediaCodec.createDecoderByType(mime)
-        val outBuffers = mutableListOf<ShortArray>()
-        var totalSamples = 0
+        val fos = FileOutputStream(outFile)
         try {
             codec.configure(extractor.getTrackFormat(trackIndex), null, null, 0)
             codec.start()
 
-            var done = false
-            var eosQueued = false
-            var tryAgainCount = 0
             val bufInfo = MediaCodec.BufferInfo()
+            var eosQueued = false
+            var idleCount = 0
 
-            while (!done) {
+            // 流式线性插值重采样状态（跨 chunk 连续，44.1k/48k → 16k）
+            val ratio = sampleRate.toDouble() / SAMPLE_RATE
+            var fracPos = 0.0     // 下一个输出样本在输入流中的位置
+            var prev: Short = 0   // 上一个输入样本（样本 n-1）
+            var consumed = 0L     // 已消费输入样本数
+
+            while (true) {
                 if (!eosQueued) {
                     val inIndex = codec.dequeueInputBuffer(10_000)
                     if (inIndex >= 0) {
@@ -60,52 +80,55 @@ object PcmDecoder {
 
                 val outIndex = codec.dequeueOutputBuffer(bufInfo, 10_000)
                 when {
-                    outIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> { tryAgainCount = 0; continue }
+                    outIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> continue
                     outIndex == MediaCodec.INFO_TRY_AGAIN_LATER -> {
                         // EOS 已送入但长时间无输出（连续 ~15s）→ 放弃，保留已解出的数据
-                        if (eosQueued) {
-                            tryAgainCount++
-                            if (tryAgainCount > 1500) done = true
-                        }
+                        if (eosQueued) { idleCount++; if (idleCount > 1500) break }
                         continue
                     }
                     outIndex >= 0 -> {
-                        tryAgainCount = 0
+                        idleCount = 0
                         val outBuf = codec.getOutputBuffer(outIndex)!!
                         val shortArr = ShortArray(bufInfo.size / 2)
                         outBuf.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(shortArr)
                         outBuf.clear()
-                        outBuffers.add(shortArr)
-                        totalSamples += shortArr.size
                         codec.releaseOutputBuffer(outIndex, false)
-                        if (bufInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) done = true
+
+                        if (sampleRate == SAMPLE_RATE) {
+                            fos.write(shortsToBytes(shortArr))
+                        } else {
+                            // 流式线性插值重采样 → 16k：输出位置 fracPos < n 时插值 [样本n-1(prev), 样本n(x)]
+                            val out = ByteArrayOutputStream(shortArr.size * 2)
+                            for (x in shortArr) {
+                                while (fracPos < consumed) {
+                                    val f = fracPos - (consumed - 1)
+                                    val v = (prev * (1 - f) + x * f).toInt().coerceIn(-32768, 32767)
+                                    out.write(v and 0xFF)
+                                    out.write((v shr 8) and 0xFF)
+                                    fracPos += ratio
+                                }
+                                prev = x
+                                consumed++
+                            }
+                            fos.write(out.toByteArray())
+                        }
+
+                        if (bufInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) break
                     }
                 }
             }
         } finally {
+            try { fos.close() } catch (_: Exception) {}
             try { codec.stop() } catch (_: Exception) {}
             try { codec.release() } catch (_: Exception) {}
             try { extractor.release() } catch (_: Exception) {}
         }
 
-        val allSamples = ShortArray(totalSamples)
-        var pos = 0
-        for (arr in outBuffers) {
-            System.arraycopy(arr, 0, allSamples, pos, arr.size)
-            pos += arr.size
+        if (outFile.length() == 0L) {
+            outFile.delete()
+            throw Exception("音频解码失败（文件损坏或格式不支持）")
         }
-
-        return if (sampleRate == 16000) {
-            shortsToBytes(allSamples)
-        } else {
-            val ratio = sampleRate.toDouble() / 16000.0
-            val resampled = ShortArray((allSamples.size / ratio).toInt())
-            for (i in resampled.indices) {
-                val srcIdx = (i * ratio).toInt().coerceIn(0, allSamples.size - 1)
-                resampled[i] = allSamples[srcIdx]
-            }
-            shortsToBytes(resampled)
-        }
+        return outFile
     }
 
     fun shortsToBytes(shorts: ShortArray): ByteArray {
@@ -116,9 +139,9 @@ object PcmDecoder {
     }
 
     /** 给 16kHz 16bit 单声道 PCM 包一层 44 字节 WAV 头 */
-    fun pcmToWav(pcm: ByteArray, sampleRate: Int = 16000, channels: Int = 1, bitsPerSample: Int = 16): ByteArray {
+    fun pcmToWav(pcm: ByteArray, sampleRate: Int = SAMPLE_RATE, channels: Int = 1, bitsPerSample: Int = 16): ByteArray {
         val totalLen = 44 + pcm.size
-        val out = java.io.ByteArrayOutputStream(totalLen)
+        val out = ByteArrayOutputStream(totalLen)
         val le = { v: Int, n: Int -> ByteArray(n) { i -> ((v shr (8 * i)) and 0xFF).toByte() } }
         out.write("RIFF".toByteArray())
         out.write(le(totalLen - 8, 4))

@@ -2,6 +2,7 @@ package com.mynote.android.util
 
 import android.content.Context
 import android.util.Base64
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -14,9 +15,9 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * 阿里云 Qwen3-ASR — 长音频切片版
+ * 阿里云 Qwen3-ASR — 长音频切片版（流式落盘防 OOM）
  * qwen3-asr-flash 单次请求限约 3 分钟 / 10MB：
- * 解码为 16k PCM → 按 90s 切片封 WAV → 并发 3 路转写 → 按序拼接
+ * PCM 磁盘文件 → 按 90s 随机读取切片封 WAV → 并发 3 路转写 → 按序拼接
  * 支持两种凭证：sk-xxx（Bearer token）和 AK/SK（先换 Token）
  */
 object QwenAsrClient {
@@ -26,7 +27,6 @@ object QwenAsrClient {
     private const val MODEL = "qwen3-asr-flash"
 
     private const val SEGMENT_SECONDS = 90
-    private const val BYTES_PER_SEC = 16000 * 2
     private const val SEGMENT_PARALLEL = 3
 
     private val client = OkHttpClient.Builder()
@@ -35,8 +35,17 @@ object QwenAsrClient {
         .callTimeout(310, java.util.concurrent.TimeUnit.SECONDS)
         .build()
 
-    suspend fun transcribe(context: Context, audioFile: File): Result<String> {
+    /**
+     * 转写音频文件。自动切片；onProgress 报告 (已完成片数, 总片数)。
+     * @param pcmFile 可选共享 PCM 文件（16k mono，调用方解码一次供多路 ASR 共用；不传则内部解码）
+     */
+    suspend fun transcribe(
+        context: Context, audioFile: File,
+        onSegmentProgress: ((done: Int, total: Int) -> Unit)? = null,
+        pcmFile: File? = null
+    ): Result<String> {
         return withContext(Dispatchers.IO) {
+            var ownPcm: File? = null
             try {
                 val p = Prefs(context)
                 val apiKey = p.qwenApiKey
@@ -47,17 +56,20 @@ object QwenAsrClient {
                     throw Exception("获取Token失败: ${it.message}")
                 }
 
-                val pcm = PcmDecoder.decodeToPcm16k(audioFile)
-                if (pcm.isEmpty()) throw Exception("音频解码失败（文件损坏或格式不支持）")
+                // PCM 流式落盘（磁盘文件），堆内不再持有完整 PCM —— 修复 OOM
+                val pcm = pcmFile ?: PcmDecoder.decodeToPcmFile(audioFile).also { ownPcm = it }
+                val totalBytes = pcm.length()
+                if (totalBytes == 0L) throw Exception("音频解码失败（文件损坏或格式不支持）")
 
-                val segBytes = SEGMENT_SECONDS * BYTES_PER_SEC
-                val segments = if (pcm.size <= segBytes) listOf(pcm) else {
-                    (0 until pcm.size step segBytes).map { off ->
-                        pcm.copyOfRange(off, minOf(off + segBytes, pcm.size))
-                    }
+                val segBytes = SEGMENT_SECONDS.toLong() * PcmDecoder.BYTES_PER_SEC
+                val sliceList = mutableListOf<Pair<Long, Int>>()
+                var off = 0L
+                while (off < totalBytes) {
+                    sliceList.add(off to minOf(segBytes, totalBytes - off).toInt())
+                    off += segBytes
                 }
 
-                val total = segments.size
+                val total = sliceList.size
                 val doneCount = AtomicInteger(0)
                 val texts = arrayOfNulls<String>(total)
                 val sem = Semaphore(SEGMENT_PARALLEL)
@@ -65,11 +77,15 @@ object QwenAsrClient {
                 val errMutex = Object()
 
                 coroutineScope {
-                    segments.mapIndexed { idx, seg ->
+                    sliceList.mapIndexed { idx, slice ->
                         async {
                             sem.withPermit {
-                                val r = runCatching { transcribeSegment(token, seg) }
-                                doneCount.incrementAndGet()
+                                val r = runCatching {
+                                    val seg = readSlice(pcm, slice.first, slice.second)
+                                    transcribeSegment(token, seg)
+                                }
+                                val d = doneCount.incrementAndGet()
+                                onSegmentProgress?.invoke(d, total)
                                 r.fold(
                                     onSuccess = { text ->
                                         texts[idx] = text
@@ -92,10 +108,24 @@ object QwenAsrClient {
                     .joinToString("")
                     .trim()
                 Result.success(merged)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Result.failure(e)
+            } finally {
+                ownPcm?.delete()
             }
         }
+    }
+
+    /** 从 PCM 磁盘文件随机读取一片（堆内仅此一片，~2.9MB） */
+    private fun readSlice(f: File, offset: Long, len: Int): ByteArray {
+        val buf = ByteArray(len)
+        java.io.RandomAccessFile(f, "r").use { raf ->
+            raf.seek(offset)
+            raf.readFully(buf)
+        }
+        return buf
     }
 
     /** 单片转写：PCM → WAV → base64 dataUri → HTTP */

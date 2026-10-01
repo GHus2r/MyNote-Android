@@ -74,10 +74,12 @@ object IatHelper {
 
     /**
      * 转写音频文件 → 纯文本。凭证从 Prefs 读取。自动分片，onProgress 报告 (已完成片数, 总片数)。
+     * @param pcmFile 可选共享 PCM 文件（16k mono，由调用方解码一次供多路 ASR 共用；不传则内部解码）
      */
     suspend fun transcribe(
         context: Context, audioFile: File,
-        onSegmentProgress: ((done: Int, total: Int) -> Unit)? = null
+        onSegmentProgress: ((done: Int, total: Int) -> Unit)? = null,
+        pcmFile: File? = null
     ): Result<String> {
         val p = Prefs(context)
         val appId = p.iatAppId
@@ -86,15 +88,16 @@ object IatHelper {
         if (appId.isEmpty() || apiKey.isEmpty()) {
             return Result.failure(Exception("请先在设置中配置讯飞 API 凭证"))
         }
-        return transcribe(audioFile, appId, apiKey, apiSecret, onSegmentProgress)
+        return transcribe(audioFile, appId, apiKey, apiSecret, onSegmentProgress, pcmFile)
     }
 
     /** 带凭证的便捷调用（无流式回调，无 pd） */
     suspend fun transcribe(
         audioFile: File, appId: String, apiKey: String, apiSecret: String,
-        onSegmentProgress: ((done: Int, total: Int) -> Unit)? = null
+        onSegmentProgress: ((done: Int, total: Int) -> Unit)? = null,
+        pcmFile: File? = null
     ): Result<String> {
-        return transcribeStreaming(audioFile, appId, apiKey, apiSecret, TranscribeParams(), onSegmentProgress)
+        return transcribeStreaming(audioFile, appId, apiKey, apiSecret, TranscribeParams(), onSegmentProgress, pcmFile)
             .map { it.rawText }
     }
 
@@ -109,26 +112,34 @@ object IatHelper {
         apiKey: String,
         apiSecret: String,
         params: TranscribeParams,
-        onSegmentProgress: ((done: Int, total: Int) -> Unit)? = null
+        onSegmentProgress: ((done: Int, total: Int) -> Unit)? = null,
+        pcmFile: File? = null
     ): Result<TranscribeResult> {
         return withContext(Dispatchers.IO) {
+            var ownPcm: File? = null
             try {
-                val pcm = PcmDecoder.decodeToPcm16k(audioFile)
-                if (pcm.isEmpty()) {
+                // PCM 流式落盘（磁盘文件），堆内不再持有完整 27MB PCM —— 修复 OOM
+                val pcm = pcmFile ?: PcmDecoder.decodeToPcmFile(audioFile).also { ownPcm = it }
+                val totalBytes = pcm.length()
+                if (totalBytes == 0L) {
                     return@withContext Result.failure(Exception("音频解码失败（文件损坏或格式不支持）"))
                 }
-                val segBytes = SEGMENT_SECONDS * BYTES_PER_SEC
-                val segments = if (pcm.size <= segBytes) listOf(pcm) else {
-                    (0 until pcm.size step segBytes).map { off ->
-                        pcm.copyOfRange(off, minOf(off + segBytes, pcm.size))
-                    }
+                val segBytes = SEGMENT_SECONDS.toLong() * BYTES_PER_SEC
+                // 切片 (offset, len)
+                val sliceList = mutableListOf<Pair<Long, Int>>()
+                var off = 0L
+                while (off < totalBytes) {
+                    sliceList.add(off to minOf(segBytes, totalBytes - off).toInt())
+                    off += segBytes
                 }
-                // 尾片太短（< 2s）并入前一片，避免讯飞对超短音频返回异常
-                val finalSegments = if (segments.size > 1 && segments.last().size < 2 * BYTES_PER_SEC) {
-                    segments.dropLast(2) + (segments.takeLast(2).reduce { a, b -> a + b })
-                } else segments
+                // 尾片太短（< 2s）并入前一片（最长 57s < 60s 上限）
+                if (sliceList.size > 1 && sliceList.last().second < 2 * BYTES_PER_SEC) {
+                    val last = sliceList.removeAt(sliceList.size - 1)
+                    val prev = sliceList.removeAt(sliceList.size - 1)
+                    sliceList.add(prev.first to prev.second + last.second)
+                }
 
-                val total = finalSegments.size
+                val total = sliceList.size
                 val doneCount = AtomicInteger(0)
                 val rawArr = arrayOfNulls<String>(total)
                 val annArr = arrayOfNulls<String>(total)
@@ -137,9 +148,10 @@ object IatHelper {
                 val errMutex = Object()
 
                 coroutineScope {
-                    finalSegments.mapIndexed { idx, seg ->
+                    sliceList.mapIndexed { idx, slice ->
                         async {
                             sem.withPermit {
+                                val seg = readSlice(pcm, slice.first, slice.second)
                                 val r = transcribeSegment(seg, appId, apiKey, apiSecret, params)
                                 val d = doneCount.incrementAndGet()
                                 onSegmentProgress?.invoke(d, total)
@@ -173,10 +185,24 @@ object IatHelper {
                 // 说话人标记：单片段保留讯飞 pd 结果；多片段每片编号独立重置，annotated 降级为 raw
                 val annotated = if (total == 1) (annArr[0] ?: raw) else raw
                 Result.success(TranscribeResult(raw, annotated))
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Result.failure(e)
+            } finally {
+                ownPcm?.delete()
             }
         }
+    }
+
+    /** 从 PCM 磁盘文件随机读取一片（堆内仅此一片，~1.7MB） */
+    private fun readSlice(f: File, offset: Long, len: Int): ByteArray {
+        val buf = ByteArray(len)
+        java.io.RandomAccessFile(f, "r").use { raf ->
+            raf.seek(offset)
+            raf.readFully(buf)
+        }
+        return buf
     }
 
     /** 单片转写（≤55s PCM），内部含超时保护。返回 rawText + 说话人标记 annotatedText（pd=1 时） */
@@ -279,6 +305,8 @@ object IatHelper {
             Result.success(res)
         } catch (e: TimeoutCancellationException) {
             Result.failure(Exception("讯飞识别超时（单片 ${SEGMENT_TIMEOUT_MS / 1000}s）"))
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -243,83 +243,106 @@ class EditActivity : AppCompatActivity() {
                     }
                 }
 
-                // 讯飞（中英）始终调用（长音频自动分片）
-                val iatJob = ioScope.async { IatHelper.transcribe(this@EditActivity, file, onSeg) }
-                // 天翼（方言）仅在凭证已配置时调用
-                val p = com.mynote.android.util.Prefs(this@EditActivity)
-                val tianyiOk = p.tianyiAppId.isNotEmpty() && p.tianyiApiKey.isNotEmpty()
-                val tianyiJob = if (tianyiOk) ioScope.async { TianyiAsrClient.transcribe(this@EditActivity, file) } else null
-                // 阿里云 Qwen（维语）仅在凭证已配置时调用
-                val qwenOk = p.qwenApiKey.isNotEmpty()
-                val qwenJob = if (qwenOk) ioScope.async { QwenAsrClient.transcribe(this@EditActivity, file) } else null
-
-                // 收集每个 API 的结果和错误
-                val iatRaw = runCatching { iatJob.await() }
-                val tianyiRaw = if (tianyiJob != null) runCatching { tianyiJob.await() } else null
-                val qwenRaw = if (qwenJob != null) runCatching { qwenJob.await() } else null
-
-                val iatText = iatRaw.getOrNull()?.getOrNull() ?: ""
-                val tianyiText = tianyiRaw?.getOrNull()?.getOrNull() ?: ""
-                val qwenText = qwenRaw?.getOrNull()?.getOrNull() ?: ""
-
-                if (iatText.isEmpty() && tianyiText.isEmpty() && qwenText.isEmpty()) {
-                    val errors = mutableListOf<String>()
-                    val iatErr = iatRaw.getOrNull()?.exceptionOrNull() ?: iatRaw.exceptionOrNull()
-                    iatErr?.let { errors.add("讯飞: ${it.message}") } ?: errors.add("讯飞: 返回空")
-                    val tianyiErr = tianyiRaw?.getOrNull()?.exceptionOrNull() ?: tianyiRaw?.exceptionOrNull()
-                    tianyiErr?.let { errors.add("天翼: ${it.message}") }
-                    val qwenErr = qwenRaw?.getOrNull()?.exceptionOrNull() ?: qwenRaw?.exceptionOrNull()
-                    qwenErr?.let { errors.add("阿里: ${it.message}") } ?: errors.add("阿里: 返回空")
-                    val msg = errors.joinToString("\n")
+                // 解码一次 → PCM 磁盘临时文件，讯飞/阿里两路共享（流式落盘防止双路解码 OOM）
+                val pcmFile = try {
+                    com.mynote.android.util.PcmDecoder.decodeToPcmFile(file)
+                } catch (e: Exception) {
                     runOnUiThread {
                         js("""
                             (function(){
                                 var el=document.querySelector('.voice-msg[data-path="${esc(path)}"]');
                                 if(!el)return;
                                 var b=el.querySelector('.voice-transcribe-btn');if(b)b.textContent='重试';
-                                var c=el.querySelector('.voice-copy-btn');if(c)c.style.display='none';
                                 var t=el.querySelector('.voice-transcript');
-                                if(t){t.textContent="${esc(msg)}";t.style.display='';t.style.maxHeight=(t.scrollHeight+16)+'px';t.style.padding='8px 10px 12px 10px';t.style.color='#E53E3E'}
+                                if(t){t.textContent="解码失败: ${esc(e.message ?: "未知错误")}";t.style.display='';t.style.maxHeight=(t.scrollHeight+16)+'px';t.style.padding='8px 10px 12px 10px';t.style.color='#E53E3E'}
                             })()
                         """.trimIndent())
                     }
                     return@launch
                 }
 
-                val merged = buildString {
-                    if (iatText.isNotEmpty()) append(iatText)
-                    if (tianyiText.isNotEmpty()) {
-                        if (isNotEmpty()) append("\n")
-                        append(tianyiText)
+                try {
+                    // 讯飞（中英）始终调用（长音频自动分片）
+                    val iatJob = ioScope.async { IatHelper.transcribe(this@EditActivity, file, onSeg, pcmFile) }
+                    // 天翼（方言）仅在凭证已配置时调用
+                    val p = com.mynote.android.util.Prefs(this@EditActivity)
+                    val tianyiOk = p.tianyiAppId.isNotEmpty() && p.tianyiApiKey.isNotEmpty()
+                    val tianyiJob = if (tianyiOk) ioScope.async { TianyiAsrClient.transcribe(this@EditActivity, file) } else null
+                    // 阿里云 Qwen（维语）仅在凭证已配置时调用
+                    val qwenOk = p.qwenApiKey.isNotEmpty()
+                    val qwenJob = if (qwenOk) ioScope.async { QwenAsrClient.transcribe(this@EditActivity, file, onSeg, pcmFile) } else null
+
+                    // 收集每个 API 的结果和错误
+                    val iatRaw = runCatching { iatJob.await() }
+                    val tianyiRaw = if (tianyiJob != null) runCatching { tianyiJob.await() } else null
+                    val qwenRaw = if (qwenJob != null) runCatching { qwenJob.await() } else null
+
+                    val iatText = iatRaw.getOrNull()?.getOrNull() ?: ""
+                    val tianyiText = tianyiRaw?.getOrNull()?.getOrNull() ?: ""
+                    val qwenText = qwenRaw?.getOrNull()?.getOrNull() ?: ""
+
+                    if (iatText.isEmpty() && tianyiText.isEmpty() && qwenText.isEmpty()) {
+                        val errors = mutableListOf<String>()
+                        val iatErr = iatRaw.getOrNull()?.exceptionOrNull() ?: iatRaw.exceptionOrNull()
+                        iatErr?.let { errors.add("讯飞: ${it.message}") } ?: errors.add("讯飞: 返回空")
+                        val tianyiErr = tianyiRaw?.getOrNull()?.exceptionOrNull() ?: tianyiRaw?.exceptionOrNull()
+                        tianyiErr?.let { errors.add("天翼: ${it.message}") }
+                        val qwenErr = qwenRaw?.getOrNull()?.exceptionOrNull() ?: qwenRaw?.exceptionOrNull()
+                        qwenErr?.let { errors.add("阿里: ${it.message}") } ?: errors.add("阿里: 返回空")
+                        val msg = errors.joinToString("\n")
+                        runOnUiThread {
+                            js("""
+                                (function(){
+                                    var el=document.querySelector('.voice-msg[data-path="${esc(path)}"]');
+                                    if(!el)return;
+                                    var b=el.querySelector('.voice-transcribe-btn');if(b)b.textContent='重试';
+                                    var c=el.querySelector('.voice-copy-btn');if(c)c.style.display='none';
+                                    var t=el.querySelector('.voice-transcript');
+                                    if(t){t.textContent="${esc(msg)}";t.style.display='';t.style.maxHeight=(t.scrollHeight+16)+'px';t.style.padding='8px 10px 12px 10px';t.style.color='#E53E3E'}
+                                })()
+                            """.trimIndent())
+                        }
+                        return@launch
                     }
-                    if (qwenText.isNotEmpty()) {
-                        if (isNotEmpty()) append("\n")
-                        append(qwenText)
+
+                    val merged = buildString {
+                        if (iatText.isNotEmpty()) append(iatText)
+                        if (tianyiText.isNotEmpty()) {
+                            if (isNotEmpty()) append("\n")
+                            append(tianyiText)
+                        }
+                        if (qwenText.isNotEmpty()) {
+                            if (isNotEmpty()) append("\n")
+                            append(qwenText)
+                        }
                     }
-                }
-                val trimmed = merged.trim()
-                val db = AppDatabase.get(this@EditActivity)
-                noteId?.let { nid ->
-                    val items = db.noteDao().getContentItems(nid)
-                    val item = items.find { it.content == path }
-                    if (item != null) {
-                        db.noteDao().updateContentItem(item.copy(voiceTranscript = trimmed))
+                    val trimmed = merged.trim()
+                    val db = AppDatabase.get(this@EditActivity)
+                    noteId?.let { nid ->
+                        val items = db.noteDao().getContentItems(nid)
+                        val item = items.find { it.content == path }
+                        if (item != null) {
+                            db.noteDao().updateContentItem(item.copy(voiceTranscript = trimmed))
+                        }
                     }
-                }
-                runOnUiThread {
-                    js("""
-                        (function(){
-                            var el=document.querySelector('.voice-msg[data-path="${esc(path)}"]');
-                            if(!el)return;
-                            el.dataset.transcript="${esc(trimmed)}";
-                            var t=el.querySelector('.voice-transcript');
-                            var b=el.querySelector('.voice-transcribe-btn');
-                            var c=el.querySelector('.voice-copy-btn');
-                            if(t){t.textContent="${esc(trimmed)}";t.style.display='';t.style.maxHeight=(t.scrollHeight+16)+'px';t.style.padding='8px 10px 12px 10px'}
-                            if(b)b.textContent='收起'
-                            if(c)c.style.display='inline-block'
-                        })()
-                    """.trimIndent())
+                    runOnUiThread {
+                        js("""
+                            (function(){
+                                var el=document.querySelector('.voice-msg[data-path="${esc(path)}"]');
+                                if(!el)return;
+                                el.dataset.transcript="${esc(trimmed)}";
+                                var t=el.querySelector('.voice-transcript');
+                                var b=el.querySelector('.voice-transcribe-btn');
+                                var c=el.querySelector('.voice-copy-btn');
+                                if(t){t.textContent="${esc(trimmed)}";t.style.display='';t.style.maxHeight=(t.scrollHeight+16)+'px';t.style.padding='8px 10px 12px 10px'}
+                                if(b)b.textContent='收起'
+                                if(c)c.style.display='inline-block'
+                            })()
+                        """.trimIndent())
+                    }
+                } finally {
+                    // 共享 PCM 临时文件用完即删
+                    pcmFile.delete()
                 }
             }
         }
