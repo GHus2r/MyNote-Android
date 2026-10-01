@@ -130,7 +130,8 @@ object IatHelper {
 
                 val total = finalSegments.size
                 val doneCount = AtomicInteger(0)
-                val texts = arrayOfNulls<String>(total)
+                val rawArr = arrayOfNulls<String>(total)
+                val annArr = arrayOfNulls<String>(total)
                 val sem = Semaphore(SEGMENT_PARALLEL)
                 var firstError: Exception? = null
                 val errMutex = Object()
@@ -143,10 +144,11 @@ object IatHelper {
                                 val d = doneCount.incrementAndGet()
                                 onSegmentProgress?.invoke(d, total)
                                 r.fold(
-                                    onSuccess = { text ->
-                                        texts[idx] = text
+                                    onSuccess = { res ->
+                                        rawArr[idx] = res.rawText
+                                        annArr[idx] = res.annotatedText
                                         params.onProgress?.let { cb ->
-                                            val acc = texts.filterNotNull().joinToString("")
+                                            val acc = rawArr.filterNotNull().joinToString("")
                                             mainHandler.post { cb(acc) }
                                         }
                                     },
@@ -161,35 +163,38 @@ object IatHelper {
                     }.awaitAll()
                 }
 
-                val anySuccess = texts.any { !it.isNullOrEmpty() }
+                val anySuccess = rawArr.any { !it.isNullOrEmpty() }
                 if (!anySuccess) {
                     return@withContext Result.failure(firstError ?: Exception("识别结果为空"))
                 }
-                val parts = texts.mapIndexed { i, t ->
+                val raw = rawArr.mapIndexed { i, t ->
                     t ?: "[第${i + 1}段识别失败]"   // 部分失败：拼接占位标记，保留其余内容
-                }
-                val raw = parts.joinToString("").trim()
-                Result.success(TranscribeResult(raw, raw))
+                }.joinToString("").trim()
+                // 说话人标记：单片段保留讯飞 pd 结果；多片段每片编号独立重置，annotated 降级为 raw
+                val annotated = if (total == 1) (annArr[0] ?: raw) else raw
+                Result.success(TranscribeResult(raw, annotated))
             } catch (e: Exception) {
                 Result.failure(e)
             }
         }
     }
 
-    /** 单片转写（≤55s PCM），内部含超时保护 */
+    /** 单片转写（≤55s PCM），内部含超时保护。返回 rawText + 说话人标记 annotatedText（pd=1 时） */
     private suspend fun transcribeSegment(
         pcm: ByteArray, appId: String, apiKey: String, apiSecret: String,
         params: TranscribeParams
-    ): Result<String> = withContext(Dispatchers.IO) {
+    ): Result<TranscribeResult> = withContext(Dispatchers.IO) {
         try {
             val url = buildAuthUrl(appId, apiKey, apiSecret)
             val client = buildClient()
-            val deferred = CompletableDeferred<String>()
+            val deferred = CompletableDeferred<TranscribeResult>()
 
             val ws = client.newWebSocket(
                 Request.Builder().url(url).build(),
                 object : WebSocketListener() {
-                    val sb = StringBuilder()
+                    val rawSb = StringBuilder()
+                    val annotatedSb = StringBuilder()
+                    var currentSpeaker = -1
 
                     override fun onOpen(webSocket: WebSocket, response: Response) {
                         // 独立线程节流发送，避免阻塞 OkHttp 回调线程
@@ -218,12 +223,27 @@ object IatHelper {
                                 for (i in 0 until wsArr.length()) {
                                     val cwArr = wsArr.getJSONObject(i).optJSONArray("cw")
                                     for (j in 0 until cwArr.length()) {
-                                        sb.append(cwArr.getJSONObject(j).optString("w", ""))
+                                        val cwObj = cwArr.getJSONObject(j)
+                                        val word = cwObj.optString("w", "")
+                                        rawSb.append(word)
+
+                                        // pd=1 时读取说话人标签
+                                        if (params.pd == "1") {
+                                            val rg = cwObj.optInt("rg", -1)
+                                            if (rg >= 0 && rg != currentSpeaker) {
+                                                if (annotatedSb.isNotEmpty()) annotatedSb.append("\n")
+                                                annotatedSb.append("说话人").append(rg + 1).append(": ")
+                                                currentSpeaker = rg
+                                            }
+                                        }
+                                        annotatedSb.append(word)
                                     }
                                 }
                             }
                             if (data?.optInt("status", 0) == 2) {
-                                deferred.complete(sb.toString().trim())
+                                val raw = rawSb.toString().trim()
+                                val annotated = annotatedSb.toString().trim().ifEmpty { raw }
+                                deferred.complete(TranscribeResult(raw, annotated))
                                 webSocket.close(1000, "")
                             }
                         } catch (e: Exception) {
@@ -237,18 +257,26 @@ object IatHelper {
                     }
 
                     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                        if (!deferred.isCompleted) deferred.complete(sb.toString().trim())
+                        if (!deferred.isCompleted) {
+                            val raw = rawSb.toString().trim()
+                            val annotated = annotatedSb.toString().trim().ifEmpty { raw }
+                            deferred.complete(TranscribeResult(raw, annotated))
+                        }
                     }
 
                     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                        if (!deferred.isCompleted) deferred.complete(sb.toString().trim())
+                        if (!deferred.isCompleted) {
+                            val raw = rawSb.toString().trim()
+                            val annotated = annotatedSb.toString().trim().ifEmpty { raw }
+                            deferred.complete(TranscribeResult(raw, annotated))
+                        }
                     }
                 })
 
             // 关键：超时保护。此前无超时导致半开连接时永久挂起（"识别中..."卡死）
-            val text = withTimeout(SEGMENT_TIMEOUT_MS) { deferred.await() }
+            val res = withTimeout(SEGMENT_TIMEOUT_MS) { deferred.await() }
             client.dispatcher.executorService.shutdown()
-            Result.success(text)
+            Result.success(res)
         } catch (e: TimeoutCancellationException) {
             Result.failure(Exception("讯飞识别超时（单片 ${SEGMENT_TIMEOUT_MS / 1000}s）"))
         } catch (e: Exception) {
