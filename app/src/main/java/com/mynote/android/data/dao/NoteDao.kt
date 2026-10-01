@@ -23,6 +23,9 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE id = :id")
     suspend fun getNote(id: String): Note?
 
+    @Query("SELECT * FROM notes WHERE isTrashed = 0 ORDER BY isPinned DESC, updateTime DESC")
+    suspend fun getAllNotes(): List<Note>
+
     @Query("""
         SELECT * FROM notes
         WHERE isTrashed = 0 AND (

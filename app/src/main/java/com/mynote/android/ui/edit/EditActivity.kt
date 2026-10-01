@@ -20,9 +20,11 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.GridLayout
 import android.widget.LinearLayout
+import android.widget.ListView
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
@@ -412,12 +414,174 @@ class EditActivity : AppCompatActivity() {
             dialog.dismiss()
             shareVoice(path)
         }
+        addButton("移动到其他笔记", Color.parseColor("#388E3C")) {
+            dialog.dismiss()
+            moveVoiceToOtherNote(path)
+        }
         addButton("删除", Color.parseColor("#E53935")) {
             dialog.dismiss()
             showDeleteMediaDialog("voice", path)
         }
 
         dialog.show()
+    }
+
+    /**
+     * 移动录音条到其他笔记：
+     * 1) 提取录音条完整 HTML（含转写文本）
+     * 2) 弹出笔记选择器（按大主题/子主题/标题展示，可搜索）
+     * 3) 移动物理录音文件到目标笔记目录 + 追加到目标笔记 HTML + 从源笔记移除
+     */
+    private fun moveVoiceToOtherNote(path: String) {
+        val escPath = esc(path)
+        jsResult("""(function(){var el=document.querySelector('.voice-msg[data-path="$escPath"]');return el?JSON.stringify(el.outerHTML):''})()""") { outerHtml ->
+            if (outerHtml.isBlank()) {
+                toast("录音条不存在")
+                return@jsResult
+            }
+            showMoveNotePicker(path, outerHtml)
+        }
+    }
+
+    private fun showMoveNotePicker(path: String, outerHtml: String) {
+        ioScope.launch {
+            val db = AppDatabase.get(this@EditActivity)
+            val notes = db.noteDao().getAllNotes().filter { it.id != noteId }
+            if (notes.isEmpty()) {
+                runOnUiThread { toast("没有其他笔记可移动") }
+                return@launch
+            }
+            val parents = db.categoryDao().getParentCategories()
+            val subs = parents.flatMap { p -> db.categoryDao().getSubCategories(p.id) }
+            val subMap = subs.associateBy { it.id }
+            val parentMap = parents.associateBy { it.id }
+            val choices = notes.map { n ->
+                val sub = subMap[n.subCategoryId]
+                val parent = sub?.let { parentMap[it.parentId] }
+                val label = listOfNotNull(parent?.name, sub?.name, n.title).joinToString(" / ")
+                n.id to label
+            }
+            runOnUiThread { buildNotePickerDialog(choices, path, outerHtml) }
+        }
+    }
+
+    private fun buildNotePickerDialog(choices: List<Pair<String, String>>, path: String, outerHtml: String) {
+        val searchBox = EditText(this).apply {
+            hint = "搜索笔记标题"
+            setSingleLine(true)
+            setPadding(12, 8, 12, 8)
+            textSize = 15f
+        }
+        val listView = ListView(this).apply {
+            dividerHeight = 1
+        }
+        val filtered = java.util.ArrayList(choices)
+        val adapter = object : ArrayAdapter<Pair<String, String>>(this, android.R.layout.simple_list_item_1, filtered) {
+            override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+                val tv = super.getView(position, convertView, parent) as TextView
+                tv.text = filtered[position].second
+                tv.textSize = 15f
+                tv.setPadding(16, 16, 16, 16)
+                return tv
+            }
+        }
+        listView.adapter = adapter
+        searchBox.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val q = s?.toString()?.trim() ?: ""
+                filtered.clear()
+                filtered.addAll(if (q.isEmpty()) choices else choices.filter { it.second.contains(q, ignoreCase = true) })
+                adapter.notifyDataSetChanged()
+            }
+        })
+
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(8.dp, 8.dp, 8.dp, 8.dp)
+        }
+        container.addView(searchBox, LinearLayout.LayoutParams(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT))
+        container.addView(listView, LinearLayout.LayoutParams(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT, 420.dp))
+
+        val dialog = AlertDialog.Builder(this, R.style.GlassDialog)
+            .setTitle("移动到笔记")
+            .setView(container)
+            .setNegativeButton("取消", null)
+            .create()
+
+        listView.setOnItemClickListener { _, _, position, _ ->
+            val targetId = filtered[position].first
+            dialog.dismiss()
+            moveVoiceToNote(path, outerHtml, targetId)
+        }
+        dialog.show()
+    }
+
+    private fun moveVoiceToNote(path: String, outerHtml: String, targetNoteId: String) {
+        ioScope.launch {
+            try {
+                val db = AppDatabase.get(this@EditActivity)
+                val srcNoteId = noteId ?: return@launch
+                if (srcNoteId == targetNoteId) {
+                    runOnUiThread { toast("目标就是当前笔记") }
+                    return@launch
+                }
+                val targetNote = db.noteDao().getNote(targetNoteId)
+                    ?: run { runOnUiThread { toast("目标笔记不存在") }; return@launch }
+
+                // 1. 移动物理录音文件到目标笔记目录
+                val newPath = moveVoiceFile(path, targetNoteId)
+
+                // 2. 生成新 HTML（替换 data-path 里的旧路径 → 新路径）
+                val newHtml = outerHtml.replace(esc(path), esc(newPath)) + "<br>"
+
+                // 3. 追加到目标笔记
+                val targetItems = db.noteDao().getContentItems(targetNoteId)
+                val htmlItem = targetItems.firstOrNull { it.type == "html" }
+                if (htmlItem != null) {
+                    db.noteDao().updateContentItem(htmlItem.copy(content = htmlItem.content + "\n" + newHtml))
+                } else {
+                    // 目标笔记为旧数据（无 html 块）→ 直接插入 voice 内容项
+                    db.noteDao().insertContentItem(ContentItem(
+                        noteId = targetNoteId, type = "voice", content = newPath,
+                        timestamp = timeFormat.format(Date())
+                    ))
+                }
+                db.noteDao().updateNote(targetNote.copy(updateTime = timeFormat.format(Date())))
+
+                // 4. 从源笔记编辑器移除该录音条（触发保存）
+                runOnUiThread {
+                    val selector = "[data-type=\"voice\"][data-path=\"${esc(path)}\"]"
+                    js("""skipRestore=true;var el=document.querySelector('$selector');if(el){el.remove()}setTimeout(function(){skipRestore=false;saveProtected()},200);""")
+                    markDirty()
+                    toast("已移动到「${targetNote.title}」")
+                }
+            } catch (e: Exception) {
+                runOnUiThread { toast("移动失败: ${e.message}") }
+            }
+        }
+    }
+
+    /** 移动录音文件：filesDir/notes/<源笔记>/xxx.m4a → filesDir/notes/<目标笔记>/xxx.m4a，返回新绝对路径 */
+    private fun moveVoiceFile(srcPath: String, targetNoteId: String): String {
+        val src = File(srcPath)
+        if (!src.exists()) throw Exception("录音文件不存在")
+        val destDir = File(filesDir, "notes/$targetNoteId")
+        if (!destDir.exists() && !destDir.mkdirs()) throw Exception("无法创建目标目录")
+        var dest = File(destDir, src.name)
+        if (dest.exists()) {
+            val base = src.nameWithoutExtension
+            val ext = src.extension.ifEmpty { "m4a" }
+            dest = File(destDir, "${base}_${System.currentTimeMillis()}.$ext")
+        }
+        if (!src.renameTo(dest)) {
+            src.copyTo(dest, overwrite = false)
+            src.delete()
+        }
+        return dest.absolutePath
     }
 
     private fun shareVoice(path: String) {
