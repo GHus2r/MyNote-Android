@@ -109,6 +109,82 @@ object QwenOcrClient {
         }
     }
 
+    /**
+     * 病历照片全文 OCR —— 提取病历书写内容（手写/打印）
+     * 与 calibrate(化验单) 复用同一 qwen-vl-max 通道与压缩/请求框架，仅 prompt 不同。
+     * @param bitmap 病历照片
+     * @return 提取出的病历纯文本，失败返回 null
+     */
+    suspend fun extractMedicalText(context: Context, bitmap: Bitmap): String? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val p = Prefs(context)
+                val apiKey = p.qwenApiKey
+                if (apiKey.isEmpty()) return@withContext null
+
+                // 病历识别对清晰度要求更高：最长边 1536，JPEG 80%
+                val scaled = scaleBitmap(bitmap, 1536)
+                val bos = ByteArrayOutputStream()
+                scaled.compress(Bitmap.CompressFormat.JPEG, 80, bos)
+                if (scaled !== bitmap) scaled.recycle()
+                val base64 = Base64.encodeToString(bos.toByteArray(), Base64.NO_WRAP)
+
+                val prompt = buildString {
+                    append("这是一张手写或打印的病历照片。请完整、准确地识别并转录病历全文，包括标题、各段落标题（如主诉、现病史、既往史、体格检查、辅助检查、诊断、诊疗计划等）、正文、以及末尾的医师签名与书写日期时间。\n\n")
+                    append("严格要求：\n")
+                    append("1. 只输出病历原文文字，不要任何解释、评价或补充\n")
+                    append("2. 按原文顺序逐行转录，保留段落标题\n")
+                    append("3. 手写部分若无法辨认，用「【无法辨认】」占位，不要臆测\n")
+                    append("4. 不要输出 JSON 或 markdown 代码块\n")
+                }
+
+                val body = JSONObject().apply {
+                    put("model", MODEL)
+                    put("messages", JSONArray().apply {
+                        put(JSONObject().apply {
+                            put("role", "user")
+                            put("content", JSONArray().apply {
+                                put(JSONObject().apply {
+                                    put("type", "image_url")
+                                    put("image_url", JSONObject().apply {
+                                        put("url", "data:image/jpeg;base64,$base64")
+                                    })
+                                })
+                                put(JSONObject().apply {
+                                    put("type", "text")
+                                    put("text", prompt)
+                                })
+                            })
+                        })
+                    })
+                    put("temperature", 0.1)
+                    put("max_tokens", 4096)
+                }
+
+                val request = Request.Builder()
+                    .url(ENDPOINT)
+                    .post(body.toString().toRequestBody("application/json".toMediaType()))
+                    .header("Authorization", "Bearer $apiKey")
+                    .header("Content-Type", "application/json")
+                    .build()
+
+                val response = client.newCall(request).execute()
+                val respBody = response.body?.string() ?: return@withContext null
+                response.close()
+
+                val json = JSONObject(respBody)
+                val choices = json.optJSONArray("choices") ?: return@withContext null
+                if (choices.length() == 0) return@withContext null
+                val message = choices.getJSONObject(0).optJSONObject("message") ?: return@withContext null
+                val content = message.optString("content", "").trim()
+                content.removePrefix("```").removePrefix("```").removeSuffix("```").trim()
+            } catch (e: Exception) {
+                android.util.Log.e("QwenOcr", "病历识别失败", e)
+                null
+            }
+        }
+    }
+
     private fun scaleBitmap(src: Bitmap, maxSide: Int): Bitmap {
         val w = src.width; val h = src.height
         if (w <= maxSide && h <= maxSide) return src

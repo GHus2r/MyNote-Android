@@ -12,6 +12,7 @@ import com.mynote.android.data.dao.MedicalRecordDao
 import com.mynote.android.data.dao.NoteDao
 import com.mynote.android.data.dao.PatientDao
 import com.mynote.android.data.dao.VitalSignsDao
+import com.mynote.android.data.dao.RecordAuditDao
 import com.mynote.android.data.entity.ContentItem
 import com.mynote.android.data.entity.MedicalRecord
 import com.mynote.android.data.entity.Meeting
@@ -21,6 +22,7 @@ import com.mynote.android.data.entity.ParentCategory
 import com.mynote.android.data.entity.Patient
 import com.mynote.android.data.entity.SubCategory
 import com.mynote.android.data.entity.VitalSigns
+import com.mynote.android.data.entity.RecordAuditReport
 
 @Database(
     entities = [
@@ -32,9 +34,10 @@ import com.mynote.android.data.entity.VitalSigns
         MedicalRecord::class,
         VitalSigns::class,
         Meeting::class,
-        MeetingEntry::class
+        MeetingEntry::class,
+        RecordAuditReport::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -45,6 +48,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun medicalRecordDao(): MedicalRecordDao
     abstract fun vitalSignsDao(): VitalSignsDao
     abstract fun meetingDao(): MeetingDao
+    abstract fun recordAuditDao(): RecordAuditDao
 
     companion object {
         @Volatile
@@ -140,6 +144,14 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `record_audits` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `patientId` INTEGER NOT NULL DEFAULT 0, `dept` TEXT NOT NULL DEFAULT '', `recordType` TEXT NOT NULL DEFAULT '', `sourceImageHash` TEXT NOT NULL DEFAULT '', `ocrRawText` TEXT NOT NULL DEFAULT '', `ocrEngine` TEXT NOT NULL DEFAULT '', `model` TEXT NOT NULL DEFAULT '', `promptVersion` TEXT NOT NULL DEFAULT '', `scoreTotal` INTEGER NOT NULL DEFAULT 0, `scoreCompleteness` INTEGER NOT NULL DEFAULT 0, `scoreNorms` INTEGER NOT NULL DEFAULT 0, `scoreAccuracy` INTEGER NOT NULL DEFAULT 0, `summary` TEXT NOT NULL DEFAULT '', `reportJson` TEXT NOT NULL DEFAULT '', `createdAt` INTEGER NOT NULL DEFAULT 0)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_record_audits_patientId` ON `record_audits` (`patientId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_record_audits_createdAt` ON `record_audits` (`createdAt`)")
+            }
+        }
+
         fun get(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -150,7 +162,7 @@ abstract class AppDatabase : RoomDatabase() {
                     .addMigrations(
                         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
                         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
-                        MIGRATION_11_12
+                        MIGRATION_11_12, MIGRATION_12_13
                     )
                     .fallbackToDestructiveMigration()
                     .build()

@@ -171,7 +171,7 @@ class PatientDetailActivity : AppCompatActivity() {
     }
 
     private fun showFabMenu() {
-        val items = arrayOf("AI 生成病历", "手动录入病历", "识别化验单", "导出病历数据", "打印病历", "体征趋势", "随访设置", "用药日历", "清空所有病历", "删除患者", "AI 辅助分析")
+        val items = arrayOf("AI 生成病历", "手动录入病历", "识别化验单", "导出病历数据", "打印病历", "体征趋势", "随访设置", "用药日历", "清空所有病历", "删除患者", "AI 辅助分析", "病历照片质控")
         AlertDialog.Builder(this, R.style.GlassDialog)
             .setItems(items) { _, which ->
                 when (which) {
@@ -207,6 +207,7 @@ class PatientDetailActivity : AppCompatActivity() {
                             }.setNegativeButton("取消", null).show()
                     }
                     10 -> startActivity(Intent(this, ClinicalAnalysisActivity::class.java).putExtra("patient_id", patientId))
+                    11 -> startActivity(Intent(this, RecordAuditActivity::class.java).putExtra("patient_id", patientId))
                 }
             }.show()
     }

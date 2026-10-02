@@ -148,6 +148,12 @@
             android:exported="false"
             android:theme="@style/Theme.MyNote.NoActionBar" />
 
+        <!-- 病历照片质控分析（OCR 识图 + 规范性/准确性/漏写项分析） -->
+        <activity
+            android:name=".ui.patient.RecordAuditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyNote.NoActionBar" />
+
         <!-- 图片裁剪（影像报告框选识别区域） -->
         <activity
             android:name=".ui.image.ImageCropActivity"

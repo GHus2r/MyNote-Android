@@ -232,4 +232,104 @@ object DeepSeekClient {
             }
         }
     }
+
+    // ---------- 病历质控审计 ----------
+
+    /** 审计 prompt 版本号（用于结果可追溯） */
+    const val AUDIT_PROMPT_VERSION = "AUDIT_PROMPT_v1"
+
+    /**
+     * 构建病历质控审计 prompt
+     * @param dept 科室（决定专科判定依据）
+     * @param recordType 文书类型（决定必备要素清单）
+     * @param ocrText OCR 提取的病历原文
+     */
+    fun buildAuditPrompt(dept: String, recordType: String, ocrText: String): String {
+        val d = dept.ifEmpty { "内科" }
+        return buildString {
+            append("你是一位三甲医院${d}质控科主任医师，精通《病历书写基本规范》（国家卫健委2022版）与病历质量评审标准。\n")
+            append("请对以下已书写完成的病历（由照片 OCR 识别而来，可能含错字）进行严格质控分析。\n\n")
+
+            append("=== 病历原文（OCR 识别结果） ===\n")
+            append(ocrText.take(6000))
+            append("\n\n")
+
+            append("=== 文书类型 ===\n")
+            append(recordType.ifEmpty { "未知，请根据内容判断" })
+            append("\n\n")
+
+            // 注入必备要素清单（来自 RecordSpec 单一数据源）
+            append("=== 判定依据（必备要素清单） ===\n")
+            append(RecordSpec.toPromptBlock(recordType))
+            append("\n")
+
+            // 注入科室专科要求（复用 DeptRecordTemplate）
+            val spec = DeptRecordTemplate.getSpecialty(d)
+            if (spec != null) {
+                append("=== ${d}专科书写要求（用于完整性与准确性判定） ===\n")
+                append(spec.take(1500))
+                append("\n\n")
+            }
+
+            append("=== 分析要求 ===\n")
+            append("从以下三个维度分析，并严格输出 JSON（不要 markdown 代码块，不要 JSON 之外的任何文字）：\n")
+            append("1. 漏写项 missingItems：对照必备要素清单逐项判断是否缺失。\n")
+            append("2. 规范性 normIssues：术语规范、格式分段、签名与时限、诊断全称、用药通用名+剂量、禁用「患者」代姓名等。\n")
+            append("3. 准确性 accuracyIssues：主诉与现病史一致性、诊断依据逻辑、用药与诊断匹配度、异常值处理、鉴别诊断覆盖。\n\n")
+
+            append("输出 JSON 结构（字段固定，数组可为空，务必只输出 JSON）：\n")
+            append("""{"summary":"一句话总评","scoreTotal":0,"scoreCompleteness":0,"scoreNorms":0,"scoreAccuracy":0,"missingItems":[{"item":"","severity":"必填","basis":"","suggestion":""}],"normIssues":[{"point":"","expectation":"","basis":"","fix":""}],"accuracyIssues":[{"aspect":"","issue":"","evidence":"","suggestion":"","refGuideline":""}],"improvementPlan":[{"step":"","action":"","target":"","rationale":""}]}""")
+            append("\n\n")
+
+            append("约束：\n")
+            append("1. scoreTotal = scoreCompleteness + scoreNorms + scoreAccuracy，各分项取值范围分别为 0-40 / 0-30 / 0-30\n")
+            append("2. 每条 issue 的 basis 必须引用具体规范条款或专科要求，禁止泛泛而谈\n")
+            append("3. accuracyIssues 的 evidence 必须引用病历原文片段\n")
+            append("4. 未发现问题的维度输出空数组 []\n")
+            append("5. 基于 OCR 原文判断；若原文疑似识别错误导致歧义，在 suggestion 中提示「建议人工核对原文」\n")
+        }
+    }
+
+    /** 自定义 prompt 的非流式生成（供病历质控审计等场景复用，低温稳定输出） */
+    suspend fun generateWithPrompt(context: Context, prompt: String): Result<String> = withContext(Dispatchers.IO) {
+        val apiKey = Prefs(context).qwenApiKey
+        if (apiKey.isEmpty()) return@withContext Result.failure(Exception("未配置Qwen API Key"))
+
+        val body = JSONObject().apply {
+            put("model", MODEL)
+            put("temperature", 0.1)
+            put("max_tokens", 8192)
+            put("messages", JSONArray().apply {
+                put(JSONObject().apply {
+                    put("role", "user")
+                    put("content", prompt)
+                })
+            })
+        }
+
+        val resp = client.newCall(
+            Request.Builder().url(ENDPOINT)
+                .header("Authorization", "Bearer $apiKey")
+                .header("Content-Type", "application/json")
+                .post(body.toString().toRequestBody("application/json".toMediaType()))
+                .build()
+        ).execute()
+
+        val respBody = resp.body?.string() ?: ""
+        if (!resp.isSuccessful) return@withContext Result.failure(
+            Exception("HTTP ${resp.code}: ${respBody.take(200)}")
+        )
+
+        try {
+            val json = JSONObject(respBody)
+            val text = json.getJSONArray("choices")
+                .getJSONObject(0)
+                .getJSONObject("message")
+                .optString("content", "")
+            if (text.isEmpty()) return@withContext Result.failure(Exception("生成结果为空"))
+            Result.success(text.trim())
+        } catch (e: Exception) {
+            Result.failure(Exception("解析失败: ${e.message}"))
+        }
+    }
 }
