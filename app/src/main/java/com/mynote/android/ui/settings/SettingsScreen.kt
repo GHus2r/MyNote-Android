@@ -52,6 +52,9 @@ data class SettingsState(
     val shakeSensitiveLabel: String = "灵敏",
     val lastBackupLabel: String = "从未备份",
     val backupCountLabel: String = "0个",
+    val webdavAutoBackup: Boolean = false,
+    val webdavConfigured: Boolean = false,
+    val webdavHint: String = "保存笔记时自动上传到坚果云",
     val patientCountLabel: String = "0人",
     val storageSizeLabel: String = "计算中...",
     val crashCountLabel: String = "0条",
@@ -70,6 +73,8 @@ fun SettingsScreen(
     onFingerprintToggle: (Boolean) -> Unit,
     onLockTimeClick: () -> Unit,
     onAntiUninstallToggle: (Boolean) -> Unit,
+    onWebdavAutoToggle: (Boolean) -> Unit,
+    onWebdavConfigClick: () -> Unit,
     onLocalBackupClick: () -> Unit,
     onDbBackupClick: () -> Unit,
     onRestoreBackupClick: () -> Unit,
@@ -174,6 +179,12 @@ fun SettingsScreen(
             // 备份
             item(key = "h3") { GroupHeader("备份") }
             item(key = "last_backup") { DisplayItem("上次备份", value = state.lastBackupLabel, backdrop = backdrop) }
+            item(key = "webdav_auto") {
+                SwitchItem("坚果云自动备份", checked = state.webdavAutoBackup, onChecked = onWebdavAutoToggle, hint = state.webdavHint, backdrop = backdrop)
+            }
+            item(key = "webdav_config") {
+                ClickItem("配置坚果云 WebDAV", sub = if (state.webdavConfigured) "已配置 ✓" else "未配置", onClick = onWebdavConfigClick, backdrop = backdrop)
+            }
             item(key = "local_backup") { ClickItem("完整备份 (JSON)", sub = "含分类+笔记+内容", onClick = onLocalBackupClick, backdrop = backdrop) }
             item(key = "db_backup") { ClickItem("快速备份 (DB)", sub = "直接打包数据库", onClick = onDbBackupClick, backdrop = backdrop) }
             item(key = "restore_backup") { ClickItem("从备份恢复", sub = "选择备份文件", onClick = onRestoreBackupClick, backdrop = backdrop) }

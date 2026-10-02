@@ -124,6 +124,18 @@ class SettingsActivity : BaseActivity() {
                 onAntiUninstallToggle = { checked ->
                     if (checked) enableAntiUninstall() else disableAntiUninstall()
                 },
+                onWebdavAutoToggle = { checked ->
+                    if (!WebDAVBackup.isConfigured(this@SettingsActivity)) {
+                        prefs.backupAutoBackup = false
+                        Toast.makeText(this@SettingsActivity, "请先配置坚果云 WebDAV", Toast.LENGTH_SHORT).show()
+                        showWebDAVConfigDialog()
+                    } else {
+                        prefs.backupAutoBackup = checked
+                        Toast.makeText(this@SettingsActivity, if (checked) "自动云备份已启用" else "自动云备份已关闭", Toast.LENGTH_SHORT).show()
+                    }
+                    refreshUI()
+                },
+                onWebdavConfigClick = { showWebDAVConfigDialog() },
                 onLocalBackupClick = { showBackupOptionsDialog() },
                 onDbBackupClick = { startDbBackup() },
                 onRestoreBackupClick = { startRestore() },
@@ -208,6 +220,9 @@ class SettingsActivity : BaseActivity() {
             shakeSensitiveLabel = if (prefs.shakeSensitive) "灵敏(摇3次)" else "迟钝(摇4次)",
             lastBackupLabel = prefs.lastBackupTime ?: "从未备份",
             backupCountLabel = "${BackupManager.listBackupFiles(this).size}个",
+            webdavAutoBackup = prefs.backupAutoBackup,
+            webdavConfigured = WebDAVBackup.isConfigured(this),
+            webdavHint = if (WebDAVBackup.isConfigured(this)) "保存笔记时自动上传到坚果云 /MyNote/" else "未配置，开启后跳转配置",
             patientCountLabel = "${patientCount}人",
             storageSizeLabel = settingsState.value.storageSizeLabel,
             crashCountLabel = "${CrashHandler.listLogs().size}条",
@@ -535,6 +550,7 @@ class SettingsActivity : BaseActivity() {
                 prefs.webdavUser = etUser.text.toString().trim()
                 prefs.webdavPass = etPass.text.toString().trim()
                 Toast.makeText(this, "配置已保存", Toast.LENGTH_SHORT).show()
+                refreshUI()
             }
             .setNegativeButton("取消", null)
             .show()
@@ -573,6 +589,7 @@ class SettingsActivity : BaseActivity() {
             .setPositiveButton("保存设置") { _, _ ->
                 prefs.backupAutoBackup = switchSync.isChecked
                 Toast.makeText(this, if (switchSync.isChecked) "自动云备份已启用" else "已关闭", Toast.LENGTH_SHORT).show()
+                refreshUI()
             }
 
         if (!configured) {
