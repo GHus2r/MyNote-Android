@@ -433,14 +433,142 @@ class EditActivity : AppCompatActivity() {
      * 3) 移动物理录音文件到目标笔记目录 + 追加到目标笔记 HTML + 从源笔记移除
      */
     private fun moveVoiceToOtherNote(path: String) {
-        val escPath = esc(path)
-        jsResult("""(function(){var el=document.querySelector('.voice-msg[data-path="$escPath"]');return el?JSON.stringify(el.outerHTML):''})()""") { outerHtml ->
-            if (outerHtml.isBlank()) {
-                toast("录音条不存在")
-                return@jsResult
+        ioScope.launch {
+            val db = AppDatabase.get(this@EditActivity)
+            val nid = noteId ?: return@launch
+            val items = db.noteDao().getContentItems(nid)
+            // 直接从源笔记数据库 HTML 提取录音条块（不经 WebView，规避 JSON 转义链）
+            val block = items.firstOrNull { it.type == "html" }?.content?.let { extractVoiceBlock(it, path) }
+            if (block != null) {
+                runOnUiThread { showMoveNotePicker(path, block) }
+            } else {
+                // 旧数据：录音条为独立 voice 内容项 → 用标准模板重建 HTML
+                val voiceItem = items.firstOrNull { it.type == "voice" && it.content == path }
+                if (voiceItem == null) {
+                    runOnUiThread { toast("未找到该录音条数据") }
+                } else {
+                    val rebuilt = buildVoiceMsgHtml(path, voiceItem.voiceTranscript ?: "")
+                    runOnUiThread { showMoveNotePicker(path, rebuilt) }
+                }
             }
-            showMoveNotePicker(path, outerHtml)
         }
+    }
+
+    /** 从 HTML 中提取完整录音条块（<div class="voice-msg" ...>...</div>，div 平衡计数处理嵌套） */
+    private fun extractVoiceBlock(html: String, path: String): String? {
+        val marker = "data-path=\"$path\""
+        val mIdx = html.indexOf(marker)
+        if (mIdx < 0) return null
+        val start = html.lastIndexOf("<div", mIdx)
+        if (start < 0) return null
+        var i = start
+        var depth = 0
+        while (i < html.length) {
+            if (html.startsWith("<div", i) &&
+                (i + 4 >= html.length || html[i + 4] == ' ' || html[i + 4] == '>' || html[i + 4] == '\n' || html[i + 4] == '\r')
+            ) {
+                depth++; i += 4; continue
+            }
+            if (html.startsWith("</div>", i)) {
+                depth--; i += 6
+                if (depth == 0) return html.substring(start, i)
+                continue
+            }
+            i++
+        }
+        return null
+    }
+
+    /** 标准录音条 HTML（用于旧数据独立 voice 项的重建，样式与 insertAudio 一致） */
+    private fun buildVoiceMsgHtml(path: String, transcript: String): String {
+        val dur = getAudioDuration(path)
+        val sec = dur.toIntOrNull() ?: 1
+        val px = (50 + sec * 8).coerceIn(50, 350)
+        val attr = transcript.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;")
+        return "<div contenteditable=\"false\" class=\"voice-msg\" data-type=\"voice\" data-path=\"" + esc(path) +
+            "\" data-transcript=\"" + attr + "\" style=\"display:block;margin:6px 0\">" +
+            "<span class=\"voice-playing-tip\" style=\"display:none;font-size:11px;color:#07C160;white-space:nowrap\">正在播放</span>" +
+            "<span class=\"voice-body\" style=\"display:flex;align-items:center;gap:6px;flex-wrap:nowrap;background:linear-gradient(135deg,rgba(220,238,255,0.85),rgba(140,190,240,0.45));border-radius:8px;border:1px solid rgba(180,210,240,0.5);box-shadow:inset 0 1px 0 rgba(255,255,255,0.7),0 1px 4px rgba(30,80,160,0.08);padding:5px 10px;cursor:pointer;width:${px}px;max-width:49vw;height:30px;box-sizing:border-box;overflow:hidden\">" +
+            "<span class=\"vdur\" style=\"font-size:12px;color:#333;font-weight:500;line-height:1;flex-shrink:0\">" + dur + "″</span>" +
+            "</span>" +
+            "<span class=\"voice-transcribe-btn\" style=\"display:inline-block;font-size:10px;color:#576B95;cursor:pointer;margin-top:2px\">转文字</span>" +
+            "<span class=\"voice-copy-btn\" style=\"display:none;font-size:10px;color:#576B95;cursor:pointer;margin-left:8px;margin-top:2px\">复制</span>" +
+            "<div class=\"voice-transcript\" style=\"display:none;max-height:0;overflow:hidden;transition:max-height 0.3s ease;font-size:13px;color:#333;background:#F5F5F5;border-radius:6px;padding:0 10px;margin-top:4px;line-height:1.6\">" + attr + "</div>" +
+            "</div>"
+    }
+
+    /**
+     * 自愈修复：还原历史版本「移动录音」写入的转义残留坏块。
+     * 旧 bug 通过 evaluateJavascript(JSON.stringify(...)) 取 outerHTML，
+     * 双层 JSON 编码未正确解码，库中留下 "\u003Cdiv contenteditable=\"false\" class=\"voice-msg\" ... \u003C/div>\<br>
+     * 载入时按 div 平衡定位坏块并反转义还原为真录音条；用户保存后即落库为干净 HTML。
+     */
+    private fun repairEscapedVoiceBlocks(html: String): String {
+        val hasMark = html.contains("\\\"voice-msg\\\"") || html.contains("\\u003C")
+        android.util.Log.d("VoiceRepair", "enter: len=${html.length} hasMark=$hasMark hasU003C=${html.contains("\\u003C")} hasQ=${html.contains("\\\"voice-msg\\\"")}")
+        if (!hasMark) return html
+        var result = html
+        var guard = 0
+        while (guard++ < 10) {
+            var startIdx = result.indexOf("\\u003Cdiv contenteditable=")
+            if (startIdx < 0) startIdx = result.indexOf("\\u003cdiv contenteditable=")
+            if (startIdx < 0) break
+            // 前导孤立引号纳入替换范围（替换时被丢弃），但转义块本身从 startIdx 取
+            var replaceStart = startIdx
+            if (replaceStart > 0 && result[replaceStart - 1] == '"') replaceStart--
+            // div 平衡扫描（转义形态 \u003Cdiv / \u003C/div>）
+            var i = startIdx
+            var depth = 0
+            var end = -1
+            while (i <= result.length - 6) {
+                if (result.startsWith("\\u003Cdiv", i) || result.startsWith("\\u003cdiv", i)) { depth++; i += 9; continue }
+                if (result.startsWith("\\u003C/div>", i) || result.startsWith("\\u003c/div>", i)) {
+                    depth--; i += 11
+                    if (depth == 0) { end = i; break }
+                    continue
+                }
+                i++
+            }
+            if (end < 0) break
+            var e = end
+            // 吃掉紧随的 \<br> 或孤立 \ 残留（规范化后可能只剩反斜杠）
+            if (e < result.length && result[e] == '\\') {
+                e = if (e + 5 <= result.length && result.startsWith("<br>", e + 1)) e + 5 else e + 1
+            }
+            val block = result.substring(startIdx, e)
+            val fixed = unescapeJsonish(block)
+            if (!fixed.contains("voice-msg")) break  // 防误伤：反转义后不含录音条则放弃
+            result = result.substring(0, replaceStart) + fixed + result.substring(e)
+            android.util.Log.d("VoiceRepair", "repaired block: replaceStart=$replaceStart end=$e blockLen=${block.length}")
+        }
+        android.util.Log.d("VoiceRepair", "exit: len=${result.length} tail=${result.takeLast(30)}")
+        return result
+    }
+
+    /** 还原双层 JSON 编码残留的转义（\u003C、\"、\/、\\、\n 等） */
+    private fun unescapeJsonish(s: String): String {
+        val sb = StringBuilder(s.length)
+        var i = 0
+        while (i < s.length) {
+            val c = s[i]
+            if (c == '\\' && i + 1 < s.length) {
+                when {
+                    s.startsWith("\\u003C", i) || s.startsWith("\\u003c", i) -> { sb.append('<'); i += 6 }
+                    s.startsWith("\\u003E", i) || s.startsWith("\\u003e", i) -> { sb.append('>'); i += 6 }
+                    s.startsWith("\\u0026", i) -> { sb.append('&'); i += 6 }
+                    s[i + 1] == '"' -> { sb.append('"'); i += 2 }
+                    s[i + 1] == '/' -> { sb.append('/'); i += 2 }
+                    s[i + 1] == '\\' -> { sb.append('\\'); i += 2 }
+                    s[i + 1] == '<' -> { sb.append('<'); i += 2 }   // 块尾 \<br> 的孤立反斜杠：丢弃 \ 保留 <br>
+                    s[i + 1] == 'n' -> { sb.append('\n'); i += 2 }
+                    s[i + 1] == 't' -> { sb.append('\t'); i += 2 }
+                    else -> { sb.append(c); i++ }
+                }
+            } else {
+                sb.append(c); i++
+            }
+        }
+        return sb.toString()
     }
 
     private fun showMoveNotePicker(path: String, outerHtml: String) {
@@ -535,8 +663,8 @@ class EditActivity : AppCompatActivity() {
                 // 1. 移动物理录音文件到目标笔记目录
                 val newPath = moveVoiceFile(path, targetNoteId)
 
-                // 2. 生成新 HTML（替换 data-path 里的旧路径 → 新路径）
-                val newHtml = outerHtml.replace(esc(path), esc(newPath)) + "<br>"
+                // 2. 生成新 HTML（替换 data-path 里的旧路径 → 新路径；块为原始真 HTML，无转义）
+                val newHtml = outerHtml.replace(path, newPath) + "<br>"
 
                 // 3. 追加到目标笔记
                 val targetItems = db.noteDao().getContentItems(targetNoteId)
@@ -550,7 +678,7 @@ class EditActivity : AppCompatActivity() {
                         timestamp = timeFormat.format(Date())
                     ))
                 }
-                db.noteDao().updateNote(targetNote.copy(updateTime = timeFormat.format(Date())))
+                // 注意：不刷新目标笔记 updateTime，保持原卡片时间不变
 
                 // 4. 从源笔记编辑器移除该录音条（触发保存）
                 runOnUiThread {
@@ -1355,7 +1483,7 @@ ${d.treatment.split("、").joinToString("\n") { "　○ ${it.trim()}" }}
             val html = items.firstOrNull { it.type == "html" }?.content
                 ?: buildHtmlFromItems(items)
             // 修复残留：转写中途退出会把 "识别中..." 按钮文本存进 HTML，载入时复位为可点击的 "转文字"
-            val fixedHtml = html.replace(">识别中...</span>", ">转文字</span>")
+            val fixedHtml = repairEscapedVoiceBlocks(html.replace(">识别中...</span>", ">转文字</span>"))
             htmlContent = fixedHtml
             runOnUiThread {
                 note?.let { etTitle.setText(it.title) }
