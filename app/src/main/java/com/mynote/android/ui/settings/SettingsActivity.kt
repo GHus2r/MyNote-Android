@@ -136,6 +136,7 @@ class SettingsActivity : BaseActivity() {
                     refreshUI()
                 },
                 onWebdavConfigClick = { showWebDAVConfigDialog() },
+                onWebdavRestoreClick = { showRestoreFromCloud() },
                 onLocalBackupClick = { showBackupOptionsDialog() },
                 onDbBackupClick = { startDbBackup() },
                 onRestoreBackupClick = { startRestore() },

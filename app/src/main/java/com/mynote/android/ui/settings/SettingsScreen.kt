@@ -75,6 +75,7 @@ fun SettingsScreen(
     onAntiUninstallToggle: (Boolean) -> Unit,
     onWebdavAutoToggle: (Boolean) -> Unit,
     onWebdavConfigClick: () -> Unit,
+    onWebdavRestoreClick: () -> Unit,
     onLocalBackupClick: () -> Unit,
     onDbBackupClick: () -> Unit,
     onRestoreBackupClick: () -> Unit,
@@ -184,6 +185,9 @@ fun SettingsScreen(
             }
             item(key = "webdav_config") {
                 ClickItem("配置坚果云 WebDAV", sub = if (state.webdavConfigured) "已配置 ✓" else "未配置", onClick = onWebdavConfigClick, backdrop = backdrop)
+            }
+            item(key = "webdav_restore") {
+                ClickItem("从坚果云恢复", sub = "选择云端备份文件", onClick = onWebdavRestoreClick, backdrop = backdrop)
             }
             item(key = "local_backup") { ClickItem("完整备份 (JSON)", sub = "含分类+笔记+内容", onClick = onLocalBackupClick, backdrop = backdrop) }
             item(key = "db_backup") { ClickItem("快速备份 (DB)", sub = "直接打包数据库", onClick = onDbBackupClick, backdrop = backdrop) }
