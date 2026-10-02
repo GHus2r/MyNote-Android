@@ -505,7 +505,6 @@ class EditActivity : AppCompatActivity() {
      */
     private fun repairEscapedVoiceBlocks(html: String): String {
         val hasMark = html.contains("\\\"voice-msg\\\"") || html.contains("\\u003C")
-        android.util.Log.d("VoiceRepair", "enter: len=${html.length} hasMark=$hasMark hasU003C=${html.contains("\\u003C")} hasQ=${html.contains("\\\"voice-msg\\\"")}")
         if (!hasMark) return html
         var result = html
         var guard = 0
@@ -539,9 +538,7 @@ class EditActivity : AppCompatActivity() {
             val fixed = unescapeJsonish(block)
             if (!fixed.contains("voice-msg")) break  // 防误伤：反转义后不含录音条则放弃
             result = result.substring(0, replaceStart) + fixed + result.substring(e)
-            android.util.Log.d("VoiceRepair", "repaired block: replaceStart=$replaceStart end=$e blockLen=${block.length}")
         }
-        android.util.Log.d("VoiceRepair", "exit: len=${result.length} tail=${result.takeLast(30)}")
         return result
     }
 
