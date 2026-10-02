@@ -16,3 +16,13 @@ app/release/
 *_bak*/
 *.bak
 .gradle_home/
+
+# 本地 Maven 依赖缓存（构建走阿里云镜像，无需提交）
+local-maven/
+
+# WorkBuddy 工作区数据（AI 记忆/日志/调试截图，不公开）
+.workbuddy/
+
+# 构建日志与临时脚本
+build_*.log
+build_voice_fix.py
