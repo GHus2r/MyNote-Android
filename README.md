@@ -1,97 +1,225 @@
-# MyNote (Android 原生版)
+# MyNote · 临床医生个人医疗笔记 + AI 临床辅助
 
-从 uni-app 项目迁移而来的 Android 原生应用,使用 Kotlin + MVVM + Room + Material 3。
+面向临床医生（住院医师规范化培训 / 三甲内科方向）的个人知识管理 App。将**临床笔记、患者管理、医学参考库与 AI 辅助**整合进一个应用，支持完全离线使用，数据本地存储、可加密锁定、可备份恢复。
 
-## 技术栈
+- **当前版本**：5.5.5（versionCode 555）
+- **平台**：Android 5.0+（minSdk 21），原生 Kotlin 实现
+- **定位**：个人使用、非商业化
+- **数据安全**：全部数据存于本机 Room 数据库，支持应用锁、指纹、防卸载、坚果云/百度网盘备份
 
-- **语言**: Kotlin 1.9.24
-- **构建**: Gradle 8.9 + AGP 8.5.2 + KSP
-- **架构**: MVVM + ViewBinding
-- **数据库**: Room 2.6.1
-- **UI**: Material Components 3
-- **异步**: Kotlin Coroutines
-- **网络**: OkHttp 4.12
-- **指纹**: AndroidX Biometric
-- **最低 SDK**: 21 (Android 5.0)
+---
 
-## 工程结构
+## 一、核心亮点
+
+- **三层知识导航**：13 个规培科室大主题 → 43 个子主题 → 笔记，契合临床知识组织习惯
+- **富媒体笔记**：富文本 + 录音（自动转文字）+ 图片 + 视频 + 手绘形状，一条笔记承载完整临床信息
+- **AI 病历生成**：流式输出，遵循《病历书写基本规范》，自动套用科室专属模板
+- **AI 临床辅助分析**：多源融合推理（CDSS），输出 P0/P1/P2 分级建议
+- **医学参考库**：药物、疾病、检验、影像、心电图 + 抗生素/输血/毒理/儿科等专科指南，**离线可用**
+- **临床工具**：药物相互作用、临床路径、医学计算器、临床评分、急诊操作流程
+- **安全隐私**：应用锁（密码 + 指纹）、设备管理员防卸载、伪装模式、暗色模式
+- **备份恢复**：坚果云 WebDAV 自动备份、百度网盘、DOCX/PDF/HTML 多格式导出
+
+---
+
+## 二、功能总览
+
+| 分类 | 功能模块 |
+|------|----------|
+| **笔记** | 三层导航、富文本编辑、录音转文字、图片/视频插入、手绘、搜索、批量导出、回收站 |
+| **患者与临床** | 患者档案、病历、生命体征、药物相互作用、临床路径、指南库、科室模板 |
+| **AI 能力** | AI 病历生成、AI 临床辅助分析、化验单 OCR、病历照片质控、语音录入、会议转写 |
+| **参考库** | 药物 / 疾病 / 检验 / 影像 / 心电图 + 抗生素 / 输血 / 毒理 / 儿科生长 |
+| **学习工具** | 闪卡复习、工具箱（计算器 / 参考库入口） |
+| **安全** | 应用锁、指纹解锁、防卸载、伪装模式、暗色模式、主页背景自定义 |
+| **备份导出** | 坚果云 WebDAV、百度网盘、DOCX / PDF / HTML 导出、SAF 目录导出 |
+
+---
+
+## 三、功能详解
+
+### 1. 笔记系统
+
+**用途**：核心知识载体，按临床科室组织，支持多类型内容块。
+
+**三层结构**：大主题（科室）→ 子主题（专科方向）→ 笔记。
+
+首次启动自动创建 13 个大主题及子主题：
+
+| 大主题 | 子主题 |
+|--------|--------|
+| 内 | 呼吸科、心血管科、消化科、内分泌科、肾内科、血液科、风湿免疫 |
+| 外 | 普外科、骨科、泌尿外科、神经外科、心胸外科、整形外科 |
+| 妇 | 产科、妇科、生殖医学 |
+| 儿 | 小儿内科、小儿外科、新生儿科 |
+| 急 | 急诊、ICU |
+| 神内 | 脑血管、癫痫与发作性疾病、神经免疫 |
+| 皮 | 常见皮肤病、性病 |
+| 眼 | 眼前节、眼底病 |
+| 五官 | 耳科、鼻科、咽喉科 |
+| 影像 | X线、CT、MRI、超声 |
+| 麻醉 | 全身麻醉、局部麻醉 |
+| 病理 | 组织病理、细胞病理 |
+| 考试 | 执业医考点、出科考试、年度考核、结业考核 |
+
+**笔记内容块类型**：文本（HTML 富文本）、语音、图片、视频、手绘形状。
+
+**主要交互流程**：
+1. 首页选择科室大主题 → 进入子主题列表 → 新建/打开笔记
+2. 编辑页支持富文本排版，可插入录音、拍照、相册图片、视频、手绘
+3. 录音可一键转文字（详见 AI 章节）
+4. 列表页支持搜索、多选、批量导出、排序
+
+**关键参数**：
+- **回收站保留 30 天**，超期自动清理
+- **删除保护码**：删除操作需输入 3 位安全码（默认 `737`，可在设置修改）
+- 笔记支持标签（tags）、待办标记（isTodo）、置顶（isPinned）
+
+### 2. 患者与临床
+
+**用途**：管理患者档案与临床数据，支撑规培轮转中的病历书写与诊疗决策。
+
+| 模块 | 说明 |
+|------|------|
+| 患者管理 | 患者主档列表 / 详情，关联病历、生命体征 |
+| 病历 | 结构化病历记录，套用科室模板 |
+| 生命体征 | T / P / R / BP / SpO2 / 肌酐 / eGFR / 肝功 / 血脂等，支持文本智能解析录入 |
+| 药物相互作用 | 输入多药自动检测相互作用，给出级别与建议 |
+| 临床路径 | 各科室诊疗路径速查 |
+| 指南库 | 权威临床指南检索 |
+| 科室模板 | 13 科室病历模板 + 处方模板 + 病历质量评分 |
+
+**生命体征解析示例**：粘贴一段查房记录文本，自动提取体温、脉搏、呼吸、血压、血氧等数值填入表单，无需逐项手输。
+
+### 3. 医学参考库
+
+**用途**：内置可离线查询的医学知识库，查房、开医嘱时随手查。
+
+**预置数据**（assets 内置 JSON，随 APK 打包，离线可用，支持增量更新）：
+- 药物参考（DrugReference）
+- 疾病参考（DiseaseReference）
+- 检验参考（LabReference）
+- 影像参考（ImagingReference）
+- 心电图参考（ECGReference）
+
+**专科指南**：
+- 抗生素应用指南（AntibioticGuide）
+- 输血指南（TransfusionGuide）
+- 中毒急救参考（ToxicologyRef）
+- 儿科生长曲线（PediatricGrowth）
+- 临床评分量表（ClinicalScores）
+- 医学计算器（MedicalCalculator）
+- 急诊操作流程（EmergencyProcedures）
+
+### 4. AI 智能能力
+
+**用途**：贯穿病历书写、报告解读、语音记录全流程的 AI 辅助。
+
+| 能力 | 说明 |
+|------|------|
+| AI 病历生成 | 输入关键信息，**流式生成**结构化病历，遵循《病历书写基本规范》2022，自动套用科室专属模板 |
+| AI 临床辅助分析 | 多源融合推理（CDSS），输出 **P0 / P1 / P2 分级**建议，支持引擎选择 |
+| 化验单 OCR | 拍照识别化验单，本地 ML Kit 初识 + 云端模型校准，异常项高亮标注 |
+| 病历照片质控 | 病历照片 → OCR → 规则初筛 + AI 审计 → 生成质控报告并落库（可追溯） |
+| 语音录入 | 摇一摇快速录音，支持讯飞 / 阿里 / 天翼多引擎 |
+| 会议转写 | 录音 → AI 自动摘要，生成会议纪要 |
+
+**录音转文字关键参数**（长音频已做分片与超时保护）：
+- 讯飞 IAT：单次会话上限 60s，自动按 **55s 分片**、并发 **2 路**、单片 **150s 超时**
+- 阿里 ASR：按 **90s 切片**、并发 **3 路**、按序拼接
+- 支持**说话人分离**（会议多人场景）
+
+**使用流程示例（AI 病历生成）**：
+1. 患者详情页点「AI 病历」→ 选择科室模板
+2. 输入/粘贴关键病情信息
+3. AI 流式输出完整病历（主诉、现病史、既往史、查体、辅助检查、诊断、治疗）
+4. 一键保存为正式病历，可继续手动修改
+
+**说明**：AI 功能需在设置中配置对应服务的 API Key（阿里云百炼 / DeepSeek / 百川等），Key 仅存本机，不联网上传。
+
+### 5. 学习与考试工具
+
+- **闪卡**：针对「考试」大主题的卡片式复习（执业医 / 出科 / 年度 / 结业考核）
+- **工具箱**：首页快捷入口，聚合临床计算器、参考库等工具
+
+### 6. 安全与隐私
+
+| 能力 | 说明 |
+|------|------|
+| 应用锁 | 密码 + 指纹双重解锁，星空 / 渐变动画锁屏页 |
+| 防卸载 | 设备管理员（DevicePolicyManager）防止误卸载 |
+| 伪装模式 | 一键伪装为普通工具应用 |
+| 暗色模式 | 全局深色主题 |
+| 主页背景 | 默认 / 纯色 / 渐变 / 自定义图片 |
+| 崩溃保护 | 全局 CrashHandler 捕获异常 |
+
+### 7. 备份与导出
+
+| 方式 | 说明 |
+|------|------|
+| 坚果云 WebDAV | **自动备份**开关、手动备份、从云端恢复；备份文字 + 媒体文件（图片 / 视频 / PDF / Office），录音默认跳过 |
+| 百度网盘 | 通过开放接口上传备份 |
+| 本地导出 | DOCX / PDF / HTML / SAF 目录导出 |
+
+**坚果云备份云端布局**：
+```
+/MyNote/
+├── backup_*.json      # 数据库备份
+└── media/<noteId>/    # 媒体文件（按笔记目录）
+```
+
+---
+
+## 四、技术栈
+
+| 类别 | 技术 |
+|------|------|
+| 语言 | Kotlin 2.2.21 |
+| 构建 | Gradle 8.11.1 + AGP 8.7.3 + KSP 2.2.21-2.0.4 |
+| 架构 | MVVM + ViewBinding + Jetpack Compose（玻璃层 / 小组件） |
+| 数据库 | Room 2.7.2（9 张表） |
+| 异步 | Kotlin Coroutines 1.8.1 |
+| 网络 | OkHttp 4.12.0 + Gson 2.11.0（SSE 流式） |
+| UI | Material 3 + Compose BOM |
+| OCR | ML Kit 中文识别（离线内置） |
+| 指纹 | AndroidX Biometric 1.1.0 |
+| 文件 | SAF（DocumentFile），Office/PDF 解析均为**手写实现**（零第三方 Office/PDF 库） |
+| SDK | minSdk 21 / targetSdk 34 / compileSdk 35 / Java 17 |
+
+---
+
+## 五、工程结构
 
 ```
-MyNote-Android/
-├── app/
-│   ├── build.gradle.kts
-│   ├── proguard-rules.pro
-│   └── src/main/
-│       ├── AndroidManifest.xml
-│       ├── java/com/mynote/android/
-│       │   ├── MyNoteApp.kt              # Application
-│       │   ├── data/                     # 数据层
-│       │   │   ├── entity/               # Room Entity
-│       │   │   │   ├── ParentCategory.kt
-│       │   │   │   ├── SubCategory.kt
-│       │   │   │   ├── Note.kt
-│       │   │   │   └── ContentItem.kt
-│       │   │   ├── dao/                  # Room DAO
-│       │   │   │   ├── CategoryDao.kt
-│       │   │   │   └── NoteDao.kt
-│       │   │   └── AppDatabase.kt
-│       │   ├── security/
-│       │   │   └── LockManager.kt        # 自动锁定
-│       │   ├── ui/
-│       │   │   ├── base/
-│       │   │   │   ├── BaseActivity.kt   # 自动锁屏基类
-│       │   │   │   └── ActivityStack.kt
-│       │   │   ├── lock/LockActivity.kt  # 锁屏页
-│       │   │   ├── main/MainActivity.kt  # 主页
-│       │   │   ├── edit/EditActivity.kt  # 编辑页
-│       │   │   └── settings/SettingsActivity.kt
-│       │   └── util/Prefs.kt             # SharedPreferences
-│       └── res/
-│           ├── layout/                   # 4 个 Activity 布局
-│           ├── values/                   # colors/strings/themes
-│           ├── drawable/
-│           └── mipmap-anydpi-v26/        # 启动图标
-├── build.gradle.kts                      # 项目级
-├── settings.gradle.kts
-├── gradle.properties
-└── gradle/wrapper/gradle-wrapper.properties
+app/src/main/java/com/mynote/android/
+├── MyNoteApp.kt              # Application（初始化 / 科室种子 / 回收站清理）
+├── data/                     # Room 数据层（entity / dao / AppDatabase）
+├── ui/
+│   ├── main/                 # 主页（三层导航 / 玻璃卡片 / 工具箱）
+│   ├── edit/                 # 富文本编辑器 + 媒体插入
+│   ├── patient/              # 患者 / 病历 / 生命体征 / AI 分析 / 病历质控
+│   ├── meeting/              # 会议转写
+│   ├── flashcard/            # 闪卡复习
+│   ├── pdf/  image/  viewer/ office/  # 各类查看器与标注
+│   ├── lock/                 # 应用锁
+│   ├── settings/             # 设置 + 防卸载
+│   └── widget/               # 桌面小组件
+├── util/                     # 工具（AI 客户端 / 参考库 / 备份导出 / 计算引擎）
+└── security/                 # 锁定管理
 ```
 
-## 如何打开
+---
 
-1. 打开 Android Studio
-2. File → Open → 选择 `F:\NOTE\MyNote-Android` 目录
-3. 等待 Gradle 同步完成(首次会下载依赖)
-4. 连接真机或模拟器,点 Run 运行
+## 六、构建与运行
 
-## 迁移进度
+1. 打开 Android Studio，选择 `File → Open` 打开项目根目录
+2. 等待 Gradle 同步完成（依赖走阿里云镜像，首次会下载）
+3. 连接真机或启动模拟器，点击 Run
 
-### 已完成(第一阶段骨架)
-- [x] 工程结构与 Gradle 配置
-- [x] AndroidManifest(权限、4 个 Activity)
-- [x] Room 数据层(ParentCategory/SubCategory/Note/ContentItem + DAO)
-- [x] Application + BaseActivity(自动锁屏框架)
-- [x] 4 个 Activity 骨架(可运行)
-- [x] 资源文件(主题、颜色、字符串、布局、图标)
+> 注意：项目不依赖任何私有 Maven 仓库，构建所需依赖均来自公共镜像。
 
-### 待实现(后续阶段)
-- [ ] 主页:主题分类网格 + 笔记列表 + 搜索 + 导入导出
-- [ ] 编辑页:富文本 + 录音/拍照/视频 + 形状手势
-- [ ] 设置页:密码管理 + 指纹 + 防卸载(DevicePolicyManager) + 备份
-- [ ] 锁屏页:星空动画 + 自定义数字键盘
-- [ ] 数据迁移工具(从 uni-app setStorage 导入)
+---
 
-## 与原 uni-app 项目的对应关系
+## 七、免责声明
 
-| uni-app | Android 原生 |
-|---------|-------------|
-| `uni.setStorageSync('notes', ...)` | Room `notes` 表 |
-| `uni.setStorageSync('parentCategories', ...)` | Room `parent_categories` + `sub_categories` 表 |
-| `note.contentList` 数组 | Room `content_items` 表 |
-| `plus.fingerprint.authenticate` | AndroidX BiometricPrompt |
-| `uni.getRecorderManager` | MediaRecorder |
-| `plus.io.*` 文件操作 | SAF / MediaStore |
-| `plus.android.importClass` Intent 桥接 | 原生 Intent(无需桥接) |
-| 防卸载原生插件 aar | 直接 DevicePolicyManager |
-| App.vue onShow/onHide 自动锁定 | BaseActivity + LockManager |
-| pages.json 路由 | AndroidManifest Activity 注册 |
+本应用提供的医学参考信息与 AI 生成内容**仅供学习与临床辅助参考，不构成诊疗建议**。实际临床决策请以权威指南、上级医师意见及患者实际情况为准。
