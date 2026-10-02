@@ -1700,6 +1700,14 @@ ed.addEventListener('click',function(e){
         Android.transcribeVoice(path);
         return;
     }
+    // 复制按钮（必须在媒体卡片点击之前检查，否则点复制会误触播放菜单）
+    if(el.classList.contains('voice-copy-btn')){
+        e.preventDefault();e.stopPropagation();
+        var tr=el.closest('.voice-msg').querySelector('.voice-transcript');
+        var text=tr?tr.textContent.trim():'';
+        if(text){navigator.clipboard.writeText(text);el.textContent='已复制';setTimeout(function(){el.textContent='复制'},1500)}
+        return;
+    }
     // 媒体卡片点击
     var card=el.closest('.media-card')||el.closest('.media')||el.closest('.voice-msg');
     if(card&&card!==ed){
@@ -1713,14 +1721,6 @@ ed.addEventListener('click',function(e){
         var seekSec=parseInt(el.dataset.seek)||0;
         var voiceEl=el.closest('.voice-msg');
         Android.seekAudio(voiceEl?voiceEl.dataset.path:'',seekSec);
-        return;
-    }
-    // 复制按钮
-    if(el.classList.contains('voice-copy-btn')){
-        e.preventDefault();e.stopPropagation();
-        var tr=el.closest('.voice-msg').querySelector('.voice-transcript');
-        var text=tr?tr.textContent.trim():'';
-        if(text){navigator.clipboard.writeText(text);el.textContent='已复制';setTimeout(function(){el.textContent='复制'},1500)}
         return;
     }
     // 转文字区域不冒泡
@@ -2012,17 +2012,63 @@ function setPageTemplate(style){
             js("document.querySelectorAll('.voice-msg.playing').forEach(function(el){el.classList.remove('playing');var b=el.querySelector('.voice-body')||el;b.style.background='#FFFFFF';var t=el.querySelector('.voice-playing-tip');if(t)t.style.display='none'})")
             return
         }
+        // 文件缺失：可能是移动功能历史版本导致的路径错乱，尝试全局搜索同名文件自动修复
+        var realPath = path
+        if (!File(path).exists()) {
+            val found = searchVoiceFile(path)
+            if (found != null) {
+                realPath = found
+                fixVoicePath(path, found)
+                toast("已重新定位录音文件")
+            } else {
+                toast("录音文件不存在")
+                return
+            }
+        }
         try {
-            playingPath = path
+            playingPath = realPath
             player = MediaPlayer().apply {
-                setDataSource(path); prepare(); start()
+                setDataSource(realPath); prepare(); start()
                 setOnCompletionListener {
                     release(); player = null; playingPath = null
                     js("document.querySelectorAll('.voice-msg.playing').forEach(function(el){el.classList.remove('playing');var b=el.querySelector('.voice-body')||el;b.style.background='#FFFFFF';var t=el.querySelector('.voice-playing-tip');if(t)t.style.display='none'})")
                 }
             }
-            js("""document.querySelectorAll('.voice-msg[data-path="${esc(path)}"]').forEach(function(el){el.classList.add('playing');var b=el.querySelector('.voice-body')||el;b.style.background='#F5F5F5';var t=el.querySelector('.voice-playing-tip');if(t)t.style.display='block'})""")
-        } catch (_: Exception) { toast("播放失败") }
+            js("""document.querySelectorAll('.voice-msg[data-path="${esc(realPath)}"]').forEach(function(el){el.classList.add('playing');var b=el.querySelector('.voice-body')||el;b.style.background='#F5F5F5';var t=el.querySelector('.voice-playing-tip');if(t)t.style.display='block'})""")
+        } catch (_: Exception) { toast("录音文件损坏或格式不支持") }
+    }
+
+    /** 在 filesDir/notes 下全局搜索同名录音文件（移动历史数据可能路径错乱） */
+    private fun searchVoiceFile(path: String): String? {
+        val name = File(path).name
+        if (name.isBlank()) return null
+        val notesDir = File(filesDir, "notes")
+        if (!notesDir.exists()) return null
+        notesDir.listFiles()?.forEach { noteDir ->
+            if (noteDir.isDirectory) {
+                val f = File(noteDir, name)
+                if (f.exists() && f.length() > 0) return f.absolutePath
+            }
+        }
+        return null
+    }
+
+    /** 修复录音条 data-path：更新数据库 HTML 和当前 DOM（移动历史数据路径错乱自动修复） */
+    private fun fixVoicePath(oldPath: String, newPath: String) {
+        ioScope.launch {
+            try {
+                val db = AppDatabase.get(this@EditActivity)
+                val nid = noteId ?: return@launch
+                val items = db.noteDao().getContentItems(nid)
+                val htmlItem = items.firstOrNull { it.type == "html" }
+                if (htmlItem != null && htmlItem.content.contains(oldPath)) {
+                    db.noteDao().updateContentItem(htmlItem.copy(content = htmlItem.content.replace(oldPath, newPath)))
+                }
+            } catch (_: Exception) {}
+        }
+        runOnUiThread {
+            js("""document.querySelectorAll('.voice-msg[data-path="${esc(oldPath)}"]').forEach(function(el){el.dataset.path="${esc(newPath)}";el.setAttribute('data-path',"${esc(newPath)}")})""")
+        }
     }
 
     private fun seekVoice(path: String, seekSec: Int) {
