@@ -6,7 +6,9 @@ import android.util.Log
 import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -23,6 +25,7 @@ object WebDAVBackup {
 
     private const val TAG = "WebDAVBackup"
     private const val BACKUP_DIR = "MyNote"
+    private const val MEDIA_DIR = "media"
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
@@ -93,7 +96,11 @@ object WebDAVBackup {
 
             if (code in 200..299 || code == 201 || code == 204) {
                 Log.i(TAG, "WebDAV 上传成功: $filename")
-                callback(true, "已备份到坚果云")
+                // 顺带备份媒体文件（图片/视频/附件，跳过 voice_ 录音）
+                val media = uploadMediaFiles(context)
+                val mediaCount = media.getOrNull() ?: 0
+                val mediaMsg = if (mediaCount > 0) "，媒体文件 $mediaCount 个" else ""
+                callback(true, "已备份到坚果云$mediaMsg")
             } else {
                 Log.e(TAG, "上传失败: HTTP $code")
                 callback(false, "上传失败 (HTTP $code)")
@@ -209,5 +216,170 @@ object WebDAVBackup {
             response.close()
             content
         } catch (e: Exception) { Log.e(TAG, "下载异常", e); null }
+    }
+
+    // ═══════ 媒体文件备份（图片/视频/PDF/Office 附件；跳过 voice_ 录音） ═══════
+
+    /** 收集本地需备份的媒体文件（跳过 voice_*.m4a 录音） */
+    private fun collectLocalMedia(context: Context): List<Pair<String, File>> {
+        val notesDir = File(context.filesDir, "notes")
+        val result = mutableListOf<Pair<String, File>>()
+        if (!notesDir.isDirectory) return result
+        for (noteDir in notesDir.listFiles().orEmpty()) {
+            if (!noteDir.isDirectory) continue
+            for (f in noteDir.listFiles().orEmpty()) {
+                if (!f.isFile) continue
+                // 录音暂不备份
+                if (f.name.startsWith("voice_") && f.name.endsWith(".m4a")) continue
+                result.add(noteDir.name to f)
+            }
+        }
+        return result
+    }
+
+    /** 递归列出云端 /MyNote/media/ 下所有文件，返回 remotePath(media/noteId/name) -> size */
+    private suspend fun listRemoteMedia(context: Context): Map<String, Long> {
+        val map = mutableMapOf<String, Long>()
+        try {
+            val dirUrl = "${getUrl(context)}/$BACKUP_DIR/$MEDIA_DIR"
+            val body = """<?xml version="1.0" encoding="utf-8"?>
+                <D:propfind xmlns:D="DAV:"><D:prop><D:getcontentlength/></D:prop></D:propfind>""".trimIndent()
+            val request = Request.Builder()
+                .url(dirUrl)
+                .header("Authorization", getAuthHeader(context))
+                .header("Depth", "infinity")
+                .method("PROPFIND", body.toRequestBody("application/xml".toMediaType()))
+                .build()
+            val response = client.newCall(request).execute()
+            if (response.code !in 200..299) { response.close(); return map }
+            val xml = response.body?.string() ?: ""; response.close()
+
+            val responseRe = Regex("""<D:response>(.*?)</D:response>""", RegexOption.DOT_MATCHES_ALL)
+            val hrefRe = Regex("""<D:href>(.*?)</D:href>""")
+            val sizeRe = Regex("""<D:getcontentlength>(.*?)</D:getcontentlength>""")
+            for (match in responseRe.findAll(xml)) {
+                val seg = match.value
+                val href = hrefRe.find(seg)?.groupValues?.get(1) ?: continue
+                val size = sizeRe.find(seg)?.groupValues?.get(1)?.toLongOrNull() ?: continue  // 目录项无长度，跳过
+                val decoded = try { java.net.URLDecoder.decode(href, "UTF-8") } catch (_: Exception) { href }
+                val rel = decoded.substringAfter("/$BACKUP_DIR/", "")
+                if (rel.isEmpty() || !rel.startsWith("$MEDIA_DIR/")) continue
+                map[rel] = size
+            }
+        } catch (e: Exception) { Log.e(TAG, "列媒体异常", e) }
+        return map
+    }
+
+    /** 确保 WebDAV 子目录存在（relPath 相对 /MyNote/，如 "media" 或 "media/<noteId>"） */
+    private suspend fun ensureDirPath(context: Context, relPath: String) {
+        try {
+            val dirUrl = "${getUrl(context)}/$BACKUP_DIR/$relPath"
+            val probeReq = Request.Builder()
+                .url(dirUrl)
+                .header("Authorization", getAuthHeader(context))
+                .method("PROPFIND", "".toRequestBody("application/xml".toMediaType()))
+                .build()
+            val probeResp = client.newCall(probeReq).execute()
+            if (probeResp.code in 200..299) { probeResp.close(); return }
+            probeResp.close()
+            val mkcolReq = Request.Builder()
+                .url(dirUrl)
+                .header("Authorization", getAuthHeader(context))
+                .method("MKCOL", "".toRequestBody(null))
+                .build()
+            client.newCall(mkcolReq).execute().close()
+        } catch (_: Exception) {}
+    }
+
+    /**
+     * 上传媒体文件（图片/视频/附件，跳过录音）。增量：云端已存在同大小文件则跳过。
+     * 返回实际上传的文件数。
+     */
+    suspend fun uploadMediaFiles(
+        context: Context,
+        onProgress: (done: Int, total: Int) -> Unit = { _, _ -> }
+    ): Result<Int> = withContext(Dispatchers.IO) {
+        try {
+            if (!isConfigured(context)) return@withContext Result.failure(Exception("未配置 WebDAV"))
+            val files = collectLocalMedia(context)
+            if (files.isEmpty()) return@withContext Result.success(0)
+            val remote = listRemoteMedia(context)
+            ensureDir(context)
+            ensureDirPath(context, MEDIA_DIR)
+            var uploaded = 0
+            var i = 0
+            for ((noteId, f) in files) {
+                i++
+                onProgress(i, files.size)
+                val remotePath = "$MEDIA_DIR/$noteId/${f.name}"
+                if (remote[remotePath] == f.length()) continue  // 已存在同大小，跳过
+                ensureDirPath(context, "$MEDIA_DIR/$noteId")
+                val request = Request.Builder()
+                    .url("${getUrl(context)}/$BACKUP_DIR/$remotePath")
+                    .header("Authorization", getAuthHeader(context))
+                    .put(f.asRequestBody("application/octet-stream".toMediaType()))
+                    .build()
+                val resp = client.newCall(request).execute()
+                val code = resp.code; resp.close()
+                if (code in 200..299 || code == 201 || code == 204) uploaded++
+                else Log.e(TAG, "媒体上传失败 HTTP $code: $remotePath")
+            }
+            Result.success(uploaded)
+        } catch (e: Exception) {
+            Log.e(TAG, "媒体上传异常", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * 下载云端媒体文件到本地 files/notes/<noteId>/（恢复用）。跳过本地已存在同大小的。
+     * 返回实际下载的文件数。
+     */
+    suspend fun downloadMediaFiles(
+        context: Context,
+        onProgress: (done: Int, total: Int) -> Unit = { _, _ -> }
+    ): Result<Int> = withContext(Dispatchers.IO) {
+        try {
+            if (!isConfigured(context)) return@withContext Result.failure(Exception("未配置 WebDAV"))
+            val remote = listRemoteMedia(context)
+            if (remote.isEmpty()) return@withContext Result.success(0)
+            var downloaded = 0
+            var i = 0
+            for ((remotePath, size) in remote) {
+                i++
+                onProgress(i, remote.size)
+                // remotePath = "media/<noteId>/<fileName>"
+                val parts = remotePath.split("/")
+                if (parts.size < 3) continue
+                val noteId = parts[1]
+                val fileName = parts.drop(2).joinToString("/")
+                val localDir = File(context.filesDir, "notes/$noteId")
+                localDir.mkdirs()
+                val localFile = File(localDir, fileName)
+                if (localFile.exists() && localFile.length() == size) continue
+                val request = Request.Builder()
+                    .url("${getUrl(context)}/$BACKUP_DIR/$remotePath")
+                    .header("Authorization", getAuthHeader(context))
+                    .get()
+                    .build()
+                val resp = client.newCall(request).execute()
+                if (resp.code !in 200..299) { resp.close(); continue }
+                val body = resp.body
+                if (body != null) {
+                    val tmp = File(localDir, "$fileName.tmp")
+                    tmp.outputStream().use { body.byteStream().copyTo(it) }
+                    if (tmp.length() > 0) {
+                        if (localFile.exists()) localFile.delete()
+                        tmp.renameTo(localFile)
+                        downloaded++
+                    } else tmp.delete()
+                }
+                resp.close()
+            }
+            Result.success(downloaded)
+        } catch (e: Exception) {
+            Log.e(TAG, "媒体下载异常", e)
+            Result.failure(e)
+        }
     }
 }

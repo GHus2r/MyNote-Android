@@ -642,8 +642,17 @@ class SettingsActivity : BaseActivity() {
                                                     lifecycleScope.launch {
                                                         try {
                                                             val ok = BackupManager.importJsonString(this@SettingsActivity, json, mode == 0)
+                                                            var mediaCount = 0
+                                                            if (ok) {
+                                                                // 补齐媒体文件（图片/视频/附件；录音不备份不恢复）
+                                                                Toast.makeText(this@SettingsActivity, "正在恢复媒体文件...", Toast.LENGTH_SHORT).show()
+                                                                mediaCount = WebDAVBackup.downloadMediaFiles(this@SettingsActivity).getOrNull() ?: 0
+                                                            }
                                                             runOnUiThread {
-                                                                Toast.makeText(this@SettingsActivity, if (ok) "✅ 恢复成功" else "❌ 恢复失败", Toast.LENGTH_SHORT).show()
+                                                                val msg = if (ok) {
+                                                                    if (mediaCount > 0) "✅ 恢复成功，媒体文件 $mediaCount 个" else "✅ 恢复成功"
+                                                                } else "❌ 恢复失败"
+                                                                Toast.makeText(this@SettingsActivity, msg, Toast.LENGTH_SHORT).show()
                                                                 refreshUI()
                                                             }
                                                         } catch (e: Exception) {
