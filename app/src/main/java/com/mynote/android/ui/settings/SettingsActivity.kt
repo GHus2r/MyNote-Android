@@ -170,7 +170,8 @@ class SettingsActivity : BaseActivity() {
                 onQwenConfigClick = { showQwenConfigDialog() },
                 onDeepseekConfigClick = { showDeepseekConfigDialog() },
                 onBaichuanConfigClick = { showBaichuanConfigDialog() },
-                onCrashLogsClick = { exportCrashLogs() }
+                onCrashLogsClick = { exportCrashLogs() },
+                onDisclaimerClick = { showDisclaimerDialog() }
             )
         }
 
@@ -2670,6 +2671,29 @@ class SettingsActivity : BaseActivity() {
             .setNegativeButton("取消", null)
             .show()
         showKeyboard(etApiKey)
+    }
+
+    private fun showDisclaimerDialog() {
+        val text = """MyNote 是一款面向医学专业人员的学习记录与临床辅助工具，仅供学习、参考与自我管理用途。
+
+1. 本应用内置的疾病、药物、检验、影像、心电图、评分量表、临床路径、急救流程等医学知识内容，均整理自公开资料，仅供参考，不构成任何诊疗意见、医疗建议或处方依据。
+
+2. 临床决策须结合患者实际情况、最新循证指南、药品说明书及所在医疗机构规范，由具备执业资质的医务人员作出。本应用不能替代医生面诊、辅助检查与专业判断。
+
+3. AI 生成内容（病历、质控报告、会议摘要、语音转写等）由大模型自动产出，可能存在错误、遗漏或滞后，务必逐条人工核对后方可使用。
+
+4. 药物剂量、配伍与相互作用等信息可能滞后于最新研究，用药前请以药品说明书为准，并在药师或上级医师指导下执行。
+
+5. 使用者因依赖本应用内容作出的任何医疗行为及其后果，由使用者自行承担。开发者不对因使用或误用本应用造成的任何直接或间接损失承担责任。
+
+6. 本应用为个人非商业化项目，数据默认存储于本地设备，请自行妥善备份。
+
+继续使用即表示您已阅读、理解并同意本声明。"""
+        AlertDialog.Builder(this, R.style.GlassDialog)
+            .setTitle("免责声明")
+            .setMessage(text)
+            .setPositiveButton("我知道了", null)
+            .show()
     }
 
     private fun dirSize(dir: File): Long {

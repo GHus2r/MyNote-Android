@@ -92,7 +92,8 @@ fun SettingsScreen(
     onQwenConfigClick: () -> Unit,
     onDeepseekConfigClick: () -> Unit,
     onBaichuanConfigClick: () -> Unit,
-    onCrashLogsClick: () -> Unit
+    onCrashLogsClick: () -> Unit,
+    onDisclaimerClick: () -> Unit
 ) {
     // 顶栏延伸到状态栏下方（与 View 层 LinearLayout 的 fitsSystemWindows 对齐）
     val view = LocalView.current
@@ -218,6 +219,12 @@ fun SettingsScreen(
             item(key = "deepseek_config") { ClickItem("DeepSeek AI 病历生成", onClick = onDeepseekConfigClick, backdrop = backdrop) }
             item(key = "baichuan_config") { ClickItem("百川 M3-Plus 医疗大模型", onClick = onBaichuanConfigClick, backdrop = backdrop) }
             item(key = "crash_logs") { ValueItem("导出崩溃日志", value = state.crashCountLabel, onClick = onCrashLogsClick, backdrop = backdrop) }
+
+            // 关于
+            item(key = "h8") { GroupHeader("关于") }
+            item(key = "disclaimer") {
+                ClickItem("免责声明", sub = "使用前请阅读", onClick = onDisclaimerClick, backdrop = backdrop)
+            }
         }
 
         // 3) 圆角玻璃顶栏：底部 20dp 圆角 + 真玻璃，滚动内容从下方穿过时被模糊透出；
