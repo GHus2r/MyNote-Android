@@ -261,6 +261,42 @@
                 android:resource="@xml/widget_mynote_info" />
         </receiver>
 
+        <!-- 桌面图标样式小组件（可调大小）：2×2 -->
+        <receiver
+            android:name=".ui.widget.MyNoteIconWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_icon_info" />
+        </receiver>
+
+        <!-- 桌面图标样式小组件：4×4 -->
+        <receiver
+            android:name=".ui.widget.MyNoteIconWidgetLarge"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_icon_4x4_info" />
+        </receiver>
+
+        <!-- 桌面图标样式小组件：4×5 -->
+        <receiver
+            android:name=".ui.widget.MyNoteIconWidgetTall"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_icon_4x5_info" />
+        </receiver>
+
         <!-- 摇一摇快速录音 -->
         <service
             android:name=".ui.recording.QuickRecordService"

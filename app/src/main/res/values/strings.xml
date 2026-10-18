@@ -4,4 +4,7 @@
 
     <!-- 小部件 -->
     <string name="widget_description">快速查看最新笔记并新建笔记</string>
+    <string name="widget_icon_description">MyNote 图标入口（2×2，可任意拉伸）</string>
+    <string name="widget_icon_4x4_description">MyNote 大图标（4×4，带统计与快捷新建）</string>
+    <string name="widget_icon_4x5_description">MyNote 大图标（4×5，含最近编辑的笔记）</string>
 </resources>

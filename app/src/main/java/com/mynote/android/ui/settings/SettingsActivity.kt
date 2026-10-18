@@ -419,7 +419,8 @@ class SettingsActivity : BaseActivity() {
         val icons = arrayOf(
             "默认图标" to R.mipmap.ic_launcher,
             "极简绿点" to R.drawable.ic_shortcut_minimal,
-            "MN 文字" to R.drawable.ic_shortcut_mn
+            "MN 文字" to R.drawable.ic_shortcut_mn,
+            "玻璃书（新）" to R.mipmap.ic_shortcut_glass
         )
         AlertDialog.Builder(this, R.style.GlassDialog)
             .setTitle("选择图标样式")
@@ -432,7 +433,7 @@ class SettingsActivity : BaseActivity() {
 
     private fun createShortcutWithIcon(iconRes: Int) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            createShortcutLegacy()
+            createShortcutLegacy(iconRes)
             return
         }
         try {
@@ -468,7 +469,7 @@ class SettingsActivity : BaseActivity() {
     }
 
     @Suppress("DEPRECATION")
-    private fun createShortcutLegacy() {
+    private fun createShortcutLegacy(iconRes: Int = R.mipmap.ic_launcher) {
         try {
             val intent = Intent(this, LockActivity::class.java).apply {
                 action = Intent.ACTION_MAIN
@@ -479,7 +480,7 @@ class SettingsActivity : BaseActivity() {
             val shortcutIntent = Intent("com.android.launcher.action.INSTALL_SHORTCUT").apply {
                 putExtra(Intent.EXTRA_SHORTCUT_NAME, "MN")
                 putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE,
-                    Intent.ShortcutIconResource.fromContext(this@SettingsActivity, R.mipmap.ic_launcher))
+                    Intent.ShortcutIconResource.fromContext(this@SettingsActivity, iconRes))
                 putExtra(Intent.EXTRA_SHORTCUT_INTENT, intent)
                 putExtra("duplicate", false)
             }

@@ -381,6 +381,7 @@ class MainActivity : BaseActivity() {
         }
         refreshNotes()
         try { com.mynote.android.ui.widget.MyNoteWidget.refreshAll(this) } catch (_: Exception) {}
+        try { com.mynote.android.ui.widget.MyNoteIconWidget.refreshAll(this) } catch (_: Exception) {}
         applyBackground()
     }
 
@@ -530,7 +531,7 @@ class MainActivity : BaseActivity() {
                     color = color
                 )
                 db.categoryDao().insertSubCategory(sub)
-                allSubs = db.categoryDao().getSubCategories(currentParentId!!)
+                allSubs = db.categoryDao().getAllSubCategories()
                 refreshUI()
             }
         }.show(supportFragmentManager, "addSub")
@@ -542,7 +543,7 @@ class MainActivity : BaseActivity() {
         CategoryEditDialog("编辑子主题", sub.name, initialColor) { name, color ->
             lifecycleScope.launch {
                 db.categoryDao().updateSubCategory(sub.copy(name = name, color = color))
-                allSubs = db.categoryDao().getSubCategories(currentParentId ?: "")
+                allSubs = db.categoryDao().getAllSubCategories()
                 refreshUI()
             }
         }.show(supportFragmentManager, "editSub")
@@ -553,7 +554,7 @@ class MainActivity : BaseActivity() {
             lifecycleScope.launch {
                 db.categoryDao().insertSubCategory(sub.copy(parentId = target.id))
                 db.categoryDao().deleteSubCategory(sub)
-                allSubs = db.categoryDao().getSubCategories(currentParentId ?: "")
+                allSubs = db.categoryDao().getAllSubCategories()
                 allNotes = allNotes.map { note ->
                     if (note.subCategoryId == sub.id) note.copy(subCategoryId = sub.id) else note
                 }.also { updateNoteCounts() }
@@ -569,7 +570,7 @@ class MainActivity : BaseActivity() {
                 try {
                     db.categoryDao().deleteSubCategory(sub)
                     if (currentSubId == sub.id) currentSubId = null
-                    allSubs = db.categoryDao().getSubCategories(currentParentId ?: "")
+                    allSubs = db.categoryDao().getAllSubCategories()
                     loadData()
                     refreshUI()
                 } catch (e: Exception) {
@@ -594,7 +595,7 @@ class MainActivity : BaseActivity() {
         )
         lifecycleScope.launch {
             db.noteDao().insertNote(note)
-            allNotes = db.noteDao().getNotesBySubCategory(currentSubId ?: "")
+            allNotes = db.noteDao().getAllNotes()
             updateNoteCounts()
             openEditPage(noteId)
         }
@@ -953,7 +954,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
         )
         lifecycleScope.launch {
             db.noteDao().insertNote(note)
-            allNotes = db.noteDao().getNotesBySubCategory(currentSubId ?: "")
+            allNotes = db.noteDao().getAllNotes()
             updateNoteCounts()
             refreshNotes()
             refreshUI()

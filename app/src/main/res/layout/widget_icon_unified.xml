@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 唯一布局：所有尺寸档（1×1 ~ 4×5+）共用。
+     只渲染玻璃书图标，fitCenter 保证等比居中缩放（不变形/不裁切/不加元素），
+     无文字、无按钮、无背景卡片，整卡点击打开 App。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_icon_unified_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/app_icon_snapshot"
+        android:scaleType="fitCenter"
+        android:contentDescription="MyNote" />
+
+</FrameLayout>

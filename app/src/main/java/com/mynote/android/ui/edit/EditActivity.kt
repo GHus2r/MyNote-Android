@@ -1462,8 +1462,11 @@ ${d.treatment.split("、").joinToString("\n") { "　○ ${it.trim()}" }}
                 tvSaveStatus.text = "● 已保存"
                 updateWordCount()
                 try { com.mynote.android.ui.widget.MyNoteWidget.refreshAll(this@EditActivity) } catch (_: Exception) {}
-                // 自动备份到云
+                try { com.mynote.android.ui.widget.MyNoteIconWidget.refreshAll(this@EditActivity) } catch (_: Exception) {}
+                // 通知主页刷新（否则返回后笔记标题/列表仍显示旧数据）
                 val sp = com.mynote.android.util.Prefs(this@EditActivity)
+                sp.needsRefresh = true
+                // 自动备份到云
                 if (sp.backupAutoBackup && com.mynote.android.util.WebDAVBackup.isConfigured(this@EditActivity)) {
                     ioScope.launch { com.mynote.android.util.WebDAVBackup.uploadBackup(this@EditActivity) }
                 }

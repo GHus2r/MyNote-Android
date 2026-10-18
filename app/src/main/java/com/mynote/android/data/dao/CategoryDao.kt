@@ -56,6 +56,6 @@ interface CategoryDao {
     @Query("DELETE FROM sub_categories WHERE id = :id")
     suspend fun deleteSubCategoryById(id: String)
 
-    @Query("SELECT * FROM sub_categories")
+    @Query("SELECT * FROM sub_categories ORDER BY sortOrder ASC")
     suspend fun getAllSubCategories(): List<com.mynote.android.data.entity.SubCategory>
 }
