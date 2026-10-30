@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 玻璃对话框背景（API 31+：配合 windowBlurBehind 真模糊，半透明底让模糊透出） -->
+<!-- 玻璃对话框背景（API 31+：配合 windowBlurBehind 真模糊，半透明底让模糊透出）
+
+     保持 66% 不透明的原设计——这个值是"模糊一定生效"前提下的最佳通透感。
+     模糊失效的场景（鸿蒙）不走本文件：GlassCompat.dialogTheme() 会切换到
+     GlassDialogSolid 样式，引用完全没有透明度的 drawable/dialog_glass_solid_bg.xml。 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="#A8FFFFFF" />

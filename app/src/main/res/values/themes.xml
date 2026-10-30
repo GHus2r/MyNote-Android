@@ -46,11 +46,24 @@
 
     <!-- 玻璃对话框：API 31+ 系统级 windowBlurBehind 真模糊对话框后面的内容；
          低版本回退为高不透明度磨砂底（见 drawable/dialog_glass_bg.xml）。
-         values-v31/themes.xml 覆盖追加 blur 属性。 -->
+         values-v31/themes.xml 覆盖追加 blur 属性。
+
+         鸿蒙适配不在本样式里做：所有调用点统一走 GlassCompat.dialogTheme(context)，
+         由它在运行时判定是否支持 windowBlurBehind，不支持则切换到 GlassDialogSolid。
+         因此这里保持原值不动，原生 Android 观感不受影响。 -->
     <style name="GlassDialog" parent="Theme.Material3.DayNight.Dialog">
         <item name="android:windowBackground">@drawable/dialog_glass_bg</item>
         <item name="android:backgroundDimEnabled">true</item>
         <item name="android:backgroundDimAmount">0.10</item>
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
+    <!-- 玻璃对话框·实心底：供不支持背景模糊的设备（鸿蒙等）运行时降级使用。
+         与 GlassDialog 唯一差别是背景不透明，圆角/描边/dim 保持一致。 -->
+    <style name="GlassDialogSolid" parent="Theme.Material3.DayNight.Dialog">
+        <item name="android:windowBackground">@drawable/dialog_glass_solid_bg</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.32</item>
         <item name="android:windowIsTranslucent">true</item>
     </style>
 

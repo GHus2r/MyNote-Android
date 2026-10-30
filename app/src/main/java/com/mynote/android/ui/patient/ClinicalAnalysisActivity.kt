@@ -45,6 +45,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.mynote.android.ui.glass.GlassCompat
 
 /**
  * AI 临床辅助分析 — 多源融合推理结果展示页
@@ -275,7 +276,7 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
 
     /** 选择图片来源：拍照 / 相册 */
     private fun showImageSourceDialog() {
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("导入影像报告")
             .setItems(arrayOf("拍照", "从相册选择")) { _, which ->
                 if (which == 0) takePhoto() else pickImageLauncher.launch("image/*")
@@ -502,7 +503,7 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
             setHorizontallyScrolling(false)
             setPadding(16, 12, 16, 12)
         }
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("补充信息")
             .setView(input)
             .setPositiveButton("继续分析") { _, _ ->
@@ -733,7 +734,7 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
             ClinicalReasoningClient.ENGINE_M3PLUS,
             ClinicalReasoningClient.ENGINE_DEEPSEEK
         )
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("选择推理引擎")
             .setItems(labels) { _, which ->
                 currentEngine = engines[which]
@@ -766,7 +767,7 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
                     val date = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(r.createdAt))
                     "$date  $firstLine"
                 }.toTypedArray()
-                AlertDialog.Builder(this@ClinicalAnalysisActivity, R.style.GlassDialog)
+                AlertDialog.Builder(this@ClinicalAnalysisActivity, GlassCompat.dialogTheme(this@ClinicalAnalysisActivity))
                     .setTitle("分析历史（${records.size} 次）")
                     .setItems(items) { _, which -> showHistoryDetail(records[which]) }
                     .setNegativeButton("取消", null)
@@ -784,7 +785,7 @@ class ClinicalAnalysisActivity : AppCompatActivity() {
             setPadding(16, 12, 16, 12)
         }
         scroll.addView(tv)
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("AI 辅助分析")
             .setView(scroll)
             .setPositiveButton("关闭", null)

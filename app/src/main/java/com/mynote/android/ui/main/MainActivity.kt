@@ -34,6 +34,7 @@ import com.mynote.android.data.entity.ParentCategory
 import com.mynote.android.data.entity.SubCategory
 import com.mynote.android.ui.base.BaseActivity
 import com.mynote.android.ui.edit.EditActivity
+import com.mynote.android.ui.glass.GlassCompat
 import com.mynote.android.ui.main.adapter.NoteItemAdapter
 import com.mynote.android.ui.main.dialog.CategoryEditDialog
 import com.mynote.android.ui.main.dialog.DeletePasswordDialog
@@ -978,7 +979,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
         view.findViewById<TextView>(R.id.tv_dialog_subtitle).visibility = View.GONE
         etPwd.hint = ""
 
-        val dialog = AlertDialog.Builder(this, R.style.GlassDialog)
+        val dialog = AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setView(view)
             .create()
 
@@ -1154,7 +1155,9 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
             container.addView(groupContent)
             firstGroup = false
         }
-        dialog = AlertDialog.Builder(this, R.style.GlassDialog).setTitle("🛠 工具").setView(root as android.view.View)
+        // 鸿蒙适配：不支持 windowBlurBehind 时改用实心底样式，
+        // 否则半透明底失去模糊后，首页网格会穿透到弹窗上与文字重叠（华为 nova 14 / 鸿蒙 7 实测）。
+        dialog = AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("🛠 工具").setView(root as android.view.View)
             .setNegativeButton("关闭", null).create()
         dialog.show()
         dialog.window?.setLayout((resources.displayMetrics.widthPixels * 0.92).toInt(), (resources.displayMetrics.heightPixels * 0.78).toInt())
@@ -1259,7 +1262,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
             val sortedTags = tagCount.entries.sortedByDescending { it.value }
 
             if (sortedTags.isEmpty()) {
-                AlertDialog.Builder(this@MainActivity, R.style.GlassDialog)
+                AlertDialog.Builder(this@MainActivity, GlassCompat.dialogTheme(this@MainActivity))
                     .setTitle("标签管理")
                     .setMessage("暂无标签\n\n在笔记编辑页可添加标签（逗号分隔）")
                     .setPositiveButton("好的", null).show()
@@ -1267,7 +1270,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
             }
 
             val items = sortedTags.map { "${it.key}  (${it.value})" }.toTypedArray()
-            AlertDialog.Builder(this@MainActivity, R.style.GlassDialog)
+            AlertDialog.Builder(this@MainActivity, GlassCompat.dialogTheme(this@MainActivity))
                 .setTitle("标签管理 (${sortedTags.size})")
                 .setItems(items) { _, i ->
                     val tag = sortedTags[i].key
@@ -1279,7 +1282,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
     }
 
     private fun showTagActionsDialog(tag: String, count: Int) {
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("「$tag」($count 篇笔记)")
             .setItems(arrayOf("筛选此标签", "重命名", "删除")) { _, which ->
                 when (which) {
@@ -1318,7 +1321,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
             setText(oldTag); hint = "新标签名"
             setPadding(32, 16, 32, 16)
         }
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("重命名标签")
             .setView(et)
             .setPositiveButton("确认") { _, _ ->
@@ -1340,7 +1343,7 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
     }
 
     private fun showDeleteTagConfirmDialog(tag: String, count: Int) {
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("删除标签")
             .setMessage("确定删除标签「$tag」吗？将从 $count 篇笔记中移除此标签。笔记本身不会被删除。")
             .setPositiveButton("删除") { _, _ ->

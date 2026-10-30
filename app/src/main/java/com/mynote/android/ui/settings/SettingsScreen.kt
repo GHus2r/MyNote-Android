@@ -58,7 +58,9 @@ data class SettingsState(
     val patientCountLabel: String = "0人",
     val storageSizeLabel: String = "计算中...",
     val crashCountLabel: String = "0条",
-    val antiUninstallHint: String = "激活后可防止恶意卸载"
+    val antiUninstallHint: String = "激活后可防止恶意卸载",
+    /** 当前弹窗玻璃模式的可读文案：自动 / 玻璃 / 实心 */
+    val glassModeLabel: String = "自动"
 )
 
 /**
@@ -93,6 +95,7 @@ fun SettingsScreen(
     onDeepseekConfigClick: () -> Unit,
     onBaichuanConfigClick: () -> Unit,
     onCrashLogsClick: () -> Unit,
+    onGlassModeClick: () -> Unit,
     onDisclaimerClick: () -> Unit
 ) {
     // 顶栏延伸到状态栏下方（与 View 层 LinearLayout 的 fitsSystemWindows 对齐）
@@ -210,6 +213,17 @@ fun SettingsScreen(
             // 存储与清理
             item(key = "h6") { GroupHeader("存储与清理") }
             item(key = "storage") { ValueItem("占用空间", value = state.storageSizeLabel, onClick = onStorageClick, backdrop = backdrop) }
+
+            // 显示效果（鸿蒙适配兜底）
+            item(key = "h6a") { GroupHeader("显示效果") }
+            item(key = "glass_mode") {
+                ValueItem(
+                    "弹窗玻璃效果",
+                    value = state.glassModeLabel,
+                    onClick = onGlassModeClick,
+                    backdrop = backdrop
+                )
+            }
 
             // 开发工具
             item(key = "h7") { GroupHeader("开发工具") }

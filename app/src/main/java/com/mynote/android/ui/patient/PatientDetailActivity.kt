@@ -35,6 +35,7 @@ import com.mynote.android.util.DeepSeekClient
 import com.mynote.android.util.DeptRecordTemplate
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.mynote.android.ui.glass.GlassCompat
 
 class PatientDetailActivity : AppCompatActivity() {
 
@@ -154,7 +155,7 @@ class PatientDetailActivity : AppCompatActivity() {
             "诊断" to patient.diagnosis, "主诉" to patient.chiefComplaint).map { (h, v) ->
             EditText(this).apply { hint = h; setText(v); inputType = InputType.TYPE_CLASS_TEXT }.also { root.addView(it) }
         }
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("编辑患者")
             .setView(root)
             .setPositiveButton("保存") { _, _ ->
@@ -172,7 +173,7 @@ class PatientDetailActivity : AppCompatActivity() {
 
     private fun showFabMenu() {
         val items = arrayOf("AI 生成病历", "手动录入病历", "识别化验单", "导出病历数据", "打印病历", "体征趋势", "随访设置", "用药日历", "清空所有病历", "删除患者", "AI 辅助分析", "病历照片质控")
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setItems(items) { _, which ->
                 when (which) {
                     0 -> showAIGenerateDialog()
@@ -180,7 +181,7 @@ class PatientDetailActivity : AppCompatActivity() {
                     2 -> scanLabReport()
                     3 -> {
                         val fmts = arrayOf("TXT 纯文本", "MD Markdown", "DOCX Word", "PDF 正式排版")
-                        AlertDialog.Builder(this, R.style.GlassDialog)
+                        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
                             .setTitle("导出格式")
                             .setItems(fmts) { _, i -> exportRecords(when(i) { 1 -> "md"; 2 -> "docx"; 3 -> "pdf"; else -> "txt" }) }
                             .show()
@@ -190,7 +191,7 @@ class PatientDetailActivity : AppCompatActivity() {
                     6 -> showFollowupDialog()
                     7 -> showMedicationCalendar()
                     8 -> {
-                        AlertDialog.Builder(this, R.style.GlassDialog)
+                        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
                             .setTitle("清空病历")
                             .setMessage("删除「${patient.name}」的全部病历记录？")
                             .setPositiveButton("清空") { _, _ ->
@@ -199,7 +200,7 @@ class PatientDetailActivity : AppCompatActivity() {
                             }.setNegativeButton("取消", null).show()
                     }
                     9 -> {
-                        AlertDialog.Builder(this, R.style.GlassDialog)
+                        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
                             .setTitle("确认删除")
                             .setMessage("删除「${patient.name}」和所有病历？")
                             .setPositiveButton("删除") { _, _ ->
@@ -240,7 +241,7 @@ class PatientDetailActivity : AppCompatActivity() {
         btnBar.addView(btnImport)
         root.addView(btnBar)
 
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("录入病历")
             .setView(root)
             .setPositiveButton("保存") { _, _ ->
@@ -259,20 +260,20 @@ class PatientDetailActivity : AppCompatActivity() {
         val cats = mutableListOf("通用模板")
         cats.addAll(deptGroups.keys.map { "${it}·专科" })
 
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("选择模板")
             .setItems(cats.toTypedArray()) { _, ci ->
                 if (ci == 0) {
                     val temps = com.mynote.android.util.TemplateManager.getAll()
                     val items = temps.map { it.title }.toTypedArray()
-                    AlertDialog.Builder(this, R.style.GlassDialog).setTitle("通用模板")
+                    AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("通用模板")
                         .setItems(items) { _, i -> onPicked(temps[i].content) }
                         .setNegativeButton("返回") { _, _ -> showTemplatePicker(onPicked) }.show()
                 } else {
                     val dept = cats[ci].removeSuffix("·专科")
                     val group = deptGroups[dept] ?: return@setItems
                     val items = group.map { it.title }.toTypedArray()
-                    AlertDialog.Builder(this, R.style.GlassDialog).setTitle("${dept}·专科")
+                    AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("${dept}·专科")
                         .setItems(items) { _, i -> onPicked(group[i].content) }
                         .setNegativeButton("返回") { _, _ -> showTemplatePicker(onPicked) }.show()
                 }
@@ -304,7 +305,7 @@ class PatientDetailActivity : AppCompatActivity() {
         root.addView(btns)
 
         val score = com.mynote.android.util.RecordScorer.score(record.type, record.content)
-        val dialog = AlertDialog.Builder(this, R.style.GlassDialog)
+        val dialog = AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("${record.type}  ${if(record.generatedBy == "AI") "AI" else "手动"}  ${com.mynote.android.util.RecordScorer.starLabel(score.total)}")
             .setView(root)
             .setCancelable(true)
@@ -347,7 +348,7 @@ class PatientDetailActivity : AppCompatActivity() {
             minLines = 12; gravity = android.view.Gravity.TOP; textSize = 14f
         }
         root.addView(et)
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("编辑 ${record.type}")
             .setView(root)
             .setPositiveButton("保存") { _, _ ->
@@ -402,7 +403,7 @@ class PatientDetailActivity : AppCompatActivity() {
         }
         scrollView.addView(root)
 
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("补全待补充内容（${pending.size}项）")
             .setView(scrollView)
             .setPositiveButton("回填") { _, _ ->
@@ -499,7 +500,7 @@ class PatientDetailActivity : AppCompatActivity() {
                 "体格检查")
         )
         val items = actions.map { it.first }.toTypedArray()
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("AI 润色 · ${record.type}")
             .setItems(items) { _, i ->
                 val (title, instruction, resultLabel) = actions[i]
@@ -583,7 +584,7 @@ class PatientDetailActivity : AppCompatActivity() {
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         root.addView(hint); root.addView(scroll)
 
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("润色结果 · ${record.type}（$label）")
             .setView(root)
             .setPositiveButton("保存") { _, _ ->
@@ -604,7 +605,7 @@ class PatientDetailActivity : AppCompatActivity() {
     private fun showAuditDialog(record: MedicalRecord) {
         val issues = auditRecord(record.content)
         if (issues.isEmpty()) {
-            AlertDialog.Builder(this, R.style.GlassDialog)
+            AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
                 .setTitle("审校结果")
                 .setMessage("✅ 未发现明显问题")
                 .setPositiveButton("好的", null).show()
@@ -616,7 +617,7 @@ class PatientDetailActivity : AppCompatActivity() {
             val icon = if (severity == "error") { errCount++; "❌" } else { warnCount++; "⚠️" }
             sb.append("$icon $msg\n")
         }
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("审校结果（${errCount}个错误 ${warnCount}个提醒）")
             .setMessage(sb.toString())
             .setPositiveButton("关闭", null)
@@ -698,7 +699,7 @@ class PatientDetailActivity : AppCompatActivity() {
     }
 
     private fun deleteRecord(record: MedicalRecord) {
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("删除病历")
             .setMessage("删除这条${record.type}？")
             .setPositiveButton("删除") { _, _ ->
@@ -790,7 +791,7 @@ class PatientDetailActivity : AppCompatActivity() {
         }
         scroll.addView(root)
 
-        val dialog = AlertDialog.Builder(this, R.style.GlassDialog)
+        val dialog = AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle(title)
             .setView(scroll)
             .setPositiveButton("下一步") { _, _ ->
@@ -800,7 +801,7 @@ class PatientDetailActivity : AppCompatActivity() {
                 }
                 // 询问是否收藏
                 if (favs.none { it == selectedTypes.joinToString(" + ") }) {
-                    AlertDialog.Builder(this, R.style.GlassDialog)
+                    AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
                         .setTitle("收藏此组合？")
                         .setMessage("保存「${selectedTypes.joinToString(" + ")}」为快捷收藏，下次一键选择。")
                         .setPositiveButton("收藏") { _, _ ->
@@ -850,7 +851,7 @@ class PatientDetailActivity : AppCompatActivity() {
             addView(root)
         }
 
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("补充临床信息（可选）")
             .setView(scroll)
             .setPositiveButton("开始生成") { _, _ ->
@@ -946,7 +947,7 @@ class PatientDetailActivity : AppCompatActivity() {
         streamTv = tv; scroll.addView(tv)
         streamScroll = scroll
 
-        val dialog = AlertDialog.Builder(this, R.style.GlassDialog)
+        val dialog = AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle(dialogTitle)
             .setView(scroll)
             .setPositiveButton(label, null)
@@ -1025,7 +1026,7 @@ class PatientDetailActivity : AppCompatActivity() {
         }
         scroll.addView(tv)
 
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("生成结果")
             .setView(scroll)
             .setPositiveButton("保存病历") { _, _ -> saveGeneratedRecords(rawText) }
@@ -1096,7 +1097,7 @@ class PatientDetailActivity : AppCompatActivity() {
                 sb.append(p.joinToString(" | ")).append("\n")
             }
             withContext(Dispatchers.Main) {
-                AlertDialog.Builder(this@PatientDetailActivity, R.style.GlassDialog)
+                AlertDialog.Builder(this@PatientDetailActivity, GlassCompat.dialogTheme(this@PatientDetailActivity))
                     .setTitle("体征趋势（近90天）")
                     .setMessage(sb.toString())
                     .setPositiveButton("关闭", null).show()
@@ -1125,7 +1126,7 @@ class PatientDetailActivity : AppCompatActivity() {
                         loadRecords()
                     }
                     withContext(Dispatchers.Main) {
-                        AlertDialog.Builder(this@PatientDetailActivity, R.style.GlassDialog)
+                        AlertDialog.Builder(this@PatientDetailActivity, GlassCompat.dialogTheme(this@PatientDetailActivity))
                             .setTitle("AI 校准完成")
                             .setMessage(displayText)
                             .setPositiveButton("保存") { _, _ ->
@@ -1137,7 +1138,7 @@ class PatientDetailActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         val p = com.mynote.android.util.Prefs(this@PatientDetailActivity)
                         if (p.qwenApiKey.isEmpty()) {
-                            AlertDialog.Builder(this@PatientDetailActivity, R.style.GlassDialog)
+                            AlertDialog.Builder(this@PatientDetailActivity, GlassCompat.dialogTheme(this@PatientDetailActivity))
                                 .setTitle("未配置 Qwen API")
                                 .setMessage("请先在设置→AI配置中填写阿里云(Qwen) API Key")
                                 .setPositiveButton("确定", null).show()
@@ -1199,7 +1200,7 @@ class PatientDetailActivity : AppCompatActivity() {
                         loadVitalSummary(); loadRecords()
                         Toast.makeText(this@PatientDetailActivity, "识别成功！已保存", Toast.LENGTH_SHORT).show()
                         // 提供 AI 校准选项
-                        AlertDialog.Builder(this@PatientDetailActivity, R.style.GlassDialog)
+                        AlertDialog.Builder(this@PatientDetailActivity, GlassCompat.dialogTheme(this@PatientDetailActivity))
                             .setTitle("识别成功")
                             .setMessage("本地 OCR 已保存。\n是否使用 AI 校准提高准确率？")
                             .setPositiveButton("不需要") { _, _ -> }
@@ -1215,7 +1216,7 @@ class PatientDetailActivity : AppCompatActivity() {
                         val et = EditText(this@PatientDetailActivity).apply { setText(rawText); inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE; minLines = 10; maxLines = 20; gravity = android.view.Gravity.TOP; setTypeface(Typeface.MONOSPACE); textSize = 11f; setHorizontallyScrolling(true) }
                         root.addView(TextView(this@PatientDetailActivity).apply { text = "识别文字如下，可修改后重新解析："; textSize = 12f; setTextColor(Color.GRAY); setPadding(0,0,0,4) })
                         root.addView(et)
-                        AlertDialog.Builder(this@PatientDetailActivity, R.style.GlassDialog).setTitle("手动修正").setView(root)
+                        AlertDialog.Builder(this@PatientDetailActivity, GlassCompat.dialogTheme(this@PatientDetailActivity)).setTitle("手动修正").setView(root)
                             .setPositiveButton("重新解析") { _, _ ->
                                 val txt = et.text.toString()
                                 val vt = com.mynote.android.util.VitalSignsParser.parse(patientId, 0, txt)
@@ -1547,7 +1548,7 @@ class PatientDetailActivity : AppCompatActivity() {
         val fields = listOf("体温 ℃","脉搏","呼吸","收缩压","舒张压","SpO₂","HbA1c","肌酐","eGFR","K⁺","Na⁺","Hb")
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(40, 12, 40, 0) }
         val ets = fields.map { EditText(this).apply { hint = it; inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL; setSingleLine(true) }.also { root.addView(it) } }
-        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("逐项输入").setView(root)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("逐项输入").setView(root)
             .setPositiveButton("保存") { _, _ ->
                 val vs = com.mynote.android.data.entity.VitalSigns(patientId=patientId, recordId=0,
                     temperature=ets[0].text.toString().toDoubleOrNull(), pulse=ets[1].text.toString().toIntOrNull(),
@@ -1599,7 +1600,7 @@ class PatientDetailActivity : AppCompatActivity() {
                 drugs.sorted().forEachIndexed { i, d -> sb.append("${i+1}. $d\n") }
                 sb.append("\n⚠️ 从病历自动提取，仅供参考")
             }
-            AlertDialog.Builder(this@PatientDetailActivity, R.style.GlassDialog)
+            AlertDialog.Builder(this@PatientDetailActivity, GlassCompat.dialogTheme(this@PatientDetailActivity))
                 .setTitle("用药日历").setMessage(sb.toString()).setPositiveButton("关闭", null).show()
         }
     }
@@ -1611,7 +1612,7 @@ class PatientDetailActivity : AppCompatActivity() {
         val et = EditText(this).apply { hint = "yyyy-MM-dd"; setSingleLine(true); if (current.isNotEmpty()) setText(current) }
         root.addView(et)
         root.addView(TextView(this).apply { text = if (current.isNotEmpty()) "当前: $current" else "未设置"; textSize = 12f; setTextColor(Color.GRAY); setPadding(0, 8, 0, 0) })
-        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("随访提醒").setView(root)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("随访提醒").setView(root)
             .setPositiveButton("保存") { _, _ ->
                 val d = et.text.toString().trim()
                 prefs.edit().putString("followup_$patientId", d).apply()
@@ -1741,7 +1742,7 @@ class PatientDetailActivity : AppCompatActivity() {
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(40, 16, 40, 0) }
         root.addView(et)
 
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("继续改写")
             .setView(root)
             .setPositiveButton("发送") { _, _ ->

@@ -42,6 +42,7 @@ import kotlinx.coroutines.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import com.mynote.android.ui.glass.GlassCompat
 
 class MeetingActivity : AppCompatActivity() {
 
@@ -421,7 +422,7 @@ class MeetingActivity : AppCompatActivity() {
 
     private fun showAddParticipant() {
         val input = EditText(this).apply { hint = "姓名"; setSingleLine(); setPadding(18, 14, 18, 14); textSize = 14f }
-        val dlg = android.app.AlertDialog.Builder(this, R.style.GlassDialog)
+        val dlg = android.app.AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("添加参会人")
             .setView(input)
             .setPositiveButton("添加") { _, _ ->

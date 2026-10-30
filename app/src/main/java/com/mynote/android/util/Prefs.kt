@@ -174,6 +174,20 @@ class Prefs(context: Context) {
         get() = false
         set(_) = Unit
 
+    /**
+     * 弹窗玻璃效果模式（鸿蒙适配的用户手动兜底）。
+     *
+     * - `auto`（默认）：按 [com.mynote.android.ui.glass.GlassCompat] 自动检测
+     * - `glass`：强制玻璃样式（真模糊 + 半透明底）
+     * - `solid`：强制实心底（牺牲玻璃感换取可读性）
+     *
+     * 存在意义：自动检测无法 100% 命中所有 ROM（尤其 APK 跑在安卓兼容容器中的场景），
+     * 万一某个设备漏判露出穿透问题，用户可以自行切到 solid 自救。
+     */
+    var glassMode: String
+        get() = sp.getString(KEY_GLASS_MODE, "auto") ?: "auto"
+        set(value) = sp.edit().putString(KEY_GLASS_MODE, value).apply()
+
     /** 用户已点过"暂不"创建快捷方式，之后不再弹窗 */
     var shortcutPromptDismissed: Boolean
         get() = sp.getBoolean(KEY_SHORTCUT_PROMPT_DISMISSED, false)
@@ -269,6 +283,7 @@ class Prefs(context: Context) {
         private const val KEY_WEBDAV_AUTO = "webdav_auto_backup"
         private const val KEY_LAST_BACKUP_TIME = "last_backup_time"
         private const val KEY_AUTO_SYNC = "auto_sync_to_pc"
+        private const val KEY_GLASS_MODE = "glass_mode"
 
         private const val KEY_DARK_MODE = "dark_mode"
         private const val KEY_SHORTCUT_PROMPT_DISMISSED = "shortcut_prompt_dismissed"

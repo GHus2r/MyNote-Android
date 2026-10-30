@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 玻璃对话框背景·夜间（API 31+：配合 windowBlurBehind 真模糊） -->
+<!-- 玻璃对话框背景·夜间（API 31+：配合 windowBlurBehind 真模糊）
+
+     保持 70% 不透明的原设计；模糊失效的场景（鸿蒙）由 GlassCompat 在运行时
+     切换到 GlassDialogSolid，引用 drawable-night/dialog_glass_solid_bg.xml。 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="#B31C1A1F" />

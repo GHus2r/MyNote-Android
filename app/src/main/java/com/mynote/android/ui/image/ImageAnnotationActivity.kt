@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.mynote.android.R
 import java.io.File
 import java.io.FileOutputStream
+import com.mynote.android.ui.glass.GlassCompat
 
 /**
  * 图片标注 — 在 CT/B超/胸片等图上画箭头、圈注、写字
@@ -144,7 +145,7 @@ class ImageAnnotationActivity : AppCompatActivity() {
             hint = "输入标注文字"
             setSelectAllOnFocus(true)
         }
-        android.app.AlertDialog.Builder(this, R.style.GlassDialog)
+        android.app.AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("添加文字标注")
             .setView(input)
             .setPositiveButton("确定") { _, _ ->

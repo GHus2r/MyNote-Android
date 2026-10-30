@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.mynote.android.ui.glass.GlassCompat
 
 /**
  * Office 文档查看器
@@ -234,7 +235,7 @@ class OfficeViewerActivity : AppCompatActivity() {
                 if (selText.isNotEmpty()) setText(selText)
                 setSelectAllOnFocus(true)
             }
-            android.app.AlertDialog.Builder(this, R.style.GlassDialog)
+            android.app.AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
                 .setTitle("查找文本")
                 .setView(input)
                 .setPositiveButton("查找") { _, _ ->
@@ -298,7 +299,7 @@ class OfficeViewerActivity : AppCompatActivity() {
                 setText(text.take(200))
                 setSelection(0, text.take(200).length)
             }
-            android.app.AlertDialog.Builder(this, R.style.GlassDialog)
+            android.app.AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
                 .setTitle("导出编辑内容")
                 .setMessage("导出为笔记或复制全文？\n\n（不支持写回原始文件）")
                 .setPositiveButton("导出为笔记") { _, _ -> exportAsNote(text) }

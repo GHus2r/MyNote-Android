@@ -60,6 +60,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.mynote.android.ui.glass.GlassCompat
 
 class EditActivity : AppCompatActivity() {
 
@@ -366,7 +367,7 @@ class EditActivity : AppCompatActivity() {
         } else {
             arrayOf("查看", "删除")
         }
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle(label)
             .setItems(items) { _, which ->
                 when (which) {
@@ -400,7 +401,7 @@ class EditActivity : AppCompatActivity() {
             container.addView(btn)
         }
 
-        val dialog = AlertDialog.Builder(this, R.style.GlassDialog)
+        val dialog = AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("录音")
             .setView(container)
             .setNegativeButton("取消", null)
@@ -631,7 +632,7 @@ class EditActivity : AppCompatActivity() {
         container.addView(listView, LinearLayout.LayoutParams(
             android.view.ViewGroup.LayoutParams.MATCH_PARENT, 420.dp))
 
-        val dialog = AlertDialog.Builder(this, R.style.GlassDialog)
+        val dialog = AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("移动到笔记")
             .setView(container)
             .setNegativeButton("取消", null)
@@ -733,7 +734,7 @@ class EditActivity : AppCompatActivity() {
                 playVoice(path)
             }
             "pdf", "docx", "xlsx", "pptx" -> {
-                AlertDialog.Builder(this, R.style.GlassDialog)
+                AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
                     .setTitle("选择查看器")
                     .setItems(arrayOf("内置查看器", "系统查看器")) { _, w ->
                         when (w) {
@@ -782,7 +783,7 @@ class EditActivity : AppCompatActivity() {
             setPadding(16.dp, 16.dp, 16.dp, 4.dp)
             addView(input)
         }
-        val dialog = AlertDialog.Builder(this, R.style.GlassDialog)
+        val dialog = AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setView(wrap)
             .create()
         input.addTextChangedListener(object : android.text.TextWatcher {
@@ -899,7 +900,7 @@ class EditActivity : AppCompatActivity() {
             setOnClickListener { js("document.execCommand('removeFormat')") }
         }
         root.addView(clearBtn)
-        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("颜色").setView(root)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("颜色").setView(root)
             .setPositiveButton("关闭", null).show()
     }
 
@@ -916,14 +917,14 @@ class EditActivity : AppCompatActivity() {
         val cats = mutableListOf("通用模板（80+模板）")
         cats.addAll(deptGroups.keys.map { "${it}·专科" })
 
-        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("选择病历模板").setItems(cats.toTypedArray()) { _, ci ->
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("选择病历模板").setItems(cats.toTypedArray()) { _, ci ->
             if (ci == 0) {
                 showGenericTemplates()
             } else {
                 val dept = cats[ci].removeSuffix("·专科")
                 val group = deptGroups[dept] ?: return@setItems
                 val items = group.map { it.title }.toTypedArray()
-                AlertDialog.Builder(this, R.style.GlassDialog).setTitle("${dept}·专科")
+                AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("${dept}·专科")
                     .setItems(items) { _, i -> insertTemplate(group[i].title, group[i].content) }
                     .setNegativeButton("返回") { _, _ -> showTemplatePicker() }
                     .show()
@@ -940,7 +941,7 @@ class EditActivity : AppCompatActivity() {
         root.addView(tv)
 
         fun showFiltered(filtered: List<com.mynote.android.util.TemplateManager.Template>) {
-            AlertDialog.Builder(this, R.style.GlassDialog).setTitle("通用模板").setView(root as android.view.View)
+            AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("通用模板").setView(root as android.view.View)
                 .setItems(filtered.map { t: com.mynote.android.util.TemplateManager.Template -> t.title }.toTypedArray()) { _, i -> insertTemplate(filtered[i].title, filtered[i].content) }
                 .setNegativeButton("返回") { _, _ -> showTemplatePicker() }
                 .show()
@@ -972,7 +973,7 @@ class EditActivity : AppCompatActivity() {
 
     private fun showPageTemplateDialog() {
         val items = arrayOf("空白", "横线本", "点阵本", "暗色底", "护眼绿")
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("选择页面模板")
             .setItems(items) { _, which ->
                 val style = arrayOf("blank", "lined", "dot", "dark", "green")[which]
@@ -985,7 +986,7 @@ class EditActivity : AppCompatActivity() {
     private fun showNumberedListDialog() {
         val items = arrayOf("1-3 项", "1-5 项", "1-7 项", "1-10 项")
         val counts = intArrayOf(3, 5, 7, 10)
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("插入编号")
             .setItems(items) { _, which ->
                 js("insertNumberedList(${counts[which]})")
@@ -1000,14 +1001,14 @@ class EditActivity : AppCompatActivity() {
         val groups = com.mynote.android.util.DrugReference.groups
 
         fun showCategoryDialog() {
-            AlertDialog.Builder(this, R.style.GlassDialog).setTitle("常用药速查 — 按分类")
+            AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("常用药速查 — 按分类")
                 .setItems(groups.mapIndexed { i, g -> "${i + 1}. $g" }.toTypedArray()) { _, gi ->
                     val group = groups[gi]
                     val groupDrugs = drugs.filter { it.group == group }
                     val items = groupDrugs.mapIndexed { i, d ->
                         "${i + 1}. ${d.name}     ${d.dosage}"
                     }.toTypedArray()
-                    AlertDialog.Builder(this, R.style.GlassDialog).setTitle("$group (${groupDrugs.size}种)")
+                    AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("$group (${groupDrugs.size}种)")
                         .setItems(items) { _, i -> showDrugDetail(groupDrugs[i]) }
                         .setNegativeButton("返回") { _, _ -> showCategoryDialog() }
                         .show()
@@ -1025,7 +1026,7 @@ class EditActivity : AppCompatActivity() {
             hint = "输入药品名称关键词"
             setSelectAllOnFocus(true)
         }
-        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("搜索药品")
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("搜索药品")
             .setView(input)
             .setPositiveButton("搜索") { _, _ ->
                 val kw = input.text.toString().trim().takeIf { it.isNotEmpty() } ?: return@setPositiveButton
@@ -1038,7 +1039,7 @@ class EditActivity : AppCompatActivity() {
                 val items = results.mapIndexed { i, d ->
                     "${i + 1}. ${d.name}  |  ${d.dosage}"
                 }.toTypedArray()
-                AlertDialog.Builder(this, R.style.GlassDialog)
+                AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
                     .setTitle("搜索结果: ${results.size} 种")
                     .setItems(items) { _, i -> showDrugDetail(results[i]) }
                     .setNegativeButton("关闭", null).show()
@@ -1047,7 +1048,7 @@ class EditActivity : AppCompatActivity() {
     }
 
     private fun showDrugDetail(d: com.mynote.android.util.DrugReference.Drug) {
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle(d.name)
             .setMessage("【用法用量】${d.dosage}\n【适应症】${d.indications}\n【禁忌】${d.contraindications}\n【注意】${d.caution}")
             .setPositiveButton("插入笔记") { _, _ ->
@@ -1072,7 +1073,7 @@ class EditActivity : AppCompatActivity() {
     private fun shareNote() {
         val title = safeFileName(etTitle.text.toString().trim().ifEmpty { "笔记" })
         val items = arrayOf("TXT (纯文本)", "Markdown (.md)")
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("分享 $title")
             .setItems(items) { _, which ->
                 val ext = if (which == 0) "txt" else "md"
@@ -1114,7 +1115,7 @@ class EditActivity : AppCompatActivity() {
     private fun showExportDialog() {
         val title = safeFileName(etTitle.text.toString().trim().ifEmpty { "笔记" })
         val items = arrayOf("PDF (打印/另存)", "Word (.docx)", "TXT (纯文本)", "Markdown (.md)")
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("导出 $title")
             .setItems(items) { _, which ->
                 when (which) {
@@ -1145,7 +1146,7 @@ class EditActivity : AppCompatActivity() {
             setLineSpacing(4f, 1f)
         }
         scrollView.addView(tv)
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("预览: $title.$format")
             .setView(scrollView, 32, 16, 32, 0)
             .setPositiveButton("导出") { _, _ -> onExport() }
@@ -1222,15 +1223,15 @@ class EditActivity : AppCompatActivity() {
         val depts = diseases.map { it.department }.distinct()
 
         fun showDeptDialog() {
-            AlertDialog.Builder(this, R.style.GlassDialog).setTitle("疾病速查 — 按科室")
+            AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("疾病速查 — 按科室")
                 .setItems(depts.mapIndexed { i, d -> "${i + 1}. $d" }.toTypedArray()) { _, di ->
                     val dept = depts[di]
                     val deptDiseases = diseases.filter { it.department == dept }
                     val items = deptDiseases.mapIndexed { i, d -> "${i + 1}. ${d.name}" }.toTypedArray()
-                    AlertDialog.Builder(this, R.style.GlassDialog).setTitle("$dept (${deptDiseases.size}种)")
+                    AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("$dept (${deptDiseases.size}种)")
                         .setItems(items) { _, i ->
                             val d = deptDiseases[i]
-                            AlertDialog.Builder(this, R.style.GlassDialog)
+                            AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
                                 .setTitle(d.name)
                                 .setMessage("【核心症状】${d.symptoms}\n【鉴别诊断】${d.differential}\n【常用药物】${d.drugs}\n【治疗手段】${d.treatment}")
                                 .setPositiveButton("插入笔记") { _, _ ->
@@ -1808,7 +1809,7 @@ function setPageTemplate(style){
     }
     // ===== 视频入口（录制 / 相册） =====
     private fun showVideoPicker() {
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("添加视频")
             .setItems(arrayOf("拍摄视频", "从相册选择")) { _, which ->
                 when (which) {
@@ -2154,7 +2155,7 @@ function setPageTemplate(style){
         root.addView(tvStatus)
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
 
-        val dialog = AlertDialog.Builder(this, R.style.GlassDialog).setTitle("AI 辅助写作").setView(root)
+        val dialog = AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("AI 辅助写作").setView(root)
             .setPositiveButton("✍️ 发送", null)
             .setNegativeButton("取消", null).create()
 
@@ -2245,10 +2246,10 @@ function setPageTemplate(style){
     // ===== 处方模板 =====
     private fun showRxTemplates() {
         val rxs = com.mynote.android.util.PrescriptionTemplate.all
-        AlertDialog.Builder(this, R.style.GlassDialog).setTitle("处方模板 (${rxs.size})")
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle("处方模板 (${rxs.size})")
             .setItems(rxs.map { "[${it.dept}] ${it.title}" }.toTypedArray()) { _, i ->
                 val rx = rxs[i]
-                AlertDialog.Builder(this, R.style.GlassDialog).setTitle(rx.title)
+                AlertDialog.Builder(this, GlassCompat.dialogTheme(this)).setTitle(rx.title)
                     .setMessage("【${rx.dept}】\n\n${rx.content}")
                     .setPositiveButton("📋 插入处方") { _, _ ->
                         val html = "<div style='background:#FFF8E1;padding:12px 14px;border-radius:12px;margin:8px 0;border-left:4px solid #BF360C;font-family:monospace;font-size:14px;line-height:1.6;word-wrap:break-word'>${rx.content.replace("\n", "<br>")}</div><div><br></div>"
@@ -2266,7 +2267,7 @@ function setPageTemplate(style){
     private fun findOcrDialog(): android.app.Dialog? = ocrResultDialog
 
     private fun startOcrLabReport() {
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("化验单 OCR")
             .setMessage("拍照识别化验单，自动提取检验值并结构化插入")
             .setPositiveButton("拍照") { _, _ ->
@@ -2316,7 +2317,7 @@ function setPageTemplate(style){
                         } else {
                             cleaned
                         }
-                        AlertDialog.Builder(this@EditActivity, R.style.GlassDialog)
+                        AlertDialog.Builder(this@EditActivity, GlassCompat.dialogTheme(this@EditActivity))
                             .setTitle("AI 校准完成")
                             .setMessage(displayText)
                             .setPositiveButton("插入校准结果") { _, _ ->
@@ -2329,7 +2330,7 @@ function setPageTemplate(style){
                             .setNegativeButton("关闭", null).show()
                         val p = com.mynote.android.util.Prefs(this@EditActivity)
                         if (p.qwenApiKey.isEmpty()) {
-                            AlertDialog.Builder(this@EditActivity, R.style.GlassDialog)
+                            AlertDialog.Builder(this@EditActivity, GlassCompat.dialogTheme(this@EditActivity))
                                 .setTitle("未配置 Qwen API")
                                 .setMessage("请先在设置→AI配置中填写阿里云(Qwen) API Key")
                                 .setPositiveButton("确定", null).show()
@@ -2360,7 +2361,7 @@ function setPageTemplate(style){
                 withContext(Dispatchers.Main) {
                     if (results.isEmpty()) {
                         if (rawText.isBlank()) {
-                            AlertDialog.Builder(this@EditActivity, R.style.GlassDialog)
+                            AlertDialog.Builder(this@EditActivity, GlassCompat.dialogTheme(this@EditActivity))
                                 .setTitle("识别结果")
                                 .setMessage("未能识别出化验数据\n请确保图片清晰且包含中文化验单")
                                 .setPositiveButton("好的", null)
@@ -2406,7 +2407,7 @@ function setPageTemplate(style){
                             btnRow.addView(insertBtn)
                             btnRow.addView(closeBtn)
                             root.addView(btnRow)
-                            ocrResultDialog = AlertDialog.Builder(this@EditActivity, R.style.GlassDialog)
+                            ocrResultDialog = AlertDialog.Builder(this@EditActivity, GlassCompat.dialogTheme(this@EditActivity))
                                 .setTitle("本地识别到文字（未匹配化验项）")
                                 .setView(root)
                                 .create().also { it.show() }
@@ -2415,7 +2416,7 @@ function setPageTemplate(style){
                     }
                     val formatted = com.mynote.android.util.LabReportOcr.formatResults(results)
                     val dialogBmp = bmp // 持有引用供校准使用
-                    AlertDialog.Builder(this@EditActivity, R.style.GlassDialog)
+                    AlertDialog.Builder(this@EditActivity, GlassCompat.dialogTheme(this@EditActivity))
                         .setTitle("识别成功 (${results.size}项)")
                         .setMessage(formatted)
                         .setPositiveButton("插入") { _, _ ->

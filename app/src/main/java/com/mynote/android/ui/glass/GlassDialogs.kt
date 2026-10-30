@@ -15,10 +15,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.DialogFragment
 import dev.chrisbanes.haze.HazeState
@@ -42,6 +44,12 @@ object AppHaze {
  *
  * 官方 Dialog 模式要点：Dialog 里不能用 haze tint（tint 会显示成蒙在背景上的 scrim），
  * 改用半透明底色 + hazeEffect(HazeMaterials.regular()) 真模糊。
+ *
+ * **鸿蒙适配**：Haze 基于 RenderEffect，在鸿蒙上不生效。此时若仍用 alpha 0.28 的
+ * 半透明底，弹窗内容会与背后页面重叠、无法阅读。因此按 [GlassCompat.isHazeSupported]
+ * 二选一：
+ * - 支持模糊 → 低 alpha 半透明底 + hazeEffect（保留磨砂玻璃观感）
+ * - 不支持 → 高 alpha 近乎实心底，且不挂 hazeEffect（省掉无效渲染）
  */
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
@@ -50,18 +58,30 @@ fun GlassPanel(
     shape: Shape = RoundedCornerShape(28.dp),
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val context = LocalContext.current
+    val glassSupported = remember(context) { GlassCompat.isHazeSupported(context) }
     val isDark = isSystemInDarkTheme()
     Surface(
         modifier = modifier,
         shape = shape,
-        color = if (isDark) Color(0xFF1D1B20).copy(alpha = 0.45f)
-        else Color.White.copy(alpha = 0.28f),
+        color = when {
+            !glassSupported && isDark -> Color(0xFF1D1B20).copy(alpha = 0.95f)
+            !glassSupported -> Color.White.copy(alpha = 0.94f)
+            isDark -> Color(0xFF1D1B20).copy(alpha = 0.45f)
+            else -> Color.White.copy(alpha = 0.28f)
+        },
         contentColor = if (isDark) Color.White else Color(0xFF212121),
     ) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .hazeEffect(state = AppHaze.state, style = HazeMaterials.regular())
+                .then(
+                    if (glassSupported) {
+                        Modifier.hazeEffect(state = AppHaze.state, style = HazeMaterials.regular())
+                    } else {
+                        Modifier
+                    }
+                )
         ) {
             Column(
                 modifier = Modifier
@@ -77,7 +97,9 @@ fun GlassPanel(
  * 玻璃对话框基类：无框透明窗口 + ComposeView 承载 [GlassPanel] 内容。
  *
  * 子类只需实现 [Content]；调用方仍按原 DialogFragment 方式 `.show(supportFragmentManager, tag)`。
- * 轻微 dim（0.15）压暗背景，让玻璃的模糊/半透明更明显。
+ *
+ * **dim 取值（鸿蒙适配）**：支持模糊时用轻微 dim（0.15）压暗背景、凸显玻璃质感；
+ * 不支持模糊（鸿蒙）时改用标准 dim（0.32），配合 [GlassPanel] 的实心底保证可读性。
  */
 abstract class GlassDialogFragment : DialogFragment() {
 
@@ -100,9 +122,10 @@ abstract class GlassDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val glassSupported = GlassCompat.isHazeSupported(requireContext())
         dialog?.window?.apply {
             setBackgroundDrawable(ColorDrawable(AndroidColor.TRANSPARENT))
-            setDimAmount(0.15f)
+            setDimAmount(if (glassSupported) 0.15f else 0.32f)
         }
     }
 

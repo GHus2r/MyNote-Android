@@ -32,6 +32,7 @@ import com.mynote.android.util.MedicalRecordAuditor
 import com.mynote.android.util.Prefs
 import com.mynote.android.util.RecordScorer
 import kotlinx.coroutines.launch
+import com.mynote.android.ui.glass.GlassCompat
 
 /**
  * 病历照片质控分析页
@@ -271,7 +272,7 @@ class RecordAuditActivity : AppCompatActivity() {
         }
 
         if (Prefs(this).qwenApiKey.isBlank()) {
-            AlertDialog.Builder(this, R.style.GlassDialog)
+            AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
                 .setTitle("未配置 AI Key")
                 .setMessage("请先在「设置」中配置 Qwen（百炼）API Key，再使用病历质控功能。")
                 .setPositiveButton("知道了", null)
@@ -300,7 +301,7 @@ class RecordAuditActivity : AppCompatActivity() {
                 renderResult(r)
             }
             res.onFailure { e ->
-                AlertDialog.Builder(this@RecordAuditActivity, R.style.GlassDialog)
+                AlertDialog.Builder(this@RecordAuditActivity, GlassCompat.dialogTheme(this@RecordAuditActivity))
                     .setTitle("分析失败")
                     .setMessage(e.message ?: "未知错误，请检查网络后重试")
                     .setPositiveButton("知道了", null)
@@ -368,7 +369,7 @@ class RecordAuditActivity : AppCompatActivity() {
             setTextColor(BLUE)
             background = glassCardBg()
             setOnClickListener {
-                AlertDialog.Builder(this@RecordAuditActivity, R.style.GlassDialog)
+                AlertDialog.Builder(this@RecordAuditActivity, GlassCompat.dialogTheme(this@RecordAuditActivity))
                     .setTitle("识别原文（可溯源）")
                     .setMessage(r.ocrRawText.ifEmpty { "(空)" })
                     .setPositiveButton("关闭", null)

@@ -30,6 +30,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.mynote.android.ui.glass.GlassCompat
 
 class PatientListActivity : AppCompatActivity() {
 
@@ -134,7 +135,7 @@ class PatientListActivity : AppCompatActivity() {
         }
         edits.forEach { root.addView(it) }
 
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle(if (isEdit) "编辑患者" else "新增患者")
             .setView(root)
             .setPositiveButton("保存") { _, _ ->
@@ -158,7 +159,7 @@ class PatientListActivity : AppCompatActivity() {
     }
 
     private fun showDeleteDialog(patient: Patient) {
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("删除患者")
             .setMessage("确定删除「${patient.name}」及其所有病历吗？")
             .setPositiveButton("删除") { _, _ ->

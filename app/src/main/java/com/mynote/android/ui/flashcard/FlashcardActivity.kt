@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.mynote.android.R
 import java.util.UUID
+import com.mynote.android.ui.glass.GlassCompat
 
 class FlashcardActivity : AppCompatActivity() {
 
@@ -110,7 +111,7 @@ class FlashcardActivity : AppCompatActivity() {
             addView(frontInput, android.widget.LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = 12 })
             addView(backInput, android.widget.LinearLayout.LayoutParams(-1, -2))
         }
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("添加闪卡")
             .setView(layout)
             .setPositiveButton("添加") { _, _ ->
@@ -137,7 +138,7 @@ class FlashcardActivity : AppCompatActivity() {
             return
         }
         val items = all.mapIndexed { i, c -> "${i + 1}. ${c.front}" }.toTypedArray()
-        AlertDialog.Builder(this, R.style.GlassDialog)
+        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("全部卡片 (${all.size})")
             .setItems(items, null)
             .setPositiveButton("删除全部") { _, _ ->
