@@ -5,7 +5,7 @@ import os, subprocess, sys, time, shutil
 HOME = os.path.expanduser("~")
 PROJ = r"F:\NOTE\mynoteANDROID\MyNote-Android"
 GRADLE_BAT = os.path.join(HOME, ".gradle", "wrapper", "dists", "gradle-8.11.1-all",
-                          "9vw868uvf9tq4tqhctfxqdvjy", "gradle-8.11.1", "bin", "gradle.bat")
+                          "6gcpoccneql1b0krsle0llw37", "gradle-8.11.1", "bin", "gradle.bat")
 LOG = os.path.join(PROJ, "build_%d.log" % int(time.time()))
 
 # 1. kill lingering java processes
@@ -38,6 +38,8 @@ env = dict(os.environ)
 for k in list(env.keys()):
     if k.startswith("LSBOX_") or k in ("CODEBUDDY_SAFE_DELETE_SANDBOX", "NODE_OPTIONS", "BASH_ENV"):
         env.pop(k, None)
+# gradle.bat 启动脚本需要 JAVA_HOME；F 盘 studio jbr 是 JDK25 不能用，必须用 JDK17
+env["JAVA_HOME"] = r"C:\Users\Administrator\.jdks\jbr-17.0.14"
 
 # 4. build release APK
 cmd = [GRADLE_BAT, ":app:assembleRelease", "-x", "lintVitalRelease", "--no-daemon"]
