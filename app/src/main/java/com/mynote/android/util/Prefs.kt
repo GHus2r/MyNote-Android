@@ -168,6 +168,38 @@ class Prefs(context: Context) {
         get() = sp.getString(KEY_LAST_BACKUP_TIME, null)
         set(value) = sp.edit().putString(KEY_LAST_BACKUP_TIME, value).apply()
 
+    // ===== 定时自动云备份（每天固定时间点） =====
+    var autoBackupSchedule: Boolean
+        get() = sp.getBoolean(KEY_AUTO_BACKUP_SCHEDULE, false)
+        set(value) = sp.edit().putBoolean(KEY_AUTO_BACKUP_SCHEDULE, value).apply()
+
+    var autoBackupHour: Int
+        get() = sp.getInt(KEY_AUTO_BACKUP_HOUR, 2)
+        set(value) = sp.edit().putInt(KEY_AUTO_BACKUP_HOUR, value).apply()
+
+    var autoBackupMinute: Int
+        get() = sp.getInt(KEY_AUTO_BACKUP_MINUTE, 0)
+        set(value) = sp.edit().putInt(KEY_AUTO_BACKUP_MINUTE, value).apply()
+
+    /**
+     * 「追加恢复」时写入的笔记 id 集合。
+     * 这些笔记是刚从云端恢复下来的，自动备份（保存时/定时）会跳过它们，
+     * 避免把恢复的内容重新上传到云端形成重复备份。
+     * 用户手动「立即备份」后清除标记，之后恢复正常参与备份。
+     */
+    var restoredNoteIds: Set<String>
+        get() = sp.getStringSet(KEY_RESTORED_NOTE_IDS, emptySet())?.toSet() ?: emptySet()
+        set(value) = sp.edit().putStringSet(KEY_RESTORED_NOTE_IDS, value).apply()
+
+    fun addRestoredNoteIds(ids: Collection<String>) {
+        if (ids.isEmpty()) return
+        restoredNoteIds = restoredNoteIds + ids
+    }
+
+    fun clearRestoredNoteIds() {
+        sp.edit().remove(KEY_RESTORED_NOTE_IDS).apply()
+    }
+
     // ===== 外观 =====
     @Deprecated("暗色模式已移除", ReplaceWith("false"))
     var darkMode: Boolean
@@ -282,6 +314,10 @@ class Prefs(context: Context) {
         private const val KEY_WEBDAV_PASS = "webdav_pass"
         private const val KEY_WEBDAV_AUTO = "webdav_auto_backup"
         private const val KEY_LAST_BACKUP_TIME = "last_backup_time"
+        private const val KEY_AUTO_BACKUP_SCHEDULE = "auto_backup_schedule"
+        private const val KEY_AUTO_BACKUP_HOUR = "auto_backup_hour"
+        private const val KEY_AUTO_BACKUP_MINUTE = "auto_backup_minute"
+        private const val KEY_RESTORED_NOTE_IDS = "restored_note_ids"
         private const val KEY_AUTO_SYNC = "auto_sync_to_pc"
         private const val KEY_GLASS_MODE = "glass_mode"
 

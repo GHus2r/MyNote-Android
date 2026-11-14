@@ -15,6 +15,8 @@ class BootReceiver : BroadcastReceiver() {
             if (prefs.quickRecordEnabled) {
                 QuickRecordService.start(context)
             }
+            // 定时云备份：闹钟在重启后会丢失，重新调度
+            AutoBackupScheduler.reschedule(context)
         }
     }
 }

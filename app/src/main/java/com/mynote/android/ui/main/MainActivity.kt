@@ -822,11 +822,34 @@ h2{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-top:40px
         if (!noteDir.exists()) return html
         var result = html
 
-        // 匹配 src="...notes/noteId/..." 的图片引用
+        // 匹配 src="...notes/noteId/..." 的图片引用（旧数据：绝对路径 src）
         val imgPattern = Regex("""src=["']([^"']*notes[/\\]$noteId[/\\][^"']+\.(jpg|jpeg|png|gif|webp))["']""", RegexOption.IGNORE_CASE)
         result = result.replace(imgPattern) { match ->
             val path = match.groupValues[1]
             val file = if (path.startsWith("/")) File(path) else File(noteDir, File(path).name)
+            if (file.exists() && file.length() < 5 * 1024 * 1024) {
+                try {
+                    val bytes = file.readBytes()
+                    val ext = file.extension.lowercase()
+                    val mime = when (ext) {
+                        "jpg", "jpeg" -> "image/jpeg"
+                        "png" -> "image/png"
+                        "gif" -> "image/gif"
+                        "webp" -> "image/webp"
+                        else -> "image/jpeg"
+                    }
+                    val b64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+                    "src=\"data:$mime;base64,$b64\""
+                } catch (e: Exception) { match.value }
+            } else match.value
+        }
+
+        // 匹配 src="image_xxx.jpg" 的相对文件名引用（insertImage 新写入、或迁移清洗后的数据）
+        // 此时图片文件就在 noteDir 下，按文件名定位后内嵌 base64
+        val relImgPattern = Regex("""src=["']([^"']+\.(jpg|jpeg|png|gif|webp))["']""", RegexOption.IGNORE_CASE)
+        result = result.replace(relImgPattern) { match ->
+            val fileName = File(match.groupValues[1]).name
+            val file = File(noteDir, fileName)
             if (file.exists() && file.length() < 5 * 1024 * 1024) {
                 try {
                     val bytes = file.readBytes()

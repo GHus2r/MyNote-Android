@@ -1,5 +1,6 @@
 package com.mynote.android.ui.settings
 
+import android.app.TimePickerDialog
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
@@ -36,6 +37,7 @@ import com.mynote.android.R
 import com.mynote.android.data.AppDatabase
 import com.mynote.android.ui.base.BaseActivity
 import com.mynote.android.ui.lock.LockActivity
+import com.mynote.android.util.AutoBackupScheduler
 import com.mynote.android.util.BackupManager
 import com.mynote.android.util.WebDAVBackup
 import com.mynote.android.util.CrashHandler
@@ -618,15 +620,50 @@ class SettingsActivity : BaseActivity() {
         }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         switchRow.addView(switchSync)
 
+        // 定时自动备份（每天固定时间点）
+        val switchSchedule = SwitchCompat(this).apply {
+            isChecked = prefs.autoBackupSchedule
+        }
+        val timeText = TextView(this).apply {
+            text = String.format(Locale.getDefault(), "%02d:%02d", prefs.autoBackupHour, prefs.autoBackupMinute)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+            setTextColor(Color.parseColor("#2196F3"))
+            setPadding(0, 0, 12, 0)
+        }
+        timeText.setOnClickListener {
+            TimePickerDialog(this@SettingsActivity, { _, h, m ->
+                prefs.autoBackupHour = h
+                prefs.autoBackupMinute = m
+                timeText.text = String.format(Locale.getDefault(), "%02d:%02d", h, m)
+                if (switchSchedule.isChecked) AutoBackupScheduler.schedule(this@SettingsActivity, h, m)
+            }, prefs.autoBackupHour, prefs.autoBackupMinute, true).show()
+        }
+        val scheduleRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = android.view.Gravity.CENTER_VERTICAL
+        }
+        scheduleRow.addView(TextView(this).apply {
+            text = "每天定时备份"; setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+        }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        scheduleRow.addView(timeText)
+        scheduleRow.addView(switchSchedule)
+
         layout.addView(statusText)
         layout.addView(switchRow)
+        layout.addView(scheduleRow)
 
         val builder = AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
             .setTitle("☁️ 坚果云备份")
             .setView(layout)
             .setPositiveButton("保存设置") { _, _ ->
                 prefs.backupAutoBackup = switchSync.isChecked
-                Toast.makeText(this, if (switchSync.isChecked) "自动云备份已启用" else "已关闭", Toast.LENGTH_SHORT).show()
+                prefs.autoBackupSchedule = switchSchedule.isChecked
+                AutoBackupScheduler.reschedule(this)
+                val msg = when {
+                    switchSchedule.isChecked -> "定时备份已开启：每天 ${String.format(Locale.getDefault(), "%02d:%02d", prefs.autoBackupHour, prefs.autoBackupMinute)}"
+                    switchSync.isChecked -> "保存时自动备份已开启"
+                    else -> "自动备份已关闭"
+                }
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
                 refreshUI()
             }
 
@@ -649,8 +686,18 @@ class SettingsActivity : BaseActivity() {
     private fun showRestoreFromCloud() {
         lifecycleScope.launch {
             Toast.makeText(this@SettingsActivity, "正在从坚果云读取备份列表...", Toast.LENGTH_SHORT).show()
-            val files = WebDAVBackup.listBackupFiles(this@SettingsActivity)
+            val listResult = WebDAVBackup.listBackupFiles(this@SettingsActivity)
             runOnUiThread {
+                val err = listResult.error
+                if (err != null) {
+                    AlertDialog.Builder(this@SettingsActivity, GlassCompat.dialogTheme(this@SettingsActivity))
+                        .setTitle("📥 云端备份列表")
+                        .setMessage("❌ $err")
+                        .setPositiveButton("确定", null)
+                        .show()
+                    return@runOnUiThread
+                }
+                val files = listResult.files
                 if (files.isEmpty()) {
                     AlertDialog.Builder(this@SettingsActivity, GlassCompat.dialogTheme(this@SettingsActivity))
                         .setTitle("📥 云端备份列表")
@@ -662,54 +709,75 @@ class SettingsActivity : BaseActivity() {
                 val labels = files.map { "${it.name}  (${it.time} · ${formatFileSize(it.size)})" }.toTypedArray()
                 AlertDialog.Builder(this@SettingsActivity, GlassCompat.dialogTheme(this@SettingsActivity))
                     .setTitle("📥 云端备份列表 (${files.size}个)")
-                    .setItems(labels) { _, which ->
-                        val f = files[which]
+                    .setItems(labels) { _, which -> confirmRestore(files[which]) }
+                    .setPositiveButton("⚡ 一键恢复最新") { _, _ -> confirmRestore(files.first()) }
+                    .setNegativeButton("取消", null)
+                    .show()
+            }
+        }
+    }
+
+    /** 点击单条备份：让用户选恢复方式（追加 / 覆盖 / 增量） */
+    private fun confirmRestore(f: WebDAVBackup.BackupFile) {
+        AlertDialog.Builder(this@SettingsActivity, GlassCompat.dialogTheme(this@SettingsActivity))
+            .setTitle("恢复方式\n${f.name}")
+            .setItems(arrayOf(
+                "⚡ 追加（生成「（备）」卡片）",
+                "覆盖当前数据",
+                "增量（只补本地没有的）"
+            )) { _, which ->
+                when (which) {
+                    0 -> doRestore(f, BackupManager.MODE_APPEND)
+                    1 -> {
+                        // 覆盖是危险操作，二次确认
                         AlertDialog.Builder(this@SettingsActivity, GlassCompat.dialogTheme(this@SettingsActivity))
-                            .setTitle("确认恢复")
-                            .setMessage("将从云端下载并恢复:\n${f.name}\n\n⚠️ 当前数据将被覆盖")
-                            .setPositiveButton("确认恢复") { _, _ ->
-                                lifecycleScope.launch {
-                                    Toast.makeText(this@SettingsActivity, "正在下载备份...", Toast.LENGTH_SHORT).show()
-                                    val json = WebDAVBackup.downloadBackup(this@SettingsActivity, f.path)
-                                    if (json != null) {
-                                        runOnUiThread {
-                                            AlertDialog.Builder(this@SettingsActivity, GlassCompat.dialogTheme(this@SettingsActivity))
-                                                .setTitle("恢复方式")
-                                                .setItems(arrayOf("覆盖当前数据（清空后导入）", "追加到当前数据")) { _, mode ->
-                                                    lifecycleScope.launch {
-                                                        try {
-                                                            val ok = BackupManager.importJsonString(this@SettingsActivity, json, mode == 0)
-                                                            var mediaCount = 0
-                                                            if (ok) {
-                                                                // 补齐媒体文件（图片/视频/附件；录音不备份不恢复）
-                                                                Toast.makeText(this@SettingsActivity, "正在恢复媒体文件...", Toast.LENGTH_SHORT).show()
-                                                                mediaCount = WebDAVBackup.downloadMediaFiles(this@SettingsActivity).getOrNull() ?: 0
-                                                            }
-                                                            runOnUiThread {
-                                                                val msg = if (ok) {
-                                                                    if (mediaCount > 0) "✅ 恢复成功，媒体文件 $mediaCount 个" else "✅ 恢复成功"
-                                                                } else "❌ 恢复失败"
-                                                                Toast.makeText(this@SettingsActivity, msg, Toast.LENGTH_SHORT).show()
-                                                                refreshUI()
-                                                            }
-                                                        } catch (e: Exception) {
-                                                            runOnUiThread { Toast.makeText(this@SettingsActivity, "恢复失败: ${e.message}", Toast.LENGTH_SHORT).show() }
-                                                        }
-                                                    }
-                                                }
-                                                .setNegativeButton("取消", null)
-                                                .show()
-                                        }
-                                    } else {
-                                        runOnUiThread { Toast.makeText(this@SettingsActivity, "下载失败", Toast.LENGTH_SHORT).show() }
-                                    }
-                                }
-                            }
+                            .setTitle("⚠️ 覆盖确认")
+                            .setMessage("覆盖会清空当前全部笔记，恢复成备份那一刻的样子，且不可撤销。\n\n确定要覆盖吗？")
+                            .setPositiveButton("确定覆盖") { _, _ -> doRestore(f, BackupManager.MODE_OVERWRITE) }
                             .setNegativeButton("取消", null)
                             .show()
                     }
-                    .setNegativeButton("取消", null)
-                    .show()
+                    2 -> doRestore(f, BackupManager.MODE_MERGE)
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    /** 下载并恢复指定备份；mode 见 BackupManager.MODE_* */
+    private fun doRestore(f: WebDAVBackup.BackupFile, mode: Int) {
+        lifecycleScope.launch {
+            try {
+                Toast.makeText(this@SettingsActivity, "正在下载备份...", Toast.LENGTH_SHORT).show()
+                val json = WebDAVBackup.downloadBackup(this@SettingsActivity, f.path)
+                if (json == null) {
+                    runOnUiThread { Toast.makeText(this@SettingsActivity, "下载失败", Toast.LENGTH_SHORT).show() }
+                    return@launch
+                }
+                val result = BackupManager.importJsonString(this@SettingsActivity, json, mode)
+                var mediaCount = 0
+                if (result.success) {
+                    if (mode != BackupManager.MODE_OVERWRITE) {
+                        // 追加/增量恢复：记录恢复来的笔记 id，自动备份时跳过它们，避免把恢复内容重新上传到云端
+                        Prefs(this@SettingsActivity).addRestoredNoteIds(result.noteIdMap.values)
+                    }
+                    // 补齐媒体文件（图片/视频/附件；录音不备份不恢复）
+                    Toast.makeText(this@SettingsActivity, "正在恢复媒体文件...", Toast.LENGTH_SHORT).show()
+                    mediaCount = WebDAVBackup.downloadMediaFiles(this@SettingsActivity, result.noteIdMap).getOrNull() ?: 0
+                }
+                if (result.success) {
+                    // 通知主页刷新数据（否则返回首页看不到恢复来的分类/笔记，需重启 App）
+                    Prefs(this@SettingsActivity).needsRefresh = true
+                }
+                runOnUiThread {
+                    val msg = if (result.success) {
+                        if (mediaCount > 0) "✅ 恢复成功，媒体文件 $mediaCount 个" else "✅ 恢复成功"
+                    } else "❌ 恢复失败"
+                    Toast.makeText(this@SettingsActivity, msg, Toast.LENGTH_SHORT).show()
+                    refreshUI()
+                }
+            } catch (e: Exception) {
+                runOnUiThread { Toast.makeText(this@SettingsActivity, "恢复失败: ${e.message}", Toast.LENGTH_SHORT).show() }
             }
         }
     }
@@ -2327,6 +2395,8 @@ class SettingsActivity : BaseActivity() {
                     is BackupManager.BackupResult.Success -> {
                         runOnUiThread {
                             updateLastBackupTime()
+                            // 通知主页刷新数据（否则返回首页看不到恢复来的内容，需重启 App）
+                            Prefs(this@SettingsActivity).needsRefresh = true
                             Toast.makeText(this@SettingsActivity,
                                 "恢复成功！${result.noteCount}篇笔记, ${result.itemCount}个内容项, ${result.catCount}个分类",
                                 Toast.LENGTH_LONG).show()

@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.mynote.android.data.AppDatabase
 import com.mynote.android.data.entity.ContentItem
@@ -32,6 +31,11 @@ object BackupManager {
     private const val BACKUP_DIR = "backups"
     private const val DB_NAME = "mynote.db"
     private val gson = Gson()
+
+    // ===== 云端恢复模式 =====
+    const val MODE_APPEND = 0      // 追加：生成「（备）」子主题卡片，不覆盖现有内容
+    const val MODE_OVERWRITE = 1   // 覆盖：清空后按原 id 精确还原
+    const val MODE_MERGE = 2       // 增量：只补本地没有的分类/笔记，已有的跳过
 
     // ===== JSON 全量备份 =====
 
@@ -88,7 +92,7 @@ object BackupManager {
     /**
      * 生成 JSON 备份字符串（用于云上传）
      */
-    suspend fun exportJsonString(context: Context): String {
+    suspend fun exportJsonString(context: Context, excludeNoteIds: Set<String> = emptySet()): String {
         val db = AppDatabase.get(context.applicationContext)
         val parents = db.categoryDao().getParentCategories()
         val subs = mutableListOf<SubCategory>()
@@ -98,7 +102,7 @@ object BackupManager {
             val sl = db.categoryDao().getSubCategories(p.id)
             subs.addAll(sl)
             for (s in sl) {
-                val nl = db.noteDao().getNotesBySubCategory(s.id)
+                val nl = db.noteDao().getNotesBySubCategory(s.id).filter { it.id !in excludeNoteIds }
                 notes.addAll(nl)
                 for (n in nl) items.addAll(db.noteDao().getContentItems(n.id))
             }
@@ -112,19 +116,37 @@ object BackupManager {
         return gson.toJson(backup)
     }
 
+    /** 恢复结果：success 是否成功；noteIdMap 为旧 noteId → 新 noteId 的映射（供媒体文件恢复跟随重映射） */
+    data class ImportResult(val success: Boolean, val noteIdMap: Map<String, String> = emptyMap())
+
     /**
-     * 从 JSON 字符串恢复数据（用于云端下载后恢复）
+     * 从 JSON 字符串恢复数据（用于云端下载后恢复）。
+     *
+     * 手动逐字段构造实体，不用 Gson 反序列化 Kotlin data class——
+     * 因为 JSON 经 Map<String,Any> 中间态后整数会被解析成 Double，
+     * 直接反序列化回 Int/Long/Float 字段存在类型不匹配风险（与本地恢复
+     * restoreJsonBackup 保持一致的做法）。
+     *
+     * @param mode 恢复模式：
+     *             [MODE_APPEND] 追加：大主题按名称复用，子主题「总是新建」并加「（备）」后缀，
+     *             笔记重新生成 id 落到「（备）」子主题下，绝不覆盖本地已有内容；
+     *             [MODE_OVERWRITE] 覆盖：清空后按原 id 精确还原；
+     *             [MODE_MERGE] 增量：只补本地没有的——大主题/子主题按名称复用（无则新建，
+     *             不加「（备）」），笔记按「同子主题下同标题」判断，已有的跳过、缺失的才恢复。
      */
-    suspend fun importJsonString(context: Context, json: String, clearFirst: Boolean = false): Boolean {
+    suspend fun importJsonString(context: Context, json: String, mode: Int = MODE_APPEND): ImportResult {
         return try {
             val type = object : TypeToken<Map<String, Any>>() {}.type
             val backup: Map<String, Any> = gson.fromJson(json, type)
             @Suppress("UNCHECKED_CAST")
-            val data = backup["data"] as? Map<String, Any> ?: (backup as? Map<String, Any>) ?: return false
+            val data = backup["data"] as? Map<String, Any> ?: (backup as? Map<String, Any>) ?: return ImportResult(false)
 
             val db = AppDatabase.get(context.applicationContext)
 
-            if (clearFirst) {
+            val overwrite = mode == MODE_OVERWRITE
+            val merge = mode == MODE_MERGE
+
+            if (overwrite) {
                 val parents = db.categoryDao().getParentCategories()
                 for (p in parents) {
                     val subs = db.categoryDao().getSubCategories(p.id)
@@ -134,32 +156,161 @@ object BackupManager {
                     }
                 }
                 for (p in parents) db.categoryDao().deleteParentCategory(p)
+                // 清空本地媒体目录：覆盖恢复后旧笔记的图片/视频/录音不应残留，
+                // 否则下次备份时 collectLocalMedia 会把孤儿文件误当成当前数据重新上传。
+                val notesDir = File(context.filesDir, "notes")
+                if (notesDir.isDirectory) notesDir.listFiles()?.forEach { it.deleteRecursively() }
             }
+
+            // 追加/增量：不清空，id 重新映射；覆盖：本地已清空，保持原 id 精确还原。
+            val remap = !overwrite
+            val parentIdMap = mutableMapOf<String, String>()
+            val subIdMap = mutableMapOf<String, String>()
+            val noteIdMap = mutableMapOf<String, String>()
+
+            // 追加/增量模式下预取现有大主题，供按名称复用
+            val existingParents: List<ParentCategory> =
+                if (remap) db.categoryDao().getParentCategories() else emptyList()
+            val existingSubs: List<SubCategory> =
+                if (merge) db.categoryDao().getAllSubCategories() else emptyList()
 
             // 父分类
             @Suppress("UNCHECKED_CAST")
             (data["parentCategories"] as? List<Map<String, Any>>)?.forEach { p ->
-                db.categoryDao().insertParentCategory(GsonBuilder().create().fromJson(gson.toJson(p), ParentCategory::class.java))
+                val oldId = p["id"]?.toString() ?: return@forEach
+                val name = p["name"]?.toString() ?: ""
+                val newId: String
+                if (remap) {
+                    val exist = existingParents.firstOrNull { name.isNotEmpty() && it.name == name }
+                    newId = if (exist != null) {
+                        exist.id // 复用现有大主题，不重复建卡片
+                    } else {
+                        val id = UUID.randomUUID().toString()
+                        db.categoryDao().insertParentCategory(ParentCategory(
+                            id = id,
+                            name = name,
+                            color = p["color"]?.toString() ?: "",
+                            sortOrder = (p["sortOrder"] as? Number)?.toInt() ?: 0
+                        ))
+                        id
+                    }
+                } else {
+                    newId = oldId
+                    db.categoryDao().insertParentCategory(ParentCategory(
+                        id = oldId,
+                        name = name,
+                        color = p["color"]?.toString() ?: "",
+                        sortOrder = (p["sortOrder"] as? Number)?.toInt() ?: 0
+                    ))
+                }
+                parentIdMap[oldId] = newId
             }
             // 子分类
             @Suppress("UNCHECKED_CAST")
             (data["subCategories"] as? List<Map<String, Any>>)?.forEach { s ->
-                db.categoryDao().insertSubCategory(GsonBuilder().create().fromJson(gson.toJson(s), SubCategory::class.java))
+                val oldId = s["id"]?.toString() ?: return@forEach
+                val name = s["name"]?.toString() ?: ""
+                val rawParentId = s["parentId"]?.toString() ?: ""
+                val newParentId = if (remap) (parentIdMap[rawParentId] ?: rawParentId) else rawParentId
+                val newId: String
+                if (overwrite) {
+                    newId = oldId
+                    db.categoryDao().insertSubCategory(SubCategory(
+                        id = oldId,
+                        parentId = newParentId,
+                        name = name,
+                        color = s["color"]?.toString() ?: "",
+                        sortOrder = (s["sortOrder"] as? Number)?.toInt() ?: 0
+                    ))
+                } else if (merge) {
+                    // 增量：按（parentId + 名称）复用，无同名才新建（不加「（备）」）
+                    val exist = existingSubs.firstOrNull { it.parentId == newParentId && name.isNotEmpty() && it.name == name }
+                    newId = if (exist != null) {
+                        exist.id
+                    } else {
+                        val id = UUID.randomUUID().toString()
+                        db.categoryDao().insertSubCategory(SubCategory(
+                            id = id,
+                            parentId = newParentId,
+                            name = name,
+                            color = s["color"]?.toString() ?: "",
+                            sortOrder = (s["sortOrder"] as? Number)?.toInt() ?: 0
+                        ))
+                        id
+                    }
+                } else {
+                    // 追加：总是新建一份「（备）」子主题，不并入现有子主题
+                    val id = UUID.randomUUID().toString()
+                    db.categoryDao().insertSubCategory(SubCategory(
+                        id = id,
+                        parentId = newParentId,
+                        name = "$name（备）",
+                        color = s["color"]?.toString() ?: "",
+                        sortOrder = (s["sortOrder"] as? Number)?.toInt() ?: 0
+                    ))
+                    newId = id
+                }
+                subIdMap[oldId] = newId
             }
-            // 笔记
+            // 笔记（补全 tags/isTodo/isPinned/isTrashed/trashedAt）
             @Suppress("UNCHECKED_CAST")
             (data["notes"] as? List<Map<String, Any>>)?.forEach { n ->
-                db.noteDao().insertNote(GsonBuilder().create().fromJson(gson.toJson(n), Note::class.java))
+                val oldId = n["id"]?.toString() ?: UUID.randomUUID().toString()
+                val rawSubId = n["subCategoryId"]?.toString() ?: ""
+                val newSubId = if (remap) (subIdMap[rawSubId] ?: rawSubId) else rawSubId
+                val bkTitle = n["title"]?.toString() ?: ""
+                val newId: String
+                if (merge) {
+                    // 增量：同子主题下已有同标题笔记则跳过，缺失的才恢复
+                    val exist = db.noteDao().getNotesBySubCategory(newSubId)
+                        .firstOrNull { bkTitle.isNotEmpty() && it.title == bkTitle }
+                    if (exist != null) return@forEach
+                    newId = UUID.randomUUID().toString()
+                } else {
+                    newId = if (remap) UUID.randomUUID().toString() else oldId
+                }
+                noteIdMap[oldId] = newId
+                db.noteDao().insertNote(Note(
+                    id = newId,
+                    subCategoryId = newSubId,
+                    title = bkTitle,
+                    contentText = n["contentText"]?.toString() ?: "",
+                    updateTime = n["updateTime"]?.toString() ?: "",
+                    createTime = n["createTime"]?.toString() ?: n["updateTime"]?.toString() ?: "",
+                    sortOrder = (n["sortOrder"] as? Number)?.toInt() ?: 0,
+                    tags = n["tags"]?.toString() ?: "",
+                    isTodo = n["isTodo"] as? Boolean ?: false,
+                    isPinned = n["isPinned"] as? Boolean ?: false,
+                    isTrashed = n["isTrashed"] as? Boolean ?: false,
+                    trashedAt = (n["trashedAt"] as? Number)?.toLong() ?: 0L
+                ))
             }
-            // 内容项
+            // 内容项（补全 voiceTimestamps）
             @Suppress("UNCHECKED_CAST")
             (data["contentItems"] as? List<Map<String, Any>>)?.forEach { ci ->
-                db.noteDao().insertContentItem(GsonBuilder().create().fromJson(gson.toJson(ci), ContentItem::class.java))
+                val rawNoteId = ci["noteId"]?.toString() ?: return@forEach
+                // 增量模式下被跳过的笔记不在 noteIdMap，其内容项也一并跳过（否则落到旧 id 成孤儿）
+                if (remap && rawNoteId !in noteIdMap) return@forEach
+                val newNoteId = if (remap) (noteIdMap[rawNoteId] ?: rawNoteId) else rawNoteId
+                db.noteDao().insertContentItem(ContentItem(
+                    id = 0,
+                    noteId = newNoteId,
+                    type = ci["type"]?.toString() ?: "text",
+                    content = ci["content"]?.toString() ?: "",
+                    timestamp = ci["timestamp"]?.toString() ?: "",
+                    transformX = (ci["transformX"] as? Number)?.toFloat() ?: 0f,
+                    transformY = (ci["transformY"] as? Number)?.toFloat() ?: 0f,
+                    transformScale = (ci["transformScale"] as? Number)?.toFloat() ?: 1f,
+                    transformRotation = (ci["transformRotation"] as? Number)?.toFloat() ?: 0f,
+                    voiceDuration = (ci["voiceDuration"] as? Number)?.toLong() ?: 0L,
+                    voiceTimestamps = ci["voiceTimestamps"]?.toString() ?: "",
+                    voiceTranscript = ci["voiceTranscript"]?.toString() ?: ""
+                ))
             }
-            true
+            ImportResult(true, noteIdMap)
         } catch (e: Exception) {
             Log.e("BackupManager", "恢复失败", e)
-            false
+            ImportResult(false)
         }
     }
 
@@ -242,7 +393,12 @@ object BackupManager {
                         contentText = n["contentText"]?.toString() ?: "",
                         updateTime = n["updateTime"]?.toString() ?: "",
                         createTime = n["createTime"]?.toString() ?: n["updateTime"]?.toString() ?: "",
-                        sortOrder = (n["sortOrder"] as? Double)?.toInt() ?: 0
+                        sortOrder = (n["sortOrder"] as? Number)?.toInt() ?: 0,
+                        tags = n["tags"]?.toString() ?: "",
+                        isTodo = n["isTodo"] as? Boolean ?: false,
+                        isPinned = n["isPinned"] as? Boolean ?: false,
+                        isTrashed = n["isTrashed"] as? Boolean ?: false,
+                        trashedAt = (n["trashedAt"] as? Number)?.toLong() ?: 0L
                     )
                     db.noteDao().insertNote(note)
                     noteCount++
@@ -260,11 +416,12 @@ object BackupManager {
                         type = i["type"]?.toString() ?: "text",
                         content = i["content"]?.toString() ?: "",
                         timestamp = i["timestamp"]?.toString() ?: "",
-                        transformX = (i["transformX"] as? Double)?.toFloat() ?: 0f,
-                        transformY = (i["transformY"] as? Double)?.toFloat() ?: 0f,
-                        transformScale = (i["transformScale"] as? Double)?.toFloat() ?: 1f,
-                        transformRotation = (i["transformRotation"] as? Double)?.toFloat() ?: 0f,
-                        voiceDuration = (i["voiceDuration"] as? Double)?.toLong() ?: 0L,
+                        transformX = (i["transformX"] as? Number)?.toFloat() ?: 0f,
+                        transformY = (i["transformY"] as? Number)?.toFloat() ?: 0f,
+                        transformScale = (i["transformScale"] as? Number)?.toFloat() ?: 1f,
+                        transformRotation = (i["transformRotation"] as? Number)?.toFloat() ?: 0f,
+                        voiceDuration = (i["voiceDuration"] as? Number)?.toLong() ?: 0L,
+                        voiceTimestamps = i["voiceTimestamps"]?.toString() ?: "",
                         voiceTranscript = i["voiceTranscript"]?.toString() ?: ""
                     )
                     db.noteDao().insertContentItem(item)
@@ -342,13 +499,16 @@ object BackupManager {
             // 等待数据库关闭
             Thread.sleep(300)
 
-            // 替换数据库文件
+            // 替换数据库文件：先删除现有 .db/-wal/-shm（避免 zip 里没有 -wal/-shm 时残留旧 WAL 导致数据不一致），
+            // 再复制 zip 里存在的文件。
+            for (suffix in listOf("", "-wal", "-shm")) {
+                val dstFile = File(dbDir, "$DB_NAME$suffix")
+                if (dstFile.exists()) dstFile.delete()
+            }
             for (suffix in listOf("", "-wal", "-shm")) {
                 val srcFile = File(tempDir, "$DB_NAME$suffix")
                 if (srcFile.exists()) {
-                    val dstFile = File(dbDir, "$DB_NAME$suffix")
-                    dstFile.delete()
-                    srcFile.copyTo(dstFile, overwrite = true)
+                    srcFile.copyTo(File(dbDir, "$DB_NAME$suffix"), overwrite = true)
                 }
             }
 

@@ -249,6 +249,11 @@
             </intent-filter>
         </receiver>
 
+        <!-- 定时自动云备份（闹钟触发，显式 PendingIntent 调用，无需对外暴露） -->
+        <receiver
+            android:name=".util.AutoBackupReceiver"
+            android:exported="false" />
+
         <!-- 桌面小部件 -->
         <receiver
             android:name=".ui.widget.MyNoteWidget"

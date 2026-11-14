@@ -60,10 +60,16 @@ class MyNoteApp : Application() {
         // 清理过期回收站（30天）
         cleanExpiredTrash()
 
+        // 修复「加图片后重新打开笔记闪退」：把历史内嵌 base64 图片改为文件引用
+        migrateOversizedContent()
+
         // 自动启动摇一摇录音服务（如果已开启）
         if (Prefs(this).quickRecordEnabled) {
             try { QuickRecordService.start(this) } catch (_: Exception) {}
         }
+
+        // 定时自动云备份：启动时按开关重新调度（兜底，防闹钟被系统/异常清理）
+        try { com.mynote.android.util.AutoBackupScheduler.reschedule(this) } catch (_: Exception) {}
     }
 
     /**
@@ -172,6 +178,18 @@ class MyNoteApp : Application() {
                 }
             }
         } catch (_: Exception) {}
+    }
+
+    /**
+     * 迁移历史超大内容块：把内嵌 base64 图片改为文件引用，
+     * 修复 SQLiteBlobTooBigException（CursorWindow 2MB 上限）导致的闪退。
+     */
+    private fun migrateOversizedContent() {
+        appScope.launch {
+            try {
+                com.mynote.android.util.ContentSizeMigrator.migrateIfNeeded(this@MyNoteApp, database)
+            } catch (_: Exception) {}
+        }
     }
 
     companion object {

@@ -1312,12 +1312,14 @@ ${d.treatment.split("、").joinToString("\n") { "　○ ${it.trim()}" }}
 
     // ===== 媒体插入 =====
     private fun insertImage(path: String) {
-        val bmp = BitmapFactory.decodeFile(path)
-        if (bmp == null) { toast("加载图片失败"); return }
-        val bos = ByteArrayOutputStream()
-        bmp.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, bos); bmp.recycle()
-        val b64 = Base64.encodeToString(bos.toByteArray(), Base64.NO_WRAP)
-        val html = withBr("<div contenteditable=\"false\" class=\"media\" data-type=\"image\" data-path=\"" + esc(path) + "\"><img src=\"data:image/jpeg;base64," + b64 + "\"/>" + timeLabel() + "</div>")
+        // 图片文件已由 copy()/拍照落在 baseDir，直接用文件名引用即可。
+        // 之前把图片 base64 内嵌进 HTML，会让 content_items.content 单行膨胀
+        // 超过 SQLite CursorWindow 的 2MB 上限，重新打开笔记时抛
+        // SQLiteBlobTooBigException 导致闪退。这里改用相对文件名——
+        // loadContent 里 loadDataWithBaseURL 以 baseDir 为 base、allowFileAccess=true，
+        // 相对文件名能直接加载到本地图片。
+        val fileName = File(path).name
+        val html = withBr("<div contenteditable=\"false\" class=\"media\" data-type=\"image\" data-path=\"" + esc(path) + "\"><img src=\"" + esc(fileName) + "\"/>" + timeLabel() + "</div>")
         js("document.execCommand('insertHTML',false,'" + esc(html) + "');bindMedia()")
         markDirty()
     }
@@ -1469,7 +1471,7 @@ ${d.treatment.split("、").joinToString("\n") { "　○ ${it.trim()}" }}
                 sp.needsRefresh = true
                 // 自动备份到云
                 if (sp.backupAutoBackup && com.mynote.android.util.WebDAVBackup.isConfigured(this@EditActivity)) {
-                    ioScope.launch { com.mynote.android.util.WebDAVBackup.uploadBackup(this@EditActivity) }
+                    ioScope.launch { com.mynote.android.util.WebDAVBackup.uploadBackup(this@EditActivity, excludeRestored = true) }
                 }
             }
         }

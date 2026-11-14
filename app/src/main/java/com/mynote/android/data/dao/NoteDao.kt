@@ -116,4 +116,19 @@ interface NoteDao {
 
     @Query("DELETE FROM content_items WHERE noteId = :noteId")
     suspend fun deleteContentItemsByNote(noteId: String)
+
+    // ===== 超大数据迁移（base64 图片 → 文件引用，修复 SQLiteBlobTooBigException）=====
+    // 用字节长度定位超限行，避免 SELECT * 把超大行塞进 CursorWindow 直接崩溃
+    @Query("SELECT id, noteId, length(CAST(content AS BLOB)) AS bytes FROM content_items WHERE type = 'html' AND length(CAST(content AS BLOB)) > :thresholdBytes")
+    suspend fun findOversizedHtmlItems(thresholdBytes: Int): List<OversizedHtmlItem>
+
+    // substr 按字符分段读取，单段远小于 CursorWindow，可安全读出超大 content
+    @Query("SELECT substr(content, :start, :count) FROM content_items WHERE id = :id")
+    suspend fun getContentChunk(id: Long, start: Int, count: Int): String?
+
+    @Query("UPDATE content_items SET content = :content WHERE id = :id")
+    suspend fun updateContentItemContent(id: Long, content: String)
 }
+
+/** 投影结果：定位超大的 html 内容块（超过 CursorWindow 限制） */
+data class OversizedHtmlItem(val id: Long, val noteId: String, val bytes: Int)
