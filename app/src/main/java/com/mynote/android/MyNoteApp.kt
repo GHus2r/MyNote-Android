@@ -70,6 +70,9 @@ class MyNoteApp : Application() {
 
         // 定时自动云备份：启动时按开关重新调度（兜底，防闹钟被系统/异常清理）
         try { com.mynote.android.util.AutoBackupScheduler.reschedule(this) } catch (_: Exception) {}
+
+        // 匿名使用统计上报（后台异步、失败静默，不影响启动）
+        try { com.mynote.android.util.UsageReporter.reportLaunch(this) } catch (_: Exception) {}
     }
 
     /**
