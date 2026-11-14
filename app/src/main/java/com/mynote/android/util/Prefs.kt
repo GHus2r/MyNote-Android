@@ -200,28 +200,6 @@ class Prefs(context: Context) {
         sp.edit().remove(KEY_RESTORED_NOTE_IDS).apply()
     }
 
-    // ===== 使用统计 & 用户反馈 =====
-    /** 匿名使用统计开关，默认开启；用户可在设置页关闭 */
-    var usageStatEnabled: Boolean
-        get() = sp.getBoolean(KEY_USAGE_STAT_ENABLED, true)
-        set(value) = sp.edit().putBoolean(KEY_USAGE_STAT_ENABLED, value).apply()
-
-    /** 匿名设备标识（随机 UUID，首次生成后持久化；与任何个人信息无关） */
-    val usageStatDeviceId: String
-        get() {
-            var uuid = sp.getString(KEY_USAGE_STAT_DEVICE_ID, null)
-            if (uuid == null) {
-                uuid = java.util.UUID.randomUUID().toString()
-                sp.edit().putString(KEY_USAGE_STAT_DEVICE_ID, uuid).apply()
-            }
-            return uuid
-        }
-
-    /** 统计/反馈服务器地址（可覆盖 UsageReporter.SERVER_URL 常量） */
-    var feedbackServerUrl: String
-        get() = sp.getString(KEY_FEEDBACK_SERVER_URL, "") ?: ""
-        set(value) = sp.edit().putString(KEY_FEEDBACK_SERVER_URL, value).apply()
-
     // ===== 外观 =====
     @Deprecated("暗色模式已移除", ReplaceWith("false"))
     var darkMode: Boolean
@@ -341,9 +319,6 @@ class Prefs(context: Context) {
         private const val KEY_AUTO_BACKUP_MINUTE = "auto_backup_minute"
         private const val KEY_RESTORED_NOTE_IDS = "restored_note_ids"
         private const val KEY_AUTO_SYNC = "auto_sync_to_pc"
-        private const val KEY_USAGE_STAT_ENABLED = "usage_stat_enabled"
-        private const val KEY_USAGE_STAT_DEVICE_ID = "usage_stat_device_id"
-        private const val KEY_FEEDBACK_SERVER_URL = "feedback_server_url"
         private const val KEY_GLASS_MODE = "glass_mode"
 
         private const val KEY_DARK_MODE = "dark_mode"

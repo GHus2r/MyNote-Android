@@ -44,7 +44,6 @@ import com.mynote.android.util.CrashHandler
 import com.mynote.android.util.IconManager
 import com.mynote.android.util.MedicalCalculator
 import com.mynote.android.util.Prefs
-import com.mynote.android.util.UsageReporter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -176,12 +175,7 @@ class SettingsActivity : BaseActivity() {
                 onBaichuanConfigClick = { showBaichuanConfigDialog() },
                 onCrashLogsClick = { exportCrashLogs() },
                 onGlassModeClick = { showGlassModeDialog() },
-                onDisclaimerClick = { showDisclaimerDialog() },
-                onUsageStatToggle = { checked ->
-                    prefs.usageStatEnabled = checked
-                    Toast.makeText(this@SettingsActivity, if (checked) "已开启匿名使用统计" else "已关闭匿名使用统计", Toast.LENGTH_SHORT).show()
-                },
-                onFeedbackClick = { showFeedbackDialog() }
+                onDisclaimerClick = { showDisclaimerDialog() }
             )
         }
 
@@ -243,8 +237,7 @@ class SettingsActivity : BaseActivity() {
                 "solid" -> "强制实心"
                 else -> "自动(${if (GlassCompat.isBlurBehindSupported(this)) "玻璃" else "实心"})"
             },
-            antiUninstallHint = antiHint,
-            usageStatEnabled = prefs.usageStatEnabled
+            antiUninstallHint = antiHint
         )
     }
 
@@ -2785,57 +2778,6 @@ class SettingsActivity : BaseActivity() {
         showKeyboard(etApiKey)
     }
 
-    private fun showFeedbackDialog() {
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(40, 20, 40, 10)
-        }
-        val baseParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
-        val etTitle = EditText(this).apply {
-            hint = "标题（可选）"
-            setSingleLine(true)
-        }
-        val etContent = EditText(this).apply {
-            hint = "反馈内容（必填）"
-            minLines = 4
-            gravity = android.view.Gravity.TOP
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
-            layoutParams = LinearLayout.LayoutParams(baseParams).apply { topMargin = 16 }
-        }
-        val etContact = EditText(this).apply {
-            hint = "联系方式（可选，邮箱/QQ）"
-            setSingleLine(true)
-            layoutParams = LinearLayout.LayoutParams(baseParams).apply { topMargin = 16 }
-        }
-        layout.addView(etTitle)
-        layout.addView(etContent)
-        layout.addView(etContact)
-
-        AlertDialog.Builder(this, GlassCompat.dialogTheme(this))
-            .setTitle("用户反馈")
-            .setView(layout)
-            .setPositiveButton("提交") { _, _ ->
-                val content = etContent.text.toString().trim()
-                if (content.isEmpty()) {
-                    Toast.makeText(this, "请填写反馈内容", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
-                val title = etTitle.text.toString().trim()
-                val contact = etContact.text.toString().trim()
-                Toast.makeText(this, "正在提交...", Toast.LENGTH_SHORT).show()
-                UsageReporter.submitFeedback(this, title, content, contact) { ok, msg ->
-                    runOnUiThread {
-                        Toast.makeText(this, if (ok) "反馈已提交，感谢！" else "提交失败：$msg", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-            .setNegativeButton("取消", null)
-            .show()
-    }
-
     private fun showDisclaimerDialog() {
         val text = """MyNote 是一款面向医学专业人员的学习记录与临床辅助工具，仅供学习、参考与自我管理用途。
 
@@ -2850,8 +2792,6 @@ class SettingsActivity : BaseActivity() {
 5. 使用者因依赖本应用内容作出的任何医疗行为及其后果，由使用者自行承担。开发者不对因使用或误用本应用造成的任何直接或间接损失承担责任。
 
 6. 本应用为个人非商业化项目，数据默认存储于本地设备，请自行妥善备份。
-
-7. 为改进产品，本应用会匿名上报使用统计（随机设备标识、设备型号、系统版本），不包含任何个人身份信息与笔记内容；您可在「设置 → 匿名使用统计」中随时关闭。
 
 继续使用即表示您已阅读、理解并同意本声明。"""
         AlertDialog.Builder(this, GlassCompat.dialogTheme(this))

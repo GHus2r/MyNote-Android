@@ -60,9 +60,7 @@ data class SettingsState(
     val crashCountLabel: String = "0条",
     val antiUninstallHint: String = "激活后可防止恶意卸载",
     /** 当前弹窗玻璃模式的可读文案：自动 / 玻璃 / 实心 */
-    val glassModeLabel: String = "自动",
-    /** 匿名使用统计开关 */
-    val usageStatEnabled: Boolean = true
+    val glassModeLabel: String = "自动"
 )
 
 /**
@@ -98,9 +96,7 @@ fun SettingsScreen(
     onBaichuanConfigClick: () -> Unit,
     onCrashLogsClick: () -> Unit,
     onGlassModeClick: () -> Unit,
-    onDisclaimerClick: () -> Unit,
-    onUsageStatToggle: (Boolean) -> Unit,
-    onFeedbackClick: () -> Unit
+    onDisclaimerClick: () -> Unit
 ) {
     // 顶栏延伸到状态栏下方（与 View 层 LinearLayout 的 fitsSystemWindows 对齐）
     val view = LocalView.current
@@ -240,18 +236,6 @@ fun SettingsScreen(
 
             // 关于
             item(key = "h8") { GroupHeader("关于") }
-            item(key = "feedback") {
-                ClickItem("用户反馈", sub = "意见与建议", onClick = onFeedbackClick, backdrop = backdrop)
-            }
-            item(key = "usage_stat") {
-                SwitchItem(
-                    "匿名使用统计",
-                    checked = state.usageStatEnabled,
-                    onChecked = onUsageStatToggle,
-                    hint = "仅匿名上报机型与版本，用于改进产品",
-                    backdrop = backdrop
-                )
-            }
             item(key = "disclaimer") {
                 ClickItem("免责声明", sub = "使用前请阅读", onClick = onDisclaimerClick, backdrop = backdrop)
             }
